@@ -6,8 +6,9 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 
 `PluginHub`在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
 
-![PluginHubWindow](ReadmeImg/Demo0.png)
-![PluginHubWindow](ReadmeImg/Demo1.png)
+<img src="ReadmeImg/Demo0.png" width="400">
+<img src="ReadmeImg/Demo1.png" width="400">
+
 
 ## 名词
 
@@ -41,7 +42,7 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 
 仅构建当前场景：程序会先在构建设置中取消勾选其他场景，只保留当前场景，以仅将当前场景打进包中，并且`exe`执行文件和打包目录使用当前场景名称命名。（也可指定其他名称）
 
-![BuildModule](ReadmeImg/BuildModule.png)
+<img src="ReadmeImg/BuildModule.png" width="400">
 
 ### SceneModule
 
@@ -76,7 +77,7 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 也可以以指定的距离和方向移动物体。
 
 
-![AlignModule](ReadmeImg/AlignModule.png)
+<img src="ReadmeImg/AlignModule.png" width="400">
 
 ### TextureProcessModule
 
@@ -86,14 +87,13 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 
 又例如您下载到的是Roughness纹理，但是Unity通常需要的是Smoothness纹理，这时候您可以使用该模块将Roughness纹理转换为Smoothness纹理。（Roughness=1-Smoothness）
 
-![TextureProcessModule](ReadmeImg/TextureProcessingModule.png)
+<img src="ReadmeImg/TextureProcessingModule.png" width="400">
 
 ### LightProbePlacementModule
 
 程序化控制LightProbe的放置，节约您的时间。
 
-![LightProbePlacementModule](ReadmeImg/LightProbePlacementModule.png)
-
+<img src="ReadmeImg/LightProbePlacementModule.png" width="400">
 ### MaterialOptimizationModule
 
 快速提取嵌入式材质
@@ -102,7 +102,7 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 
 将场景中所有对旧材质的引用替换为新材质。
 
-![MaterialOptimizationModule](ReadmeImg/MaterialOptimizationModule.png)
+<img src="ReadmeImg/MaterialOptimizationModule.png" width="400">
 
 ### MaterialReplaceModule
 
