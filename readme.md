@@ -6,6 +6,8 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 
 `PluginHub`在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
 
+按下Star以支持我的工作
+
 <img src="ReadmeImg/Demo0.png" width="400">
 <img src="ReadmeImg/Demo1.png" width="400">
 
