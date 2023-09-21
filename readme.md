@@ -24,6 +24,20 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 - 包含完整源代码，您可以自由扩展和修改功能模块。
 
 
+## 安装与使用
+
+已经过测试的`Unity3D`版本：`2021.3.x` 以上。更老的版本可能也可以使用，但是未经测试，可能会有API不兼容的情况。
+
+1. 将存储库克隆到本地
+2. 在`Unity3D`中打开`Package Manager`窗口
+3. 点击`+`按钮，选择`Add package from disk...`
+4. 选择`PluginHub`文件夹中的`package.json`文件
+5. 等待`Unity3D`导入完成
+6. 导航到`Window`->`PluginHub` 或者 `Ctrl+Shift+R`打开`PluginHubWindow`窗口
+7. 在`PluginHubWindow`窗口中展开模块的下拉卷展栏
+8. 开始使用
+9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
+
 
 ## 已完成开发的模块
 这里只介绍一些常用且成熟稳定的模块，更多模块请自行查看源码。
@@ -94,6 +108,7 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 程序化控制LightProbe的放置，节约您的时间。
 
 <img src="ReadmeImg/LightProbePlacementModule.png" width="400">
+
 ### MaterialOptimizationModule
 
 快速提取嵌入式材质
