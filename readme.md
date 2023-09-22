@@ -1,32 +1,38 @@
 ﻿# 项目介绍
-`PluginHub`是一款`Unity3D`编辑器插件开发框架，并包含了一些已开发完成的插件模块。
-每个模块实现一个方面的功能。旨在为您提供各式各样的功能，以加速开发效率。
+`PluginHub`是一款用`IMGUI`编写的`Unity3D`编辑器插件开发框架，并包含了一些已开发完成的插件模块。您可以使用这些开发完成的插件模块提高您的工作效率，也可以自己开发插件模块。
 
-PluginHub is a Unity3D editor plugin development framework, and contains some developed plugin modules.
+每个模块实现一个方面的功能。旨在为您提供各式各样的功能，以加速开发效率。感谢您点击右上角的`Star`以支持我的工作。
+
+`PluginHub` is a `Unity3D` editor plugin development framework and contains some developed plugin modules.
+
+Each module implements a functional aspect. The purpose is to provide you with various functions to accelerate development efficiency. Thank you for clicking the `Star` in the upper right corner to support my work.
 
 `PluginHub`在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
 
-按下Star以支持我的工作
+`PluginHub` is presented in the form of a `PluginHub` window in `Unity3D`. You can view and use the functions of all modules in the window, and you can also enable or disable modules in the `PluginHub` configuration file.
 
+## PluginHub主窗口
 <img src="ReadmeImg/Demo0.png" width="400">
+
+## 模块配置页面
 <img src="ReadmeImg/Demo1.png" width="400">
 
 
-## 名词
+# 名词
 
-- `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中。见`PluginHubWindow`类。打开`PluginHubWindow`的快捷键是`Ctrl+Shift+R`
-- 插件模块：对应`PluginHubWindow`中的一个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
-- `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块。见`ModuleConfigSO`类
+- `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Shift+R`
+- 插件模块：对应`PluginHubWindow`中的每个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
+- `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块，启用的模块会在`PluginHubWindow`中显示。见`ModuleConfigSO`类
 
-## 特点
+# 特点
 
-- 模块之间分类清晰，简单易用
+- 模块之间分类清晰，简单易用。可以通过每个模块的卷展栏按钮折叠和展开模块。
 - 提供多种方便的模块功能，您也可以开发自己的模块，只需继承`PluginHubModuleBase`类即可。
 - 可以通过`ScriptableObject`配置文件启用或禁用模块，以定制您干净整洁的`PluginHubWindow`。
 - 包含完整源代码，您可以自由扩展和修改功能模块。
 
 
-## 安装与使用
+# 安装与使用
 
 已经过测试的`Unity3D`版本：`2021.3.x` 以上。更老的版本可能也可以使用，但是未经测试，可能会有API不兼容的情况。
 
@@ -41,7 +47,7 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
 
 
-## 已完成开发的模块
+# 已完成开发的模块
 这里只介绍一些常用且成熟稳定的模块，更多模块请自行查看源码。
 
 ### CommonComponentModule
@@ -65,11 +71,17 @@ PluginHub is a Unity3D editor plugin development framework, and contains some de
 可以查看项目中的所有场景资产，并可以进行过滤筛选。例如您可以输入`Main`来查找所有文件名中包含`Main`的场景。
 方便用户快速定位到场景资产。
 
+
+<img src="ReadmeImg/SceneModule.png" width="400">
+
+
 ### SelectionModule
 
 功能围绕选中的`Object`展开。
 
 例如：如果选中的是场景中的`Mesh`对象，模块会在场景视图中展示长宽高的数据。
+
+<img src="ReadmeImg/SelectionModule.png">
 
 ### ShaderDebuggerModule
 

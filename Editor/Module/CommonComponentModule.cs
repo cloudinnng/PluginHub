@@ -109,7 +109,7 @@ namespace PluginHub.Module
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 //附近的东西
-                GUILayout.Label(PluginHubFunc.GetGuiContent("Things Nearby：", "这里显示场景相机附近的常用游戏对象，用于快速选择"));
+                GUILayout.Label(PluginHubFunc.GuiContent("Things Nearby：", "这里显示场景相机附近的常用游戏对象，用于快速选择"));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {

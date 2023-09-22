@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using NUnit.Framework.Internal;
 using PluginHub.Helper;
 using UnityEditor;
 using UnityEngine;
@@ -16,15 +17,20 @@ namespace PluginHub.Module
             get { return "选择的对象"; }
         }
 
-        private Object selectObj;
-        private GameObject selectGameObject;
+        private Object selectedObject;
+        private GameObject selectedGameObject;
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+
+            selectedObject = Selection.activeObject;
+            selectedGameObject = selectedObject as GameObject;
+        }
 
         protected override void DrawGuiContent()
         {
-            selectObj = Selection.activeObject;
-            selectGameObject = selectObj as GameObject;
-
-            if (selectObj == null)
+            if (selectedObject == null)
             {
                 DrawRow("Selection", "None");
                 return;
@@ -33,7 +39,7 @@ namespace PluginHub.Module
             GUILayout.BeginHorizontal();
             {
                 string text;
-                if (selectGameObject != null)
+                if (selectedGameObject != null)
                 {
                     text = "GameObject";
                 }
@@ -44,9 +50,8 @@ namespace PluginHub.Module
 
                 DrawRow("Selection", text);
 
-
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(PluginHubFunc.Icon("CollabExclude Icon", "", "Deselect"), PluginHubFunc.IconBtnLOS))
+                if (GUILayout.Button(PluginHubFunc.Icon("CollabExclude Icon", "", "Deselect"), PluginHubFunc.IconBtnLayoutOptions))
                 {
                     Selection.activeObject = null;
                 }
@@ -54,7 +59,7 @@ namespace PluginHub.Module
             GUILayout.EndHorizontal();
 
             string path, name;
-            if (selectGameObject == null) //选中的是一个资产
+            if (selectedGameObject == null) //选中的是一个资产
             {
                 path = AssetDatabase.GetAssetPath(Selection.activeObject);
                 name = Path.GetFileName(path);
@@ -64,19 +69,19 @@ namespace PluginHub.Module
             }
             else //选中的是一个游戏对象
             {
-                name = selectGameObject.name;
+                name = selectedGameObject.name;
                 StringBuilder sb = new StringBuilder();
-                PluginHubFunc.GetFindPath(selectGameObject.transform, sb);
+                PluginHubFunc.GetFindPath(selectedGameObject.transform, sb);
                 path = sb.ToString();
 
 
                 DrawRow("Name", name);
                 DrawRow("Path", path);
-                DrawRow("Chind Count", selectGameObject.transform.childCount.ToString());
+                DrawRow("Chind Count", selectedGameObject.transform.childCount.ToString());
 
 
                 //MeshRenderer
-                MeshRenderer[] meshRenderers = selectGameObject.GetComponentsInChildren<MeshRenderer>();
+                MeshRenderer[] meshRenderers = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
                 
                 if (meshRenderers != null && meshRenderers.Length > 0)
                 {
@@ -92,33 +97,55 @@ namespace PluginHub.Module
                 }
             }
 
-            //会在可见网格中点创建父对象（不一定是选中对象的原点），并将选中的对象作为子对象。
-            if (GUILayout.Button("在可见Mesh中间创建父亲"))
-            {
-                MeshRenderer[] meshRenderers = selectGameObject.GetComponents<MeshRenderer>();
-                if (meshRenderers != null && meshRenderers.Length > 0 && meshRenderers[0] != null)
-                {
-                    Bounds bounds = meshRenderers[0].bounds;
-                    for (int i = 1; i < meshRenderers.Length; i++)
-                        bounds.Encapsulate(meshRenderers[i].bounds);
-
-                    Vector3 meshWorldCenter = bounds.center;
-
-                    GameObject parent = new GameObject("CF_Parent");
-                    parent.transform.SetParent(selectGameObject.transform.parent);
-                    parent.transform.position = meshWorldCenter;
-                    selectGameObject.transform.SetParent(parent.transform);
-                    Undo.RegisterCreatedObjectUndo(parent, "Create CF_Parent");
-                }
-            }
-
         }
 
         private Bounds tmpBounds = default;
 
+        private void DrawGameObjectGUI()
+        {
+            GUILayout.BeginHorizontal();
+            {
+                if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh中间创建父亲","会先计算物体下Mesh的中点位置，然后再该位置创建一个父物体，最后将该物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
+                {
+                    MeshRenderer[] meshRenderers = selectedGameObject.GetComponents<MeshRenderer>();
+                    if (meshRenderers != null && meshRenderers.Length > 0 && meshRenderers[0] != null)
+                    {
+                        Bounds bounds = meshRenderers[0].bounds;
+                        for (int i = 1; i < meshRenderers.Length; i++)
+                            bounds.Encapsulate(meshRenderers[i].bounds);
+
+                        Vector3 meshWorldCenter = bounds.center;
+
+                        GameObject parent = new GameObject("PluginHub_Parent");
+                        parent.transform.SetParent(selectedGameObject.transform.parent);
+                        parent.transform.position = meshWorldCenter;
+                        selectedGameObject.transform.SetParent(parent.transform);
+                        Undo.RegisterCreatedObjectUndo(parent, "Create PluginHub_Parent");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("物体没有MeshRenderer");
+                    }
+                }
+
+                if (GUILayout.Button("选中直接子物体"))
+                {
+                    List<GameObject> list = new List<GameObject>();
+                    for (int i = 0; i < selectedGameObject.transform.childCount; i++)
+                    {
+                        list.Add(selectedGameObject.transform.GetChild(i).gameObject);
+                    }
+                    Selection.objects = list.ToArray();
+                }
+            }
+            GUILayout.EndHorizontal();
+        }
+
+
+
         public override bool OnSceneGUI(SceneView sceneView)
         {
-            if (selectObj == null)
+            if (selectedObject == null)
                 return false;
             if (tmpBounds == default)
                 return false;

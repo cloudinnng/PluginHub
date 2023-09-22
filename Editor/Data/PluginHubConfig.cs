@@ -1,7 +1,7 @@
 ﻿using PluginHub.Helper;
 using UnityEngine;
 
-namespace PluginHub
+namespace PluginHub.Data
 {
     //项目独立的配置文件
     public static class PluginHubConfig

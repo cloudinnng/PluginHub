@@ -13,34 +13,37 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace PluginHub.Helper
+namespace PluginHub
 {
     //this file contain common function in PluginHub
     public static class PluginHubFunc
     {
+
         #region Const
 
         //选中的颜色
         public static readonly Color SelectedColor = new Color(0.572549f, 0.7960784f, 1f, 1f);
 
-        //定义一个仅能容纳一个icon的小型按钮的尺寸
+        //定义一个仅能容纳一个icon的小型按钮的尺寸，icon按钮专用
         private static readonly Vector2 iconBtnSize = new Vector2(28f, 19f);
 
-        //相比一个一个传递更加精简，用法示例： GUILayout.Button("X",PHFunc.IconBtnLOS)
-        public static readonly GUILayoutOption[] IconBtnLOS = new[]
+        //ICON按钮的LayoutOption
+        //用法示例： GUILayout.Button("X", PluginHubFunc.IconBtnLayoutOptions);
+        public static readonly GUILayoutOption[] IconBtnLayoutOptions = new[]
             { GUILayout.Width(iconBtnSize.x), GUILayout.Height(iconBtnSize.y) };
 
-        //项目唯一前缀，用于存储EditorPrefs
-        public static readonly string ProjectUniquePrefix = $"CF.{Application.companyName}.{Application.productName}";
+        //项目唯一前缀(每个项目不一样，这样可以为每个项目存储不同的偏好)，用于存储EditorPrefs
+        public static readonly string ProjectUniquePrefix = $"PluginHub.{Application.companyName}.{Application.productName}";
 
         #endregion
 
 
-        #region GUI Skin/Style
+        #region GUI Skin / Style
 
-        private static GUISkin _guiSkin;
+        private static GUISkin _guiSkin;//do not call this, use guiSkin
 
-        public static GUISkin GUISkin
+        //Resources文件夹中的那个GUISkin
+        public static GUISkin pluginHubGUISkin
         {
             get
             {
@@ -50,25 +53,9 @@ namespace PluginHub.Helper
             }
         }
 
-        public static GUIStyle GetStyle(string styleName)
+        public static GUIStyle GetCustomStyle(string styleName)
         {
-            return GUISkin.customStyles.Where(s => s.name.Equals(styleName)).First();
-        }
-
-        private static GUIStyle _labelStyle; //do not call this
-
-        public static GUIStyle WordWrapLable //自动换行的Label样式
-        {
-            get
-            {
-                if (_labelStyle == null)
-                {
-                    _labelStyle = new GUIStyle(GUI.skin.label);
-                    _labelStyle.wordWrap = true;
-                }
-
-                return _labelStyle;
-            }
+            return pluginHubGUISkin.customStyles.Where(s => s.name.Equals(styleName)).First();
         }
 
         #endregion
@@ -124,7 +111,7 @@ namespace PluginHub.Helper
             bool exist = checkExist ? Directory.Exists(checkPath) : true;
             GUI.enabled = exist;
             //open folder button
-            if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", "", path), PluginHubFunc.IconBtnLOS))
+            if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", "", path), PluginHubFunc.IconBtnLayoutOptions))
             {
                 Debug.Log($"打开文件夹:{path}");
                 EditorUtility.RevealInFinder(path);
@@ -138,11 +125,83 @@ namespace PluginHub.Helper
         {
             //拷贝按钮
             if (GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
-                    PluginHubFunc.IconBtnLOS))
+                    PluginHubFunc.IconBtnLayoutOptions))
             {
                 EditorGUIUtility.systemCopyBuffer = textToCopy;
             }
         }
+
+        public static void TextBox(string text)
+        {
+            EditorGUILayout.BeginHorizontal("Box");
+            EditorGUILayout.LabelField(text, pluginHubGUISkin.label);
+            EditorGUILayout.EndHorizontal();
+        }
+
+
+        //一行两个文本
+        public static void RowTwoText(string text0, string text1)
+        {
+            EditorGUILayout.BeginHorizontal("Box");
+            EditorGUILayout.LabelField(text0, pluginHubGUISkin.label);
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.LabelField(text1, pluginHubGUISkin.label, GUILayout.Width(50));
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private const float labelWidth = 130;
+        private const bool expandWidth = false;
+
+        public static T LableWithObjectFiled<T>(string lableText, Object obj) where T : Object
+        {
+            T objReturn;
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label(lableText, GUILayout.Width(labelWidth), GUILayout.ExpandWidth(expandWidth));
+                objReturn = (T)EditorGUILayout.ObjectField(obj, typeof(T), true);
+            }
+            GUILayout.EndHorizontal();
+            return objReturn;
+        }
+
+        public static bool LabelWithToggle(string lableText, bool toggleOldValue)
+        {
+            bool toggleReturn = false;
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label(lableText, GUILayout.Width(labelWidth), GUILayout.ExpandWidth(expandWidth));
+                toggleReturn = GUILayout.Toggle(toggleOldValue, "");
+            }
+            GUILayout.EndHorizontal();
+            return toggleReturn;
+        }
+
+        public static float LabelWithSlider(string lableText, float sliderOldValue, float leftValue, float rightValue)
+        {
+            float toggleReturn;
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label(lableText, GUILayout.Width(labelWidth));
+                toggleReturn = GUILayout.HorizontalSlider(sliderOldValue, leftValue, rightValue);
+                toggleReturn = EditorGUILayout.FloatField("", toggleReturn, GUILayout.Width(50));
+            }
+            GUILayout.EndHorizontal();
+            return toggleReturn;
+        }
+
+        public static Vector3 LabelWithVector3Field(string lableText, Vector3 oldVector3)
+        {
+            Vector3 returnValue;
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label(lableText, GUILayout.Width(labelWidth));
+                returnValue = EditorGUILayout.Vector3Field("", oldVector3);
+            }
+            GUILayout.EndHorizontal();
+            return returnValue;
+        }
+
+
 
         #endregion
 
@@ -231,15 +290,15 @@ namespace PluginHub.Helper
 
         private static readonly GUIContent tempTextContent = new GUIContent();
 
-        ///获取一个带有tooltip的GuiContent
-        public static GUIContent GetGuiContent(string text, string tooltip = "")
+        //获取一个带有tooltip的GuiContent
+        public static GUIContent GuiContent(string text, string tooltip = "")
         {
             tempTextContent.text = text;
             tempTextContent.tooltip = tooltip;
             return tempTextContent;
         }
 
-        //获取一个带ICon的GUIContent，也支持tooltip
+        //获取一个带Icon的GUIContent，也可以附加tooltip
         public static GUIContent Icon(string iconStr, string text = "", string tooltip = "")
         {
             //各种icon参见   https://unitylist.com/p/5c3/Unity-editor-icons
@@ -249,7 +308,7 @@ namespace PluginHub.Helper
             return guiContent;
         }
 
-        //判断一个材质是否是一个嵌入式材质
+        //返回一个材质是否是一个嵌入式材质
         public static bool IsEmbeddedMaterial(Material material)
         {
             return IsEmbeddedMaterial(AssetDatabase.GetAssetPath(material));

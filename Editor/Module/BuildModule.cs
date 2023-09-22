@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using PluginHub;
+using PluginHub.Data;
 using PluginHub.Helper;
 using PluginHub.ModuleScripts;
 using UnityEditor;
@@ -121,7 +122,7 @@ namespace PluginHub.Module
                     GUILayout.BeginHorizontal();
                     {
                         string path = CurrProjectBuildFullPath();
-                        if (GUILayout.Button(PluginHubFunc.GetGuiContent("构建项目", $"将构建到{path}")))
+                        if (GUILayout.Button(PluginHubFunc.GuiContent("构建项目", $"将构建到{path}")))
                         {
                             BuildProject();
                             GUIUtility.ExitGUI();
@@ -151,13 +152,13 @@ namespace PluginHub.Module
                     GUILayout.BeginHorizontal();
                     {
                         string path = CurrSceneBuildFullPath();
-                        if (GUILayout.Button(PluginHubFunc.GetGuiContent("构建当前场景", $"将会直接构建当前场景到{path}。")))
+                        if (GUILayout.Button(PluginHubFunc.GuiContent("构建当前场景", $"将会直接构建当前场景到{path}。")))
                         {
                             BuildCurrScene(false);
                             GUIUtility.ExitGUI();
                         }
 
-                        if (GUILayout.Button(PluginHubFunc.GetGuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
+                        if (GUILayout.Button(PluginHubFunc.GuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
                                 GUILayout.ExpandWidth(false)))
                         {
                             BuildCurrScene(true);
@@ -222,7 +223,7 @@ namespace PluginHub.Module
                     if(iosUseShortBuildPath)
                         path = $@"D:\Build_IOS\{Application.productName}\";
 
-                    if (GUILayout.Button(PluginHubFunc.GetGuiContent("构建IOS项目", $"将构建到{path}")))
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建IOS项目", $"将构建到{path}")))
                     {
                         //执行构建
                         BuildIOS(path);
@@ -254,7 +255,7 @@ namespace PluginHub.Module
                     fullPath = Path.Combine(fullPath, $"Build/Android/");
                     fullPath = fullPath.Replace('/', '\\');
                     string path = fullPath;
-                    if (GUILayout.Button(PluginHubFunc.GetGuiContent("构建Android项目", $"将构建到{path}")))
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建Android项目", $"将构建到{path}")))
                     {
                         //执行构建
                         BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
@@ -275,7 +276,7 @@ namespace PluginHub.Module
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.Label(PluginHubFunc.Icon("VerticalLayoutGroup Icon"));
-                    GUILayout.Label(PluginHubFunc.GetGuiContent("构件库:", "下方显示项目Build目录下的所有打包文件"));
+                    GUILayout.Label(PluginHubFunc.GuiContent("构件库:", "下方显示项目Build目录下的所有打包文件"));
                 }
                 GUILayout.EndHorizontal();
 

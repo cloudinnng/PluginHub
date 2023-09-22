@@ -30,7 +30,7 @@ namespace PluginHub.Module
 
         protected override void DrawGuiContent()
         {
-            //EditorGUILayoutEx.TextBox("为小物体摆放8个光探头到指定组中");
+            //PluginHubFunc.TextBox("为小物体摆放8个光探头到指定组中");
 
             GUILayout.BeginVertical("Box");
             {
@@ -57,10 +57,10 @@ namespace PluginHub.Module
                 }
                 GUILayout.EndHorizontal();
 
-                _mrToPlaceLP = EditorGUILayoutEx.LableWithObjectFiled<MeshRenderer>("Target Object", _mrToPlaceLP);
+                _mrToPlaceLP = PluginHubFunc.LableWithObjectFiled<MeshRenderer>("Target Object", _mrToPlaceLP);
 
                 _lightProbeGroup =
-                    EditorGUILayoutEx.LableWithObjectFiled<LightProbeGroup>("Light Probe Group", _lightProbeGroup);
+                    PluginHubFunc.LableWithObjectFiled<LightProbeGroup>("Light Probe Group", _lightProbeGroup);
 
                 if (Selection.gameObjects != null && Selection.gameObjects.Length > 0)
                 {
@@ -74,27 +74,27 @@ namespace PluginHub.Module
                     }
                 }
 
-                gizmosPreviewSize = EditorGUILayoutEx.LabelWithSlider("Gizmos预览显示大小", gizmosPreviewSize, 0f, .5f);
+                gizmosPreviewSize = PluginHubFunc.LabelWithSlider("Gizmos预览显示大小", gizmosPreviewSize, 0f, .5f);
 
-                zTestEnable = EditorGUILayoutEx.LabelWithToggle("Enable Gizmos zTest", zTestEnable);
+                zTestEnable = PluginHubFunc.LabelWithToggle("Enable Gizmos zTest", zTestEnable);
 
-                distanceMultiplier = EditorGUILayoutEx.LabelWithSlider("距离乘数", distanceMultiplier, .5f, 3);
+                distanceMultiplier = PluginHubFunc.LabelWithSlider("距离乘数", distanceMultiplier, .5f, 3);
 
-                placeOffset = EditorGUILayoutEx.LabelWithVector3Field("放置偏移", placeOffset);
+                placeOffset = PluginHubFunc.LabelWithVector3Field("放置偏移", placeOffset);
 
                 if (GUILayout.Button("Reset"))
                 {
                     placeOffset = Vector3.zero;
                 }
 
-                axisScale = EditorGUILayoutEx.LabelWithVector3Field("轴向缩放", axisScale);
+                axisScale = PluginHubFunc.LabelWithVector3Field("轴向缩放", axisScale);
 
                 if (GUILayout.Button("Reset"))
                 {
                     axisScale = Vector3.one;
                 }
 
-                placeMinDistance = EditorGUILayoutEx.LabelWithSlider("放置光探头的最近距离", placeMinDistance, .01f, 3);
+                placeMinDistance = PluginHubFunc.LabelWithSlider("放置光探头的最近距离", placeMinDistance, .01f, 3);
 
                 GUI.enabled = _mrToPlaceLP && _lightProbeGroup;
                 if (GUILayout.Button("在LightProbes中放置这8个点", GUILayout.Height(30)))

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using PluginHub;
+using PluginHub.Data;
 using PluginHub.Helper;
 using PluginHub.Module;
 using UnityEditor;
@@ -28,7 +29,6 @@ namespace PluginHub
     //插件中心 主窗口
     public class PluginHubWindow : EditorWindow
     {
-
         /// <summary>
         /// PluginHubWindow单例，不要直接使用这个变量，使用Window属性
         /// </summary>
@@ -49,7 +49,7 @@ namespace PluginHub
         }
 
         //菜单栏
-        [UnityEditor.MenuItem("Window/CFramework/Plugin Hub Window %&R", false, -10000)]
+        [UnityEditor.MenuItem("Window/Plugin Hub Window %&R", false, -10000)]
         public static void ShowWindow()
         {
             Debug.Log("显示 PluginHub 主窗口");
@@ -91,7 +91,7 @@ namespace PluginHub
         //是否启用全局debug模式，在ui上显示一些调试信息，开发目的
         public static bool globalDebugMode = false;
 
-        //是否总是刷新gui，会让鼠标指针不处于窗口内也刷新UI,这在某些耗时gui时会产生编辑器性能消耗
+        //是否总是刷新gui，会让鼠标指针不处于窗口内也刷新UI,这在某些耗时模块的gui绘制中会产生一定编辑器性能消耗，但是可以让某些模块功能更新更加及时
         public static bool alwaysRefreshGUI = false;
 
         private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch(); //秒表 用于计算代码执行时间
@@ -113,8 +113,6 @@ namespace PluginHub
             set { EditorPrefs.SetFloat("ButtonPadding", value); }
         }
 
-
-
         private void OnValidate()
         {
             //这里也初始化一下 避免修改脚本后丢失引用
@@ -124,7 +122,6 @@ namespace PluginHub
         public void InitModule()
         {
             moduleList.Clear();
-
 
             List<ModuleTabConfig> tabConfigs = moduleConfigSO.tabConfigs;
             for (int i = 0; i < tabConfigs.Count; i++)
@@ -215,23 +212,28 @@ namespace PluginHub
                 GUI.enabled = true;
 
 
+                //绘制PluginHub开源主页按钮
+                if (GUILayout.Button(PluginHubFunc.Icon("UnityEditor.VersionControl", "", "前往PluginHub开源主页"),PluginHubFunc.IconBtnLayoutOptions))
+                {
+                    Application.OpenURL("https://github.com/cloudinnng/PluginHub");
+                }
+                
                 //设置按钮
                 Color oldColor = GUI.color;
                 if (showSettingPanel)
                     GUI.color = Color.red;
-                if (GUILayout.Button(PluginHubFunc.Icon("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLOS))
+                if (GUILayout.Button(PluginHubFunc.Icon("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     showSettingPanel = !showSettingPanel;
                 }
                 GUI.color = oldColor;
-
 
                 //全局调试按钮
                 oldColor = GUI.color;
                 if (globalDebugMode)
                     GUI.color = Color.red;
                 string iconName = "DebuggerDisabled";
-                if (GUILayout.Button(PluginHubFunc.Icon(iconName, "", "Global Debug Mode"),PluginHubFunc.IconBtnLOS))
+                if (GUILayout.Button(PluginHubFunc.Icon(iconName, "", "Global Debug Mode"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     globalDebugMode = !globalDebugMode;
                 }
@@ -241,7 +243,7 @@ namespace PluginHub
                 oldColor = GUI.color;
                 if (alwaysRefreshGUI)
                     GUI.color = Color.red;
-                if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLOS))
+                if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     alwaysRefreshGUI = !alwaysRefreshGUI;
                 }
@@ -255,7 +257,7 @@ namespace PluginHub
             //绘制设置面板在顶端
             if (!showSettingPanel)return;
 
-            GUILayout.BeginVertical(PluginHubFunc.GetStyle("SettingPanel"));
+            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("SettingPanel"));
             {
                 showPluginHubOnExitPlayMode = GUILayout.Toggle(showPluginHubOnExitPlayMode, "退出编辑模式时显示PluginHubWindow窗口");
             }
@@ -267,7 +269,7 @@ namespace PluginHub
         void DrawGlobalDebugUI()
         {
             //红色的背景
-            GUILayout.BeginVertical(PluginHubFunc.GetStyle("DebugBox"));
+            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugBox"));
             {
                 GUILayout.BeginHorizontal();
                 {
@@ -294,9 +296,9 @@ namespace PluginHub
         }
 
         //按钮均等宽度横放时计算按钮的宽度，参数为一行放几个按钮
-        public float CaculateButtonWidth(int numberOfLines)
+        public float CaculateButtonWidth(int numberPerLines)
         {
-            return (position.width - CommonPadding - (numberOfLines - 1) * ButtonPadding) / numberOfLines;
+            return (position.width - CommonPadding - (numberPerLines - 1) * ButtonPadding) / numberPerLines;
         }
 
         #region EditorWindowFunction

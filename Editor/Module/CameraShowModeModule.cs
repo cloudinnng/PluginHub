@@ -37,7 +37,7 @@ namespace PluginHub.Module
                 {
                     GUILayout.Label($"选择相机模式：\n当前模式：{currMode}");
 
-                    if (GUILayout.Button(PluginHubFunc.GetGuiContent("N/L", "快速在标准/光图视图模式之间切换"), GUILayout.Width(44),
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("N/L", "快速在标准/光图视图模式之间切换"), GUILayout.Width(44),
                             GUILayout.Height(36)))
                     {
                         if (SceneView.lastActiveSceneView.cameraMode.drawMode == DrawCameraMode.BakedLightmap)

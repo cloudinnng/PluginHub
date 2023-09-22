@@ -23,7 +23,6 @@ namespace PluginHub
                 if (PluginHubWindow.showPluginHubOnExitPlayMode)
                 {
                     //将PluginHubWindow窗口和gameview放在一起，可以在结束运行时切换到PluginHubWindow窗口，从而隐藏gameview
-                    // EditorWindow.GetWindow(typeof(PluginHubWindow)).Show();
                     PluginHubWindow.ShowWindow();
                     Debug.Log("退出播放模式，显示PluginHubWindow窗口");
                 }

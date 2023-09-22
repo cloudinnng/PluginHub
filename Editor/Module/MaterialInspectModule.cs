@@ -97,7 +97,7 @@ namespace PluginHub.Module
                 EditorGUILayout.LabelField($"文件夹为: {folderPath}");
                 GUILayout.FlexibleSpace();
                 EditorGUI.BeginChangeCheck();
-                inspectTexture = GUILayout.Toggle(inspectTexture, PluginHubFunc.GetGuiContent("检视纹理", "会有一定内存消耗"));
+                inspectTexture = GUILayout.Toggle(inspectTexture, PluginHubFunc.GuiContent("检视纹理", "会有一定内存消耗"));
                 if (EditorGUI.EndChangeCheck())
                 {
                     //取消勾选时，调用一下GC

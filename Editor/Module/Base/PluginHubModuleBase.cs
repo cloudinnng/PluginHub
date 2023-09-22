@@ -93,7 +93,7 @@ namespace PluginHub.Module
                 GUILayout.BeginHorizontal();
                 {
                     string charStr = expand ? "▼" : "▶";
-                    GUIContent guiContent = PluginHubFunc.GetGuiContent($"{charStr} {moduleName}", "展开/收起");
+                    GUIContent guiContent = PluginHubFunc.GuiContent($"{charStr} {moduleName}", "展开/收起");
                     //模块折叠按钮
                     GUI.color = expand ? PluginHubFunc.SelectedColor : Color.white;
                     if (GUILayout.Button(guiContent, GUILayout.Height(19)))
@@ -132,7 +132,7 @@ namespace PluginHub.Module
                 {
                     if (moduleDebug) //画模块debug内容  Draw Debug
                     {
-                        GUILayout.BeginVertical(PluginHubFunc.GetStyle("DebugBox"));
+                        GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugBox"));
                         {
                             //画脚本行便于快速进入
                             //draw script line for quick enter by double-click
@@ -337,12 +337,12 @@ namespace PluginHub.Module
                 GUILayout.Label(title, GUILayout.Width(titleWidth));
 
                 //使用这个label，因为它是可以自动换行的
-                GUILayout.Label(content, PluginHubFunc.WordWrapLable);
+                GUILayout.Label(content, PluginHubFunc.pluginHubGUISkin.label);
 
                 GUILayout.FlexibleSpace();
                 //拷贝按钮
                 if (copyBtn && GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", "Duplicate"),
-                        PluginHubFunc.IconBtnLOS))
+                        PluginHubFunc.IconBtnLayoutOptions))
                 {
                     EditorGUIUtility.systemCopyBuffer = content;
                 }

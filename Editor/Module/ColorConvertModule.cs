@@ -50,7 +50,7 @@ namespace PluginHub.Module
                 if (addFSuffix)
                     GUI.color = PluginHubFunc.SelectedColor;
                 //添加f后缀按钮
-                if (GUILayout.Button(PluginHubFunc.GetGuiContent("F", "add 'f' suffix"), GUILayout.ExpandWidth(false),
+                if (GUILayout.Button(PluginHubFunc.GuiContent("F", "add 'f' suffix"), GUILayout.ExpandWidth(false),
                         GUILayout.Height(17)))
                 {
                     addFSuffix = !addFSuffix;

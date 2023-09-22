@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 
-namespace PluginHub
+namespace PluginHub.Data
 {
 #if UNITY_EDITOR
     [CustomEditor(typeof(ModuleConfigSO))]

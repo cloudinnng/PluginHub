@@ -194,7 +194,7 @@ namespace PluginHub.Module
                 }
                 
                 //open button
-                if (GUILayout.Button(PluginHubFunc.GetGuiContent("Open", sceneAssetPath), GUILayout.Width(80)))
+                if (GUILayout.Button(PluginHubFunc.GuiContent("Open", sceneAssetPath), GUILayout.Width(80)))
                 {
                     //这段代码在切换场景前调用，若场景有未保存的更改，会弹出提示
                     if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -204,7 +204,7 @@ namespace PluginHub.Module
                 }
 
                 //open folder button
-                if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", "", "open in explorer"), PluginHubFunc.IconBtnLOS))
+                if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", "", "open in explorer"), PluginHubFunc.IconBtnLayoutOptions))
                 {
                     EditorUtility.RevealInFinder(sceneAssetPath);
                 }
@@ -231,7 +231,7 @@ namespace PluginHub.Module
                 if (inFavoriteList)
                 {
                     GUI.enabled = id > 0;
-                    if (GUILayout.Button("↑", PluginHubFunc.IconBtnLOS))
+                    if (GUILayout.Button("↑", PluginHubFunc.IconBtnLayoutOptions))
                     {
                         Object o = RecordableObjects[id];
                         RecordableObjects[id] = RecordableObjects[id - 1];
@@ -240,7 +240,7 @@ namespace PluginHub.Module
                     }
 
                     GUI.enabled = id < RecordableObjects.Count - 1;
-                    if (GUILayout.Button("↓", PluginHubFunc.IconBtnLOS))
+                    if (GUILayout.Button("↓", PluginHubFunc.IconBtnLayoutOptions))
                     {
                         Object o = RecordableObjects[id];
                         RecordableObjects[id] = RecordableObjects[id + 1];
@@ -250,7 +250,7 @@ namespace PluginHub.Module
 
                     GUI.enabled = true;
                     //remove icon
-                    if (GUILayout.Button(PluginHubFunc.Icon("winbtn_win_close@2x", "", "remove"), PluginHubFunc.IconBtnLOS))
+                    if (GUILayout.Button(PluginHubFunc.Icon("winbtn_win_close@2x", "", "remove"), PluginHubFunc.IconBtnLayoutOptions))
                     {
                         RemoveRecordableObject(sceneAsset);
                     }

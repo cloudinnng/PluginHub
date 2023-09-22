@@ -44,7 +44,7 @@ namespace PluginHub.Module
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.Label(path);
-                    if (GUILayout.Button("X", PluginHubFunc.IconBtnLOS))
+                    if (GUILayout.Button("X", PluginHubFunc.IconBtnLayoutOptions))
                     {
                         folderObj = null;
                     }
