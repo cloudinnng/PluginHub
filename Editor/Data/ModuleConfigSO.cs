@@ -102,7 +102,7 @@ namespace PluginHub.Data
                 moduleList = new List<MonoScript>()
                 {
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NavigationBarModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectedModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
                 }
