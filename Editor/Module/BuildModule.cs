@@ -74,8 +74,9 @@ namespace PluginHub.Module
             if (buildTarget == BuildTarget.iOS)
             {
                 //构建后自动自增Build号
+                string oldBuildNumber = PlayerSettings.iOS.buildNumber;
                 PlayerSettings.iOS.buildNumber = (int.Parse(PlayerSettings.iOS.buildNumber) + 1).ToString();
-                Debug.Log($"Build ID从{PlayerSettings.iOS.buildNumber}自增到{PlayerSettings.iOS.buildNumber}");
+                Debug.Log($"Build ID从{oldBuildNumber}自增到{PlayerSettings.iOS.buildNumber}");
             }
             else if (buildTarget == BuildTarget.StandaloneWindows64)
             {
@@ -84,7 +85,7 @@ namespace PluginHub.Module
                 string majorVersion = oldVersion.Substring(0, lastIndex);
                 string minorVersion = oldVersion.Substring(lastIndex + 1);
                 minorVersion = (int.Parse(minorVersion) + 1).ToString();
-                //构建后自动自增Build号
+                //构建后自增minorVersion号
                 PlayerSettings.bundleVersion = $"{majorVersion}.{minorVersion}";
                 Debug.Log($"版本号从{oldVersion}自增到{PlayerSettings.bundleVersion}");
             }

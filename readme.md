@@ -11,6 +11,8 @@ Each module implements a functional aspect. The purpose is to provide you with v
 
 `PluginHub` is presented in the form of a `PluginHub` window in `Unity3D`. You can view and use the functions of all modules in the window, and you can also enable or disable modules in the `PluginHub` configuration file.
 
+若您发现`PluginHub`中的任何问题，欢迎提交`Issue`或`Pull Request`。
+
 ## PluginHub主窗口
 <img src="ReadmeImg/Demo0.png" width="400">
 

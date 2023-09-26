@@ -1,0 +1,32 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+'plantuml类图，用于描述PluginHub的类结构和主要类之间的关系。让您快速了解PluginHub的源码。
+
+class PluginHubWindow{
+    PluginHub主窗口，继承自EditorWindow
+    容纳所有模块
+}
+class ModuleConfigSO{
+    一个ScriptableObject配置文件
+    配置哪些模块在PluginHub中显示
+}
+
+abstract class PluginHubModuleBase {
+    模块基类
+}
+
+static class PluginHubFunc{
+    PluginHub常用的功能函数都在这里
+}
+
+PluginHubModuleBase <|-- SceneModule
+PluginHubModuleBase <|-- BuildModule
+PluginHubModuleBase <|-- NavigationBarModule
+PluginHubModuleBase <|-- 等等模块
+
+'PluginHubWindow依赖ModuleConfigSO，
+PluginHubWindow -> ModuleConfigSO : 依赖
+
+
+
+@enduml

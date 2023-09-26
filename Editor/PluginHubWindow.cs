@@ -102,7 +102,7 @@ namespace PluginHub
         //用于计算按钮宽度的值
         private float CommonPadding
         {
-            get { return EditorPrefs.GetFloat("CommonPadding", 40); }
+            get { return EditorPrefs.GetFloat("CommonPadding", 43); }
             set { EditorPrefs.SetFloat("CommonPadding", value); }
         }
 
@@ -221,7 +221,7 @@ namespace PluginHub
                 //设置按钮
                 Color oldColor = GUI.color;
                 if (showSettingPanel)
-                    GUI.color = Color.red;
+                    GUI.color = PluginHubFunc.SelectedColor;
                 if (GUILayout.Button(PluginHubFunc.Icon("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     showSettingPanel = !showSettingPanel;
@@ -231,7 +231,7 @@ namespace PluginHub
                 //全局调试按钮
                 oldColor = GUI.color;
                 if (globalDebugMode)
-                    GUI.color = Color.red;
+                    GUI.color = PluginHubFunc.SelectedColor;
                 string iconName = "DebuggerDisabled";
                 if (GUILayout.Button(PluginHubFunc.Icon(iconName, "", "Global Debug Mode"),PluginHubFunc.IconBtnLayoutOptions))
                 {
@@ -242,7 +242,7 @@ namespace PluginHub
                 //总是刷新按钮
                 oldColor = GUI.color;
                 if (alwaysRefreshGUI)
-                    GUI.color = Color.red;
+                    GUI.color = PluginHubFunc.SelectedColor;
                 if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     alwaysRefreshGUI = !alwaysRefreshGUI;
@@ -342,7 +342,8 @@ namespace PluginHub
         {
             foreach (var module in moduleList)
             {
-                module.OnUpdate();
+                if (module.expand)
+                    module.OnUpdate();
             }
         }
 

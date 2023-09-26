@@ -109,7 +109,7 @@ namespace PluginHub.Module
                     if (isDrawingSceneGUI)
                     {
                         GUILayout.Label(
-                            PluginHubFunc.Icon("ParticleSystemForceField Gizmo", "", "this module is drawing SceneGUI"),
+                            PluginHubFunc.Icon("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI"),
                             GUILayout.Width(19), GUILayout.Height(19));
                     }
 
@@ -221,13 +221,13 @@ namespace PluginHub.Module
         //实现这个方法以绘制场景GUI
         public virtual bool OnSceneGUI(SceneView sceneView)
         {
-            //绘制成功返回true
+            //正在绘制返回true
             return false;
         }
 
         #endregion
 
-        #region EditorWindow function 这些方法让模块内部可以使用EditorWindow的内置函数
+        #region EditorWindow Functions 这些方法让模块内部可以使用EditorWindow的内置函数
 
         public virtual void OnEnable()
         {
@@ -242,6 +242,7 @@ namespace PluginHub.Module
             if (moduleDebug) Debug.Log($"{moduleName} mudule : OnDisable");
         }
 
+        //OnUpdate会一直调用，不论PluginHubWindow是否获得焦点，但在模块折叠时不调用
         public virtual void OnUpdate()
         {
             InitRecordableObjects();
@@ -265,7 +266,7 @@ namespace PluginHub.Module
 
         #endregion
 
-        #region 为子模块提供记录 Object 功能，存储到EditorPrefs
+        #region 为子模块提供记录 Object 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。
 
         public List<Object> RecordableObjects => recordableObjects;
 
@@ -335,7 +336,7 @@ namespace PluginHub.Module
 
         #endregion
 
-        #region Layout Helper Function  布局助手函数
+        #region Layout Helper Function 快捷绘制GUI的方法
         private const float titleWidth = 100;
 
         //绘制一个标签项目行，包含标题和内容，以及可选的复制内容按钮
@@ -346,7 +347,7 @@ namespace PluginHub.Module
                 GUILayout.Label(title, GUILayout.Width(titleWidth));
 
                 //使用这个label，因为它是可以自动换行的
-                GUILayout.Label(content, PluginHubFunc.PHGUISkin.label);
+                GUILayout.Label(content, PluginHubFunc.PhguiSkinUse.label);
 
                 GUILayout.FlexibleSpace();
                 //拷贝按钮

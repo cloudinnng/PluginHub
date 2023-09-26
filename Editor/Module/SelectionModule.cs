@@ -17,15 +17,22 @@ namespace PluginHub.Module
             get { return "选择的对象"; }
         }
 
-        private Object selectedObject;
-        private GameObject selectedGameObject;
+        private Object selectedObject;//选中的对象
+        private GameObject selectedGameObject;//选中的游戏对象
 
         public override void OnUpdate()
         {
             base.OnUpdate();
+            // Debug.Log("SelectionModule OnUpdate");
 
             selectedObject = Selection.activeObject;
             selectedGameObject = selectedObject as GameObject;
+            bool isGameObject = selectedGameObject != null;
+
+            if (isGameObject)
+                UpdateGameObject();
+            else
+                UpdateAsset();
         }
 
         protected override void DrawGuiContent()
@@ -35,78 +42,70 @@ namespace PluginHub.Module
                 DrawRow("Selection", "None");
                 return;
             }
+            bool isGameObject = selectedGameObject != null;
+
 
             GUILayout.BeginHorizontal();
             {
-                string text;
-                if (selectedGameObject != null)
-                {
-                    text = "GameObject";
-                }
-                else
-                {
-                    text = "Asset";
-                }
-
-                DrawRow("Selection", text);
+                DrawRow("Selection", isGameObject? "GameObject" : "Asset");
 
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(PluginHubFunc.Icon("CollabExclude Icon", "", "Deselect"), PluginHubFunc.IconBtnLayoutOptions))
-                {
+                if (GUILayout.Button(PluginHubFunc.Icon("CollabExclude Icon", "", "取消选择"), PluginHubFunc.IconBtnLayoutOptions))
                     Selection.activeObject = null;
-                }
             }
             GUILayout.EndHorizontal();
 
-            string path, name;
-            if (selectedGameObject == null) //选中的是一个资产
-            {
-                path = AssetDatabase.GetAssetPath(Selection.activeObject);
-                name = Path.GetFileName(path);
 
-                DrawRow("Path", path);
-                DrawRow("FileName", name);
-
-
-            }
-            else //选中的是一个游戏对象
-            {
-                name = selectedGameObject.name;
-                StringBuilder sb = new StringBuilder();
-                PluginHubFunc.GetFindPath(selectedGameObject.transform, sb);
-                path = sb.ToString();
-
-
-                DrawRow("Name", name);
-                DrawRow("Path", path);
-                DrawRow("Chind Count", selectedGameObject.transform.childCount.ToString());
-
-
-                //MeshRenderer
-                MeshRenderer[] meshRenderers = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
-                
-                if (meshRenderers != null && meshRenderers.Length > 0)
-                {
-                    tmpBounds = meshRenderers[0].bounds;
-                    for (int i = 1; i < meshRenderers.Length; i++)
-                        tmpBounds.Encapsulate(meshRenderers[i].bounds);
-                    Vector3 size = tmpBounds.size;
-                    DrawRow("Mesh Bounds Size", $"长:{size.x:F2}m,宽:{size.z:F2}m,高:{size.y:F2}m");
-                }
-                else
-                {
-                    tmpBounds = default;
-                }
-
+            if (selectedGameObject != null)//选中的是游戏对象
                 DrawGameObjectGUI();
-            }
+            else//选中的是资源
+                DrawAssetGUI();
+        }
+
+        private void UpdateAsset()
+        {
 
         }
 
-        private Bounds tmpBounds = default;
+        private void DrawAssetGUI()
+        {
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+            string name = Path.GetFileName(path);
+
+            DrawRow("Path", path,true);
+            DrawRow("FileName", name);
+        }
+
+        private Bounds _gameObjectBounds = default;
+
+        private void UpdateGameObject()
+        {
+            //计算显示包围盒尺寸
+            MeshRenderer[] meshRenderers = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
+            if (meshRenderers != null && meshRenderers.Length > 0)
+            {
+                _gameObjectBounds = meshRenderers[0].bounds;
+                for (int i = 1; i < meshRenderers.Length; i++)
+                    _gameObjectBounds.Encapsulate(meshRenderers[i].bounds);
+                Vector3 size = _gameObjectBounds.size;
+            }
+            else
+            {
+                _gameObjectBounds = default;
+            }
+        }
 
         private void DrawGameObjectGUI()
         {
+            StringBuilder sb = new StringBuilder();
+            PluginHubFunc.GetFindPath(selectedGameObject.transform, sb);
+
+            DrawRow("Name", selectedGameObject.name);
+            DrawRow("Path", sb.ToString(),true);
+            DrawRow("Chind Count", selectedGameObject.transform.childCount.ToString());
+            if(_gameObjectBounds != default)
+                DrawRow("Mesh Bounds Size", $"长:{_gameObjectBounds.size.x:F2}m,宽:{_gameObjectBounds.size.z:F2}m,高:{_gameObjectBounds.size.y:F2}m");
+
             GUILayout.BeginHorizontal();
             {
                 if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh中间创建父亲","会先计算物体下Mesh的中点位置，然后再该位置创建一个父物体，最后将该物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
@@ -145,38 +144,34 @@ namespace PluginHub.Module
             GUILayout.EndHorizontal();
         }
 
-
-
         public override bool OnSceneGUI(SceneView sceneView)
         {
             if (selectedObject == null)
                 return false;
-            if (tmpBounds == default)
+            if (_gameObjectBounds == default)
                 return false;
 
             //画出选中的游戏对象的包围盒
-            Handles.DrawWireCube(tmpBounds.center, tmpBounds.size);
+            Handles.DrawWireCube(_gameObjectBounds.center, _gameObjectBounds.size);
 
             Handles.BeginGUI();
             {
-                GUI.color = Color.red;
                 //画长
-                Vector3 worldPos = tmpBounds.center - new Vector3(0, tmpBounds.extents.y, tmpBounds.extents.z);
-                DrawText(worldPos, $"长:{tmpBounds.size.x:F2}m");
+                Vector3 worldPos = _gameObjectBounds.center - new Vector3(0, _gameObjectBounds.extents.y, _gameObjectBounds.extents.z);
+                DrawText(worldPos, $"长:{_gameObjectBounds.size.x:F2}m");
                 //画宽
-                worldPos = tmpBounds.center - new Vector3(tmpBounds.extents.x, tmpBounds.extents.y, 0);
-                DrawText(worldPos, $"宽:{tmpBounds.size.z:F2}m");
+                worldPos = _gameObjectBounds.center - new Vector3(_gameObjectBounds.extents.x, _gameObjectBounds.extents.y, 0);
+                DrawText(worldPos, $"宽:{_gameObjectBounds.size.z:F2}m");
                 //画高
-                worldPos = tmpBounds.center - new Vector3(tmpBounds.extents.x, 0, tmpBounds.extents.z);
-                DrawText(worldPos, $"高:{tmpBounds.size.y:F2}m");
-
-                GUI.color = Color.white;
+                worldPos = _gameObjectBounds.center - new Vector3(_gameObjectBounds.extents.x, 0, _gameObjectBounds.extents.z);
+                DrawText(worldPos, $"高:{_gameObjectBounds.size.y:F2}m");
             }
             Handles.EndGUI();
 
             return true;
         }
 
+        //在场景视图中画出文字
         public static void DrawText(Vector3 worldPos, string text)
         {
             Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos);
@@ -186,8 +181,11 @@ namespace PluginHub.Module
             Vector2 textSize = EditorStyles.boldLabel.CalcSize(content);
 
             Rect rect = new Rect(screenPos.x - textSize.x / 2, screenPos.y - textSize.y / 2, textSize.x, textSize.y);
-
+            GUI.color = Color.black;
+            GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
+            GUI.color = Color.white;
             GUI.Label(rect, text, EditorStyles.boldLabel);
+
         }
     }
 }
