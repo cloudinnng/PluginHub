@@ -66,6 +66,8 @@ namespace PluginHub.Module
 
                 DrawRow("Path", path);
                 DrawRow("FileName", name);
+
+
             }
             else //选中的是一个游戏对象
             {
@@ -95,6 +97,8 @@ namespace PluginHub.Module
                 {
                     tmpBounds = default;
                 }
+
+                DrawGameObjectGUI();
             }
 
         }
@@ -107,7 +111,7 @@ namespace PluginHub.Module
             {
                 if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh中间创建父亲","会先计算物体下Mesh的中点位置，然后再该位置创建一个父物体，最后将该物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
                 {
-                    MeshRenderer[] meshRenderers = selectedGameObject.GetComponents<MeshRenderer>();
+                    MeshRenderer[] meshRenderers = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
                     if (meshRenderers != null && meshRenderers.Length > 0 && meshRenderers[0] != null)
                     {
                         Bounds bounds = meshRenderers[0].bounds;

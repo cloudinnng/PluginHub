@@ -11,6 +11,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace PluginHub
@@ -40,22 +41,30 @@ namespace PluginHub
 
         #region GUI Skin / Style
 
-        private static GUISkin _guiSkin;//do not call this, use guiSkin
+        private static GUISkin _originSkin;//do not call this, use PHGUISkin instead
 
         //Resources文件夹中的那个GUISkin
-        public static GUISkin pluginHubGUISkin
+        public static GUISkin PHGUISkin
         {
             get
             {
-                if (_guiSkin == null)
-                    _guiSkin = Resources.Load<GUISkin>("PluginHubGUISkin");
-                return _guiSkin;
+                if (_originSkin == null)
+                {
+                    GUISkin originSkin = Resources.Load<GUISkin>("PluginHubGUISkin");
+                    //复制一份，避免修改原文件;
+                    _originSkin = Object.Instantiate(originSkin);
+                    Resources.UnloadAsset(originSkin);
+                }
+                return _originSkin;
             }
         }
 
         public static GUIStyle GetCustomStyle(string styleName)
         {
-            return pluginHubGUISkin.customStyles.Where(s => s.name.Equals(styleName)).First();
+            GUIStyle style = PHGUISkin.customStyles.Where(s => s.name.Equals(styleName)).First();
+            if (style == null)
+                Debug.LogError($"找不到样式：{styleName}");
+            return style;
         }
 
         #endregion
@@ -134,7 +143,7 @@ namespace PluginHub
         public static void TextBox(string text)
         {
             EditorGUILayout.BeginHorizontal("Box");
-            EditorGUILayout.LabelField(text, pluginHubGUISkin.label);
+            EditorGUILayout.LabelField(text, PHGUISkin.label);
             EditorGUILayout.EndHorizontal();
         }
 
@@ -143,9 +152,9 @@ namespace PluginHub
         public static void RowTwoText(string text0, string text1)
         {
             EditorGUILayout.BeginHorizontal("Box");
-            EditorGUILayout.LabelField(text0, pluginHubGUISkin.label);
+            EditorGUILayout.LabelField(text0, PHGUISkin.label);
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField(text1, pluginHubGUISkin.label, GUILayout.Width(50));
+            EditorGUILayout.LabelField(text1, PHGUISkin.label, GUILayout.Width(50));
             EditorGUILayout.EndHorizontal();
         }
 

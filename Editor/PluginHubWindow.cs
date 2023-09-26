@@ -269,7 +269,7 @@ namespace PluginHub
         void DrawGlobalDebugUI()
         {
             //红色的背景
-            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugBox"));
+            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
             {
                 GUILayout.BeginHorizontal();
                 {

@@ -132,7 +132,7 @@ namespace PluginHub.Module
                 {
                     if (moduleDebug) //画模块debug内容  Draw Debug
                     {
-                        GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugBox"));
+                        GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
                         {
                             //画脚本行便于快速进入
                             //draw script line for quick enter by double-click
@@ -150,8 +150,17 @@ namespace PluginHub.Module
                         GUILayout.EndVertical();
                     }
 
-                    //画模块内容
-                    DrawGuiContent();
+                    GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("ModulePanel"));
+                    {
+                        //画模块内容
+                        DrawGuiContent();
+                    }
+                    GUILayout.EndVertical();
+
+                    //draw split line
+                    // GUIStyle centerLabel = PluginHubFunc.PHGUISkin.label;
+                    // centerLabel.alignment = TextAnchor.MiddleCenter;
+                    // GUILayout.Label($"------{moduleName} END------", centerLabel, GUILayout.ExpandWidth(true));
                 }
             }
             GUILayout.EndVertical();
@@ -337,7 +346,7 @@ namespace PluginHub.Module
                 GUILayout.Label(title, GUILayout.Width(titleWidth));
 
                 //使用这个label，因为它是可以自动换行的
-                GUILayout.Label(content, PluginHubFunc.pluginHubGUISkin.label);
+                GUILayout.Label(content, PluginHubFunc.PHGUISkin.label);
 
                 GUILayout.FlexibleSpace();
                 //拷贝按钮
