@@ -35,6 +35,8 @@ namespace PluginHub.Module
             {
                 GUILayout.Label("快捷导航：",labelCenter);
 
+
+                GUILayout.Label("项目窗口：");
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button(PluginHubFunc.Icon("Settings","Project Settings"),GUILayout.Width(width3), GUILayout.Height(height_nor)))
@@ -52,6 +54,8 @@ namespace PluginHub.Module
                 }
                 GUILayout.EndHorizontal();
 
+
+                GUILayout.Label("动画窗口：");
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button(PluginHubFunc.Icon("UnityEditor.AnimationWindow","Animation"),GUILayout.Width(width2), GUILayout.Height(height_nor)))
@@ -65,6 +69,8 @@ namespace PluginHub.Module
                 }
                 GUILayout.EndHorizontal();
 
+
+                GUILayout.Label("功能：");
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button(PluginHubFunc.Icon("UpArrow", "文件夹向上一层"), GUILayout.Width(width3), GUILayout.Height(height_nor)))
@@ -113,6 +119,7 @@ namespace PluginHub.Module
                     }
                 }
                 GUILayout.EndHorizontal();
+                GUILayout.Label("场景搭建相关：");
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button(PluginHubFunc.Icon("d_PositionAsUV1 Icon", "UVInspector"), GUILayout.Width(width3),
@@ -140,10 +147,13 @@ namespace PluginHub.Module
                         GUILayout.Width(width1), GUILayout.Height(height_nor)))
                 {
     #if UNITY_2020_1_OR_NEWER
+                    //报错如下时，请在Lighting->Scene面板中新建或者选择一个LightingSettings
+                    //Exception: Lightmapping.lightingSettings is null. Please assign it to an existing asset or a new instance.
+                    LightingSettings lightingSettings = Lightmapping.lightingSettings;
                     Selection.objects = new Object[]
-                        { LightmapParameters.GetLightmapParametersForLightingSettings(Lightmapping.lightingSettings) };
+                        { LightmapParameters.GetLightmapParametersForLightingSettings(lightingSettings) };
                     //打开inspector面板
-                    EditorApplication.ExecuteMenuItem("Window/Panels/6 Inspector");
+                    EditorApplication.ExecuteMenuItem("Window/General/Inspector");
     #endif
                 }
 
@@ -203,7 +213,7 @@ namespace PluginHub.Module
                 GUILayout.EndHorizontal();
 
 
-                GUILayout.Label(PluginHubFunc.GuiContent("自定文件夹：","根据个人使用习惯设置的项目文件夹"));
+                GUILayout.Label(PluginHubFunc.GuiContent("我的文件夹：","根据个人使用习惯设置的项目文件夹"));
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button("Build",GUILayout.Width(width3)))
