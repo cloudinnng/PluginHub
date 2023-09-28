@@ -50,20 +50,32 @@ namespace PluginHub
 
         //菜单栏
         [UnityEditor.MenuItem("Window/Plugin Hub Window %&R", false, -10000)]
-        public static void ShowWindow()
+        public static void SwitchWindow()
         {
-            Debug.Log("显示 PluginHub 主窗口");
-            Window.Show();//显示窗口
+            PluginHubWindow pluginHubWindow = EditorWindow.GetWindow<PluginHubWindow>();
+            if (pluginHubWindow != null)
+            {
+                if (pluginHubWindow.docked)//当窗口被停靠时，显示窗口
+                {
+                    Debug.Log("显示 PluginHub 主窗口");
+                    Window.Show();//显示窗口
+                }
+                else//当窗口未被停靠时，切换窗口的显示和隐藏，因此可以使用快捷键切换窗口的显示和隐藏
+                {
+                    Debug.Log("切换 PluginHub 主窗口");
+                    if (Window.position.x == 0)//在非dock下，可以用Window.position.x == 0判断窗口是否显示
+                        Window.Show();
+                    else
+                        Window.Close();
+                }
+            }
         }
 
         public static void RestartWindow()
         {
-            if (_window != null)
-            {
-                _window.Close();
-                _window = null;
-            }
-            ShowWindow();
+            if (Window != null)
+                Window.Close();
+            Window.Show();
         }
 
         //ScriptableObject配置
@@ -84,7 +96,7 @@ namespace PluginHub
             get { return EditorPrefs.GetBool("showPluginHubOnExitPlayMode", true); }
             set { EditorPrefs.SetBool("showPluginHubOnExitPlayMode", value); }
         }
-        
+
         //是否显示顶部设置面板
         public static bool showSettingPanel = false;
         
@@ -259,7 +271,11 @@ namespace PluginHub
 
             GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("SettingPanel"));
             {
-                showPluginHubOnExitPlayMode = GUILayout.Toggle(showPluginHubOnExitPlayMode, "退出编辑模式时显示PluginHubWindow窗口");
+                GUILayout.BeginHorizontal();
+                {
+                    showPluginHubOnExitPlayMode = GUILayout.Toggle(showPluginHubOnExitPlayMode, "退出编辑模式时显示PluginHubWindow窗口");
+                }
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
         }
