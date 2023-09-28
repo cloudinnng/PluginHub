@@ -11,6 +11,8 @@ Each module implements a functional aspect. The purpose is to provide you with v
 
 `PluginHub` is presented in the form of a `PluginHub` window in `Unity3D`. You can view and use the functions of all modules in the window, and you can also enable or disable modules in the `PluginHub` configuration file.
 
+中文视频教程：https://www.bilibili.com/video/BV1H94y1a79d/
+
 若您发现`PluginHub`中的任何问题，欢迎提交`Issue`或`Pull Request`。
 
 ## PluginHub主窗口
@@ -22,7 +24,7 @@ Each module implements a functional aspect. The purpose is to provide you with v
 
 # 名词
 
-- `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Shift+R`
+- `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Alt+R`
 - 插件模块：对应`PluginHubWindow`中的每个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
 - `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块，启用的模块会在`PluginHubWindow`中显示。见`ModuleConfigSO`类
 
@@ -43,7 +45,7 @@ Each module implements a functional aspect. The purpose is to provide you with v
 3. 点击`+`按钮，选择`Add package from disk...`
 4. 选择`PluginHub`文件夹中的`package.json`文件
 5. 等待`Unity3D`导入完成
-6. 导航到`Window`->`PluginHub` 或者 `Ctrl+Shift+R`打开`PluginHubWindow`窗口
+6. 导航到`Window`->`PluginHub` 或者 `Ctrl+Alt+R`打开`PluginHubWindow`窗口
 7. 在`PluginHubWindow`窗口中展开模块的下拉卷展栏
 8. 开始使用
 9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块

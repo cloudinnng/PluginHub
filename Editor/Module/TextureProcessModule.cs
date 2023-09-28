@@ -65,7 +65,7 @@ namespace PluginHub.Module
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.Label("纹理合并");
-                EditorGUILayout.HelpBox("这里可以将两张纹理选择的通道合并为一张纹理。通常在HDRP中，要求金属度贴图的Alpha通道保存光滑度信息。", MessageType.Info);
+                EditorGUILayout.HelpBox("这里可以将两张纹理选择的通道合并为一张纹理。在HDRP中，通常要求金属度贴图的Alpha通道保存光滑度信息。", MessageType.Info);
 
                 GUILayout.BeginHorizontal();
                 {

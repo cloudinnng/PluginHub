@@ -68,6 +68,9 @@ namespace PluginHub.Data
                 if (GUILayout.Button("清空配置"))
                 {
                     targetScript.tabConfigs.Clear();
+                    //make dirty
+                    EditorUtility.SetDirty(targetScript);
+                    AssetDatabase.SaveAssets();
                     PluginHubWindow.RestartWindow();
                 }
                 if (GUILayout.Button("载入最小模块配置"))
@@ -118,6 +121,9 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureProcessModule.cs"),
                 }
             });
+            //make dirty
+            EditorUtility.SetDirty(targetScript);
+            AssetDatabase.SaveAssets();
         }
 
         private void MakeDefaultModuleConfig()
@@ -176,6 +182,9 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialReplaceModule.cs"),
                 }
             });
+            //make dirty
+            EditorUtility.SetDirty(targetScript);
+            AssetDatabase.SaveAssets();
         }
     }
 #endif
