@@ -221,7 +221,7 @@ namespace PluginHub
         #region Layout Helper Functions
 
         /// <summary>
-        ///
+        /// 在for循环中进行水平布局，每行显示numberOfLines个对象，使用该方法判断是否应该开始水平布局
         /// </summary>
         /// <param name="i">循环索引</param>
         /// <param name="numberOfLines">一行按钮的个数，设置一行几个</param>
@@ -578,7 +578,7 @@ namespace PluginHub
         //获取布局空间的可用宽度
         //实现原理：丢一个看不见的假label进去占满宽度，然后用GetlastRect获取其宽度
         //来自：https://forum.unity.com/threads/editorguilayout-get-width-of-inspector-window-area.82068/。最后一个留言
-        private static float GetViewWidth()
+        public static float GetViewWidth()
         {
             GUILayout.Label("hack", GUILayout.MaxHeight(0));
             if (Event.current.type == EventType.Repaint)

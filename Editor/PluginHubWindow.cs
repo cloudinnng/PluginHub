@@ -93,7 +93,7 @@ namespace PluginHub
         //退出播放模式时是否显示PluginHubWindow窗口
         public static bool showPluginHubOnExitPlayMode
         {
-            get { return EditorPrefs.GetBool("showPluginHubOnExitPlayMode", true); }
+            get { return EditorPrefs.GetBool("showPluginHubOnExitPlayMode", false); }
             set { EditorPrefs.SetBool("showPluginHubOnExitPlayMode", value); }
         }
 
@@ -220,16 +220,20 @@ namespace PluginHub
                 //绘制脚本和配置文件，用于快速定位
                 GUI.enabled = false;
                 EditorGUILayout.ObjectField(MonoScript.FromScriptableObject(this), typeof(PluginHubWindow), false);
-                EditorGUILayout.ObjectField(moduleConfigSO, typeof(ModuleConfigSO), false);
+                // EditorGUILayout.ObjectField(moduleConfigSO, typeof(ModuleConfigSO), false);
                 GUI.enabled = true;
 
-
+                
+                //选中模块配置文件按钮
+                if (GUILayout.Button(PluginHubFunc.Icon("d_StandaloneInputModule Icon", "", "模块配置文件"),PluginHubFunc.IconBtnLayoutOptions))
+                {
+                    Selection.activeObject = moduleConfigSO;
+                }
                 //绘制PluginHub开源主页按钮
                 if (GUILayout.Button(PluginHubFunc.Icon("UnityEditor.VersionControl", "", "前往PluginHub开源主页"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     Application.OpenURL("https://github.com/cloudinnng/PluginHub");
                 }
-                
                 //设置按钮
                 Color oldColor = GUI.color;
                 if (showSettingPanel)

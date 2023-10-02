@@ -32,15 +32,16 @@ namespace PluginHub.Module
                     string className = this.GetType().Name;
                     //add space to each word
                     //e.g make "ModuleFoldoutBase" to "Module Foldout Base"
-                    MatchCollection matchCollection = Regex.Matches(className, "[A-Z]");
-                    for (int i = 1; i < matchCollection.Count; i++)
+                    StringBuilder newString = new StringBuilder(className.Length * 2);
+                    newString.Append(className[0]);
+                    for (int i = 1; i < className.Length; i++)
                     {
-                        Match match = matchCollection[i];
-                        className = className.Replace(match.Value, $" {match.Value}");
+                        if (char.IsUpper(className[i]))
+                            newString.Append(' ');
+                        newString.Append(className[i]);
                     }
-                    m_ModuleName = className;
+                    m_ModuleName = newString.ToString();
                 }
-
                 return m_ModuleName;
             }
         }

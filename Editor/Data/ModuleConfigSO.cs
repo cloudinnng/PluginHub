@@ -15,26 +15,32 @@ namespace PluginHub.Data
         private ModuleConfigSO targetScript => (ModuleConfigSO)target;
         //模块前缀
         private string moduleFolder = "Packages/com.hellottw.pluginhub/Editor/Module/";
+        private string moduleFillterStr = "";
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
+            GUILayout.Space(20);
+            
             //所有已添加的模块
             string[] addedModules = targetScript.tabConfigs.Select(x =>
             {
                 return x.moduleList.Select(y => y.name).ToArray();
             }).SelectMany(x => x).ToArray();
             //所有模块
-            string[] moduleFiles =
-                System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.TopDirectoryOnly);
+            string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.TopDirectoryOnly);
+            //绘制模块搜索输入框
+            moduleFillterStr = EditorGUILayout.TextField("模块搜索：", moduleFillterStr);
+            
+            
             GUILayout.Label($"共有{moduleFiles.Length}个模块，{moduleFiles.Length - addedModules.Length}个未添加。");
+            moduleFiles = moduleFiles.Where(x => x.ToLower().Contains(moduleFillterStr.ToLower())).ToArray();
             //绘制所有未添加的模块
             for (int i = 0; i < moduleFiles.Length; i++)
             {
                 string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(moduleFiles[i]);
-                if (addedModules.Contains(fileNameWithoutExtension))
-                    continue;
+                
                 GUILayout.BeginHorizontal();
                 {
                     GUI.enabled = false;
@@ -42,8 +48,11 @@ namespace PluginHub.Data
                         typeof(MonoScript), false);
                     GUI.enabled = true;
 
-                    if (targetScript.tabConfigs.Count > 0)
+                    if (targetScript.tabConfigs.Count > 0)//如果有tab
                     {
+                        //模块是否已添加
+                        bool alreadyAdded = addedModules.Contains(fileNameWithoutExtension);
+                        GUI.enabled = !alreadyAdded;//如果已添加，按钮不可用。模块不可重复添加
                         GUILayout.Label("添加到Tab：", GUILayout.ExpandWidth(false));
                         for (int j = 0; j < targetScript.tabConfigs.Count; j++)
                         {
@@ -53,11 +62,11 @@ namespace PluginHub.Data
                                     .Add(AssetDatabase.LoadAssetAtPath<MonoScript>(moduleFiles[i]));
                             }
                         }
+                        GUI.enabled = true;
                     }
                 }
                 GUILayout.EndHorizontal();
             }
-
 
             GUILayout.Space(20);
 
@@ -87,7 +96,7 @@ namespace PluginHub.Data
             GUILayout.EndHorizontal();
 
 
-            if (GUILayout.Button("重启PluginHub", GUILayout.Height(30)))
+            if (GUILayout.Button("重启 PluginHubWindow", GUILayout.Height(30)))
             {
                 PluginHubWindow.RestartWindow();
             }
