@@ -203,7 +203,7 @@ namespace PluginHub.Module
         }
 
 
-        public override bool OnSceneGUI(SceneView sceneView)
+        protected override bool OnSceneGUI(SceneView sceneView)
         {
             if (_boxCollider != null)
             {

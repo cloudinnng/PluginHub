@@ -220,7 +220,7 @@ namespace PluginHub.Module
 
 
         //画场景GUi
-        public override bool OnSceneGUI(SceneView sceneView)
+        protected override bool OnSceneGUI(SceneView sceneView)
         {
             // if (currSelectTabIndex == 1)
             // {

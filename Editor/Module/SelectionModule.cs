@@ -108,7 +108,7 @@ namespace PluginHub.Module
 
             GUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh中间创建父亲","会先计算物体下Mesh的中点位置，然后再该位置创建一个父物体，最后将该物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
+                if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh中间创建父物体","会先计算物体下Mesh的中点位置，然后再该位置创建一个父物体，最后将该物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
                 {
                     MeshRenderer[] meshRenderers = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
                     if (meshRenderers != null && meshRenderers.Length > 0 && meshRenderers[0] != null)
@@ -144,7 +144,7 @@ namespace PluginHub.Module
             GUILayout.EndHorizontal();
         }
 
-        public override bool OnSceneGUI(SceneView sceneView)
+        protected override bool OnSceneGUI(SceneView sceneView)
         {
             if (selectedObject == null)
                 return false;

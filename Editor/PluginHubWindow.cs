@@ -40,6 +40,7 @@ namespace PluginHub
             {
                 if (_window == null)
                 {
+                    // Debug.Log("创建 PluginHub 主窗口");//调用Close()之后会释放_window实例。
                     _window = GetWindow<PluginHubWindow>("Plugin Hub Window");
                     _window.minSize = new Vector2(325, 200);
                     _window.InitModule();
@@ -66,7 +67,7 @@ namespace PluginHub
                     if (Window.position.x == 0)//在非dock下，可以用Window.position.x == 0判断窗口是否显示
                         Window.Show();
                     else
-                        Window.Close();
+                        Window.Close();//调用Close()之后，会释放PluginHubWindow实例。其中的值会消失，所以记得重要的变量使用EditorPrefs保存
                 }
             }
         }
@@ -76,6 +77,12 @@ namespace PluginHub
             if (Window != null)
                 Window.Close();
             Window.Show();
+        }
+
+        private new void Close()
+        {
+            OnDestroy();
+            base.Close();
         }
 
         //ScriptableObject配置
@@ -93,8 +100,8 @@ namespace PluginHub
         //退出播放模式时是否显示PluginHubWindow窗口
         public static bool showPluginHubOnExitPlayMode
         {
-            get { return EditorPrefs.GetBool("showPluginHubOnExitPlayMode", false); }
-            set { EditorPrefs.SetBool("showPluginHubOnExitPlayMode", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showPluginHubOnExitPlayMode", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showPluginHubOnExitPlayMode", value); }
         }
 
         //是否显示顶部设置面板
@@ -104,7 +111,7 @@ namespace PluginHub
         public static bool globalDebugMode = false;
 
         //是否总是刷新gui，会让鼠标指针不处于窗口内也刷新UI,这在某些耗时模块的gui绘制中会产生一定编辑器性能消耗，但是可以让某些模块功能更新更加及时
-        public static bool alwaysRefreshGUI = false;
+        public static bool alwaysRepaintGUI = false;
 
         private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch(); //秒表 用于计算代码执行时间
         private float lastTime;
@@ -114,15 +121,15 @@ namespace PluginHub
         //用于计算按钮宽度的值
         private float CommonPadding
         {
-            get { return EditorPrefs.GetFloat("CommonPadding", 43); }
-            set { EditorPrefs.SetFloat("CommonPadding", value); }
+            get { return EditorPrefs.GetFloat($"{PluginHubFunc.ProjectUniquePrefix}_CommonPadding", 43); }
+            set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_CommonPadding", value); }
         }
 
         //按钮之间的间距
         private float ButtonPadding
         {
-            get { return EditorPrefs.GetFloat("ButtonPadding", 3); }
-            set { EditorPrefs.SetFloat("ButtonPadding", value); }
+            get { return EditorPrefs.GetFloat($"{PluginHubFunc.ProjectUniquePrefix}_ButtonPadding", 3); }
+            set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_ButtonPadding", value); }
         }
 
         private void OnValidate()
@@ -146,18 +153,40 @@ namespace PluginHub
                     if (monoScript != null)
                     {
                         //调用模块的构造函数
-                        PluginHubModuleBase module = (PluginHubModuleBase)monoScript.GetClass().GetConstructor(new Type[]{}).Invoke(null);
-                        if (module != null)
+                        try
                         {
-                            module.Init(i);
-                            moduleList.Add(module);
+                            PluginHubModuleBase module =
+                                (PluginHubModuleBase)monoScript.GetClass().GetConstructor(new Type[] { }).Invoke(null);
+                            if (module != null)
+                            {
+                                module.Init(i);
+                                moduleList.Add(module);
+                            }
+                        }
+                        catch(InvalidCastException e)
+                        {
+                            Debug.LogError($"PluginHub 无法将 {monoScript.name} 作为模块加载，仅支持加载继承自 PluginHubModuleBase 的模块类。选择模块配置文件，去除非模块脚本。或者使用预制模块配置，并重启 PluginHub。\n{e}");
+                        }catch(Exception e)
+                        {
+                            Debug.LogError($"加载模块{monoScript.name}时发生错误：{e}");
                         }
                     }
                 }
             }
         }
 
-        private int currSelectTabIndex; //当前选择的tab索引
+        //当前选择的tab索引
+        private int currSelectTabIndex
+        {
+            set { EditorPrefs.SetInt($"{PluginHubFunc.ProjectUniquePrefix}_currSelectTabIndex", value); }
+            get
+            {
+                int storedValue = EditorPrefs.GetInt($"{PluginHubFunc.ProjectUniquePrefix}_currSelectTabIndex", 0);
+                if(storedValue >= moduleConfigSO.tabConfigs.Count)
+                    storedValue = 0;
+                return storedValue;
+            }
+        }
         private Vector2 scrollPos;
         private bool isExpandAll = true;
 
@@ -223,9 +252,8 @@ namespace PluginHub
                 // EditorGUILayout.ObjectField(moduleConfigSO, typeof(ModuleConfigSO), false);
                 GUI.enabled = true;
 
-                
                 //选中模块配置文件按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("d_StandaloneInputModule Icon", "", "模块配置文件"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.Icon("d_ScriptableObject Icon", "", "模块配置文件"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     Selection.activeObject = moduleConfigSO;
                 }
@@ -257,11 +285,11 @@ namespace PluginHub
 
                 //总是刷新按钮
                 oldColor = GUI.color;
-                if (alwaysRefreshGUI)
+                if (alwaysRepaintGUI)
                     GUI.color = PluginHubFunc.SelectedColor;
                 if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
                 {
-                    alwaysRefreshGUI = !alwaysRefreshGUI;
+                    alwaysRepaintGUI = !alwaysRepaintGUI;
                 }
                 GUI.color = oldColor;
             }
@@ -323,15 +351,32 @@ namespace PluginHub
 
         #region EditorWindowFunction
 
-        private void OnEnable()
+        private void OnEnable()//PluginHubWindow显示时调用
         {
             foreach (var module in moduleList)
             {
                 module.OnEnable();
             }
+
+            SceneView.duringSceneGui -= OnSceneGUI;
+            SceneView.duringSceneGui += OnSceneGUI;
         }
 
-        private void OnFocus()
+        private void OnDisable()
+        {
+            SceneView.duringSceneGui -= OnSceneGUI;
+        }
+
+        //
+        private void OnSceneGUI(SceneView sceneView)
+        {
+            foreach (var module in moduleList)
+            {
+                module.isDrawingSceneGUI = module.m_OnSceneGUI(sceneView);
+            }
+        }
+
+        private void OnFocus()//PluginHubWindow获得焦点时调用
         {
             foreach (var module in moduleList)
             {
@@ -339,31 +384,30 @@ namespace PluginHub
             }
         }
 
-        private void OnDestroy()
+        private void OnDestroy()//PluginHubWindow关闭时调用
         {
             foreach (var module in moduleList)
             {
                 module.OnDestroy();
             }
-            // if (thisWindow != null)
-            // {
-            //     GameObject.DestroyImmediate(thisWindow);
-            // }
         }
 
         //这段代码使得鼠标不在窗口内的情况下UI也得以更新
         private void OnInspectorUpdate()
         {
-            if (alwaysRefreshGUI)
+            if (alwaysRepaintGUI)
                 Repaint();
         }
 
-        private void Update()
+        private void Update()//即时焦点不在PluginHubWindow上，也会每帧调用。除非关掉PluginHubWindow
         {
             foreach (var module in moduleList)
             {
                 if (module.expand)
+                {
                     module.OnUpdate();
+                    module.RefreshData();
+                }
             }
         }
 

@@ -63,8 +63,8 @@ namespace PluginHub.Module
         //使用短小的构建路径
         private bool iosUseShortBuildPath
         {
-            get { return EditorPrefs.GetBool($"CF_BuildModule_{Application.productName}_iosUseShortBuildPath", false); }
-            set { EditorPrefs.SetBool($"CF_BuildModule_{Application.productName}_iosUseShortBuildPath", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_{Application.productName}_iosUseShortBuildPath", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_{Application.productName}_iosUseShortBuildPath", value); }
         }
 
         //构建后处理

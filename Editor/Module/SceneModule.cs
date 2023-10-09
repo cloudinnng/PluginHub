@@ -141,7 +141,7 @@ namespace PluginHub.Module
             GUILayout.EndVertical();
         }
 
-        protected override void RefreshData()
+        public override void RefreshData()
         {
             base.RefreshData();
             if (showAllScene)

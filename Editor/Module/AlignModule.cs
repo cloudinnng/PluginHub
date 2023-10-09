@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,7 @@ namespace PluginHub.Module
         private string[] moveAmountArray = new string[]
             { "0.01", "0.02", "0.05", "0.1", "0.1", "0.2", "0.5", "1", "1", "2", "5", "10" };
 
-        private string[] selectGridName = new string[] { "+X", "+Y", "+Z", "-X", "-Y", "-Z" };
-        private int selectAxis = 0; //选择的对齐方向
+        private int selectAxis = -1;//选择的对齐方向
 
         protected override void DrawGuiContent()
         {
@@ -29,70 +29,58 @@ namespace PluginHub.Module
                 rayOffset = EditorGUILayout.Vector3Field("射线原点偏移：", rayOffset);
 
                 GUILayout.Label("选择方向：");
-                //选择对齐方向
-                selectAxis = GUILayout.SelectionGrid(selectAxis, selectGridName, 3);
 
-                if (GUILayout.Button("对齐所选对象"))
+                GUILayout.BeginHorizontal();
                 {
-                    SelectionObjTo();
+                    DrawAxisLikeButtonGroup(
+                        "Y+", "Y-", "X-", "X+", "Z+", "Z-",
+                        () => selectAxis = 0,
+                        () => selectAxis = 1,
+                        () => selectAxis = 2,
+                        () => selectAxis = 3,
+                        () => selectAxis = 4,
+                        () => selectAxis = 5,
+                        ref selectAxis,
+                        false
+                    );
+
+                    GUILayout.BeginVertical();
+                    {
+                        EditorGUILayout.HelpBox("提示：模块会在场景视图绘制您选择的对齐方向。在对齐之前查看此方向是否为您所希望的方向。",MessageType.Info);
+                        GUI.enabled = selectAxis != -1 && Selection.gameObjects != null && Selection.gameObjects.Length > 0;
+                        if (GUILayout.Button("对齐所选对象",GUILayout.Height(30)))
+                        {
+                            SelectionObjTo();
+                        }
+                        GUI.enabled = true;
+                    }
+                    GUILayout.EndVertical();
                 }
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.Label("所选对象集体移动:");
-                Vector2 buttonSize = new Vector2(30, 30);
+
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.BeginVertical("Box", GUILayout.Width(102), GUILayout.Height(90));
-                    {
-                        GUILayout.BeginHorizontal();
-                        {
-                            GUILayout.FlexibleSpace();
-                            if (GUILayout.Button("↑", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                            {
-                                MoveSelectionByWorldAxis(Vector3.up, moveAmount);
-                            }
-
-                            if (GUILayout.Button("↗", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                            {
-                                MoveSelectionByWorldAxis(Vector3.forward, moveAmount);
-                            }
-                        }
-                        GUILayout.EndHorizontal();
-                        GUILayout.BeginHorizontal();
-                        {
-                            if (GUILayout.Button("←", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                            {
-                                MoveSelectionByWorldAxis(Vector3.left, moveAmount);
-                            }
-
-                            GUILayout.FlexibleSpace();
-                            if (GUILayout.Button("→", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                            {
-                                MoveSelectionByWorldAxis(Vector3.right, moveAmount);
-                            }
-                        }
-                        GUILayout.EndHorizontal();
-                        GUILayout.BeginHorizontal();
-                        {
-                            if (GUILayout.Button("↙", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                            {
-                                MoveSelectionByWorldAxis(Vector3.back, moveAmount);
-                            }
-
-                            if (GUILayout.Button("↓", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                            {
-                                MoveSelectionByWorldAxis(Vector3.down, moveAmount);
-                            }
-
-                            GUILayout.FlexibleSpace();
-                        }
-                        GUILayout.EndHorizontal();
-                    }
-                    GUILayout.EndVertical();
-                    GUILayout.BeginVertical();
+                    int btnState = -1;
+                    GUI.enabled = Selection.gameObjects != null && Selection.gameObjects.Length > 0 && moveAmount != 0;
+                    DrawAxisLikeButtonGroup(
+                        "↑", "↓", "←", "→", "↗", "↙",
+                        () => MoveSelectionByWorldAxis(Vector3.up, moveAmount),
+                        () => MoveSelectionByWorldAxis(Vector3.down, moveAmount),
+                        () => MoveSelectionByWorldAxis(Vector3.left, moveAmount),
+                        () => MoveSelectionByWorldAxis(Vector3.right, moveAmount),
+                        () => MoveSelectionByWorldAxis(Vector3.forward, moveAmount),
+                        () => MoveSelectionByWorldAxis(Vector3.back, moveAmount),
+                        ref btnState,
+                        false
+                    );
+                    GUI.enabled = true;
+                    GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
                     {
                         GUILayout.Label("移动量:");
                         moveAmount = EditorGUILayout.FloatField("", moveAmount, GUILayout.MinWidth(50));
@@ -111,30 +99,25 @@ namespace PluginHub.Module
 
         }
 
-        public void SelectionObjTo()
+        private Vector3 GetDir()
         {
-            Vector3 dir = Vector3.zero;
             switch (selectAxis)
             {
-                case 0:
-                    dir = Vector3.right;
-                    break;
-                case 1:
-                    dir = Vector3.up;
-                    break;
-                case 2:
-                    dir = Vector3.forward;
-                    break;
-                case 3:
-                    dir = Vector3.left;
-                    break;
-                case 4:
-                    dir = Vector3.down;
-                    break;
-                case 5:
-                    dir = Vector3.back;
-                    break;
+                case 0: return Vector3.up;
+                case 1: return Vector3.down;
+                case 2: return Vector3.left;
+                case 3: return Vector3.right;
+                case 4: return Vector3.forward;
+                case 5: return Vector3.back;
+                default:
+                    Debug.LogError("未选择对齐方向");
+                    return Vector3.zero;
             }
+        }
+
+        public void SelectionObjTo()
+        {
+            Vector3 dir = GetDir();
 
             GameObject[] gameObjects = Selection.gameObjects;
             Undo.RecordObjects(gameObjects.Select((o) => o.transform).ToArray(), "SelectionObjToGroundObj");
@@ -142,6 +125,29 @@ namespace PluginHub.Module
             {
                 MoveGameObjectTo(gameObjects[i], dir);
             }
+        }
+
+        protected override bool OnSceneGUI(SceneView sceneView)
+        {
+            if (selectAxis != -1 && Selection.gameObjects != null && Selection.gameObjects.Length > 0
+                &&Selection.gameObjects[0]!=null)
+            {
+                Vector3 position = Selection.gameObjects[0].transform.position;
+
+                //draw a arrow to show the direction
+                Color oldColor = Handles.color;
+                Handles.color = Color.white;
+
+                float size = HandleUtility.GetHandleSize(position) + 1;
+                Handles.ArrowHandleCap(0, position, Quaternion.LookRotation(GetDir()), size, EventType.Repaint);
+                // Handles.DrawLine(position, position + GetDir() * size);
+
+
+                Handles.color = oldColor;
+
+                return true;
+            }
+            return false;
         }
 
         private void MoveSelectionByWorldAxis(Vector3 sceneCamDir, float moveAmount)
@@ -202,8 +208,87 @@ namespace PluginHub.Module
             }
             else
             {
-                Debug.LogWarning($"对象{obj.name}对齐方向碰撞体");
+                Debug.LogWarning($"对象{obj.name}对齐方向无碰撞体");
             }
         }
+
+
+        private readonly Vector2 axisLikeBtnSize = new Vector2(30, 30);
+        //saveStatus:按钮是否保持按下状态的颜色，作为一个状态按钮。
+        public void DrawAxisLikeButtonGroup(
+            string upBtnName,string downBtnName,string leftBtnName,string rightBtnName, string forwardBtnName,string backBtnName,
+            Action upBtn,Action downBtn,Action leftBtn,Action rightBtn,Action forwardBtn,Action backBtn,
+            ref int axisBtnState, bool hasInitializedState = true)
+        {
+            if(hasInitializedState)
+                axisBtnState = -1;
+            GUILayout.BeginVertical("Box", GUILayout.Width(102), GUILayout.Height(90));
+            {
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.FlexibleSpace();
+                    GUI.color = axisBtnState == 0 ? PluginHubFunc.SelectedColor : Color.white;
+                    if (GUILayout.Button(upBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
+                    {
+                        upBtn?.Invoke();
+                        axisBtnState = 0;
+                    }
+                    GUI.color = Color.white;
+
+                    GUI.color = axisBtnState == 4 ? PluginHubFunc.SelectedColor : Color.white;
+                    if (GUILayout.Button(forwardBtnName,GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
+                    {
+                        forwardBtn?.Invoke();
+                        axisBtnState = 4;
+                    }
+                    GUI.color = Color.white;
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.color = axisBtnState == 2 ? PluginHubFunc.SelectedColor : Color.white;
+                    if (GUILayout.Button(leftBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
+                    {
+                        leftBtn?.Invoke();
+                        axisBtnState = 2;
+                    }
+                    GUI.color = Color.white;
+
+                    GUILayout.FlexibleSpace();
+
+                    GUI.color = axisBtnState == 3 ? PluginHubFunc.SelectedColor : Color.white;
+                    if (GUILayout.Button(rightBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
+                    {
+                        rightBtn?.Invoke();
+                        axisBtnState = 3;
+                    }
+                    GUI.color = Color.white;
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.color = axisBtnState == 5 ? PluginHubFunc.SelectedColor : Color.white;
+                    if (GUILayout.Button(backBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
+                    {
+                        backBtn?.Invoke();
+                        axisBtnState = 5;
+                    }
+                    GUI.color = Color.white;
+
+                    GUI.color = axisBtnState == 1 ? PluginHubFunc.SelectedColor : Color.white;
+                    if (GUILayout.Button(downBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
+                    {
+                        downBtn?.Invoke();
+                        axisBtnState = 1;
+                    }
+                    GUI.color = Color.white;
+
+                    GUILayout.FlexibleSpace();
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+        }
+
     }
 }

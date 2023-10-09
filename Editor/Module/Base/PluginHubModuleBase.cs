@@ -48,14 +48,14 @@ namespace PluginHub.Module
 
         public bool expand //展开状态
         {
-            get { return EditorPrefs.GetBool($"{GetType().Name}_ExpandState", true); }
-            set { EditorPrefs.SetBool($"{GetType().Name}_ExpandState", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", true); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", value); }
         }
 
         protected bool moduleDebug//单独模块的debug模式
         {
-            get { return EditorPrefs.GetBool($"{GetType().Name}_moduleDebug", false); }
-            set { EditorPrefs.SetBool($"{GetType().Name}_moduleDebug", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", value); }
         }
             
             
@@ -63,7 +63,9 @@ namespace PluginHub.Module
         // protected PluginHubWindow pluginHubWindow;
         private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch(); //秒表对象 用于计算代码执行时间
         private float guiTimeLastFrame;
-        private bool isDrawingSceneGUI = false; //指示该模块是否正在绘制SceneGUI
+        //指示该模块是否正在绘制SceneGUI
+        public bool isDrawingSceneGUI { private get; set; }
+
 
         //data
         private Object scriptObj; //脚本对象,指示该脚本自身对象
@@ -86,9 +88,6 @@ namespace PluginHub.Module
                 stopwatch.Start();
             }
 
-            RefreshData();
-
-
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.BeginHorizontal();
@@ -110,7 +109,7 @@ namespace PluginHub.Module
                     if (isDrawingSceneGUI)
                     {
                         GUILayout.Label(
-                            PluginHubFunc.Icon("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI"),
+                            PluginHubFunc.Icon("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI，您可以在场景视图状态栏中勾选 Always Refresh 来让场景GUI绘制更加即时"),
                             GUILayout.Width(19), GUILayout.Height(19));
                     }
 
@@ -129,28 +128,29 @@ namespace PluginHub.Module
                 }
                 GUILayout.EndHorizontal();
 
+
+                if (moduleDebug) //画模块debug内容  Draw Debug
+                {
+                    GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
+                    {
+                        //画脚本行便于快速进入
+                        //draw script line for quick enter by double-click
+                        GUILayout.BeginHorizontal();
+                        {
+                            GUI.enabled = false;
+                            GUILayout.Label("Script File:");
+                            EditorGUILayout.ObjectField("", scriptObj, typeof(PluginHubModuleBase), false); //画出这个脚本对象
+                            GUI.enabled = true;
+                        }
+                        GUILayout.EndHorizontal();
+                        GUILayout.Label($"模块GUI时间：{guiTimeLastFrame}ms");
+                        DrawModuleDebug();
+                    }
+                    GUILayout.EndVertical();
+                }
+
                 if (expand)
                 {
-                    if (moduleDebug) //画模块debug内容  Draw Debug
-                    {
-                        GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
-                        {
-                            //画脚本行便于快速进入
-                            //draw script line for quick enter by double-click
-                            GUILayout.BeginHorizontal();
-                            {
-                                GUI.enabled = false;
-                                GUILayout.Label("Script File:");
-                                EditorGUILayout.ObjectField("", scriptObj, typeof(PluginHubModuleBase), false); //画出这个脚本对象
-                                GUI.enabled = true;
-                            }
-                            GUILayout.EndHorizontal();
-                            GUILayout.Label($"模块GUI时间：{guiTimeLastFrame}ms");
-                            DrawModuleDebug();
-                        }
-                        GUILayout.EndVertical();
-                    }
-
                     GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("ModulePanel"));
                     {
                         //画模块内容
@@ -174,7 +174,7 @@ namespace PluginHub.Module
         }
 
         //刷新数据，为避免每一个GUI绘制都进行数据更新，浪费性能，所以刷新数据统一在这个方法内执行
-        protected virtual void RefreshData()
+        public virtual void RefreshData()
         {
             if (!isDataDirty) return;
             isDataDirty = false;
@@ -203,26 +203,26 @@ namespace PluginHub.Module
         //当模块展开时调用
         public virtual void OnFoldoutExpand()
         {
-            SceneView.duringSceneGui -= this.m_OnSceneGUI;
-            SceneView.duringSceneGui += this.m_OnSceneGUI;
+            if (moduleDebug) Debug.Log($"{moduleName} mudule : OnFoldoutExpand");
         }
 
         //当模块折叠时调用
         public virtual void OnFoldoutCollapse()
         {
-            SceneView.duringSceneGui -= this.m_OnSceneGUI;
-            isDrawingSceneGUI = false;
+            if (moduleDebug) Debug.Log($"{moduleName} mudule : OnFoldoutCollapse");
         }
 
-        private void m_OnSceneGUI(SceneView sceneView)
+        public bool m_OnSceneGUI(SceneView sceneView)
         {
-            isDrawingSceneGUI = OnSceneGUI(sceneView);
+            if (expand)
+                return OnSceneGUI(sceneView);
+            return false;
         }
 
-        //实现这个方法以绘制场景GUI
-        public virtual bool OnSceneGUI(SceneView sceneView)
+        //子类实现这个方法以绘制属于模块的场景GUI
+        //返回是否正在绘制GUI
+        protected virtual bool OnSceneGUI(SceneView sceneView)
         {
-            //正在绘制返回true
             return false;
         }
 
@@ -261,8 +261,6 @@ namespace PluginHub.Module
         public virtual void OnDestroy()
         {
             if (moduleDebug) Debug.Log($"{moduleName} mudule : OnDestroy");
-
-            SceneView.duringSceneGui -= this.m_OnSceneGUI;
         }
 
         #endregion

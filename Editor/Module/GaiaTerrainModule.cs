@@ -16,14 +16,14 @@ namespace PluginHub.Module
 
         private int terrainTileCountX
         {
-            get { return EditorPrefs.GetInt($"{GetType()}_GaiaTerrainTileCountX", 4); }
-            set { EditorPrefs.SetInt($"{GetType()}_GaiaTerrainTileCountX", value); }
+            get { return EditorPrefs.GetInt($"{PluginHubFunc.ProjectUniquePrefix}_{GetType()}_GaiaTerrainTileCountX", 4); }
+            set { EditorPrefs.SetInt($"{PluginHubFunc.ProjectUniquePrefix}_{GetType()}_GaiaTerrainTileCountX", value); }
         }
 
         private int terrainTileCountZ
         {
-            get { return EditorPrefs.GetInt($"{GetType()}_GaiaTerrainTileCountZ", 4); }
-            set { EditorPrefs.SetInt($"{GetType()}_GaiaTerrainTileCountZ", value); }
+            get { return EditorPrefs.GetInt($"{PluginHubFunc.ProjectUniquePrefix}_{GetType()}_GaiaTerrainTileCountZ", 4); }
+            set { EditorPrefs.SetInt($"{PluginHubFunc.ProjectUniquePrefix}_{GetType()}_GaiaTerrainTileCountZ", value); }
         }
 
 
@@ -45,20 +45,20 @@ namespace PluginHub.Module
 
         private float heightScale
         {
-            get { return EditorPrefs.GetFloat("TerrainModule_HeightScale", 1); }
-            set { EditorPrefs.SetFloat("TerrainModule_HeightScale", value); }
+            get { return EditorPrefs.GetFloat($"{PluginHubFunc.ProjectUniquePrefix}_TerrainModule_HeightScale", 1); }
+            set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_TerrainModule_HeightScale", value); }
         }
 
         private float heightOffset
         {
-            get { return EditorPrefs.GetFloat("TerrainModule_HeightOffset", 0); }
-            set { EditorPrefs.SetFloat("TerrainModule_HeightOffset", value); }
+            get { return EditorPrefs.GetFloat($"{PluginHubFunc.ProjectUniquePrefix}_TerrainModule_HeightOffset", 0); }
+            set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_TerrainModule_HeightOffset", value); }
         }
 
         private int rotateCount
         {
-            get { return EditorPrefs.GetInt("TerrainModule_RotateCount", 0); }
-            set { EditorPrefs.SetInt("TerrainModule_RotateCount", value); }
+            get { return EditorPrefs.GetInt($"{PluginHubFunc.ProjectUniquePrefix}_TerrainModule_RotateCount", 0); }
+            set { EditorPrefs.SetInt($"{PluginHubFunc.ProjectUniquePrefix}_TerrainModule_RotateCount", value); }
         }
 
 

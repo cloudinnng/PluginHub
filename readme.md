@@ -27,6 +27,7 @@ Each module implements a functional aspect. The purpose is to provide you with v
 - `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Alt+R`
 - 插件模块：对应`PluginHubWindow`中的每个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
 - `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块，启用的模块会在`PluginHubWindow`中显示。见`ModuleConfigSO`类
+- `PH`:有时候您可能会在源码中看到`PH`这个缩写，它是`PluginHub`的缩写
 
 # 特点
 

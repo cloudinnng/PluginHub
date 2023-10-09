@@ -92,7 +92,7 @@ namespace PluginHub.Module
             }
         }
 
-        public override bool OnSceneGUI(SceneView sceneView)
+        protected override bool OnSceneGUI(SceneView sceneView)
         {
             //中心坐标移动手柄
             _centerPosition = Handles.PositionHandle(_centerPosition, Quaternion.identity);
