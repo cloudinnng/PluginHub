@@ -336,10 +336,8 @@ namespace PluginHub.Module
         #endregion
 
         #region Layout Helper Function 快捷绘制GUI的方法
-        private const float titleWidth = 100;
-
         //绘制一个标签项目行，包含标题和内容，以及可选的复制内容按钮
-        public void DrawRow(string title, string content, bool copyBtn = false)
+        public void DrawRow(string title, string content, bool copyBtn = false, float titleWidth = 100)
         {
             GUILayout.BeginHorizontal();
             {

@@ -100,11 +100,16 @@ namespace PluginHub.Module
             StringBuilder sb = new StringBuilder();
             PluginHubFunc.GetFindPath(selectedGameObject.transform, sb);
 
-            DrawRow("Name", selectedGameObject.name);
-            DrawRow("Path", sb.ToString(),true);
-            DrawRow("Chind Count", selectedGameObject.transform.childCount.ToString());
-            if(_gameObjectBounds != default)
-                DrawRow("Mesh Bounds Size", $"长:{_gameObjectBounds.size.x:F2}m,宽:{_gameObjectBounds.size.z:F2}m,高:{_gameObjectBounds.size.y:F2}m");
+            DrawRow("Name", selectedGameObject.name,false,150);
+            DrawRow("Path", sb.ToString(),true,150);
+            DrawRow("Chind Count", selectedGameObject.transform.childCount.ToString(),false,150);
+            if (_gameObjectBounds != default)
+            {
+                DrawRow("Mesh Bounds Size", $"长:{_gameObjectBounds.size.x:F2}m,宽:{_gameObjectBounds.size.z:F2}m,高:{_gameObjectBounds.size.y:F2}m",false,150);
+                DrawRow("Mesh Bounds Center", $"X:{_gameObjectBounds.center.x:F2}m,Y:{_gameObjectBounds.center.y:F2}m,Z:{_gameObjectBounds.center.z:F2}m",false,150);
+            }
+
+
 
             GUILayout.BeginHorizontal();
             {
