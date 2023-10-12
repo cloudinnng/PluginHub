@@ -48,7 +48,7 @@ namespace PluginHub.Module
 
         public bool expand //展开状态
         {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", true); }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", false); }
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", value); }
         }
 
