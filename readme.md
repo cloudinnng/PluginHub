@@ -1,15 +1,13 @@
 ﻿# 项目介绍
-`PluginHub`是一款用`IMGUI`编写的`Unity3D`编辑器插件开发框架，并包含了一些已开发完成的插件模块。您可以使用这些开发完成的插件模块提高您的工作效率，也可以自己开发插件模块。
+`PluginHub`是一款用`IMGUI`编写、基于`EditorWindow`的`Unity3D`编辑器插件开发框架，并包含一些开箱即用的插件模块。您可以使用这些开发完成的插件模块提高您的工作效率。或者您也可以自己开发插件模块，以适应您自己的开发工作流。
 
-每个模块实现一个方面的功能。旨在为您提供各式各样的功能，以加速开发效率。感谢您点击右上角的`Star`以支持我的工作。
+每个模块实现一方面的功能。旨在为您提供各式各样的功能，以加速开发效率。感谢您点击右上角的`Star`以支持我的工作。
 
-`PluginHub` is a `Unity3D` editor plugin development framework and contains some developed plugin modules.
+`PluginHub` is an `Unity3D` editor plugin development framework based on `EditorWindow` written in `IMGUI`, and contains some out-of-the-box plugin modules. You can use these developed plugin modules to improve your work efficiency. Or you can also develop plugin modules by yourself to adapt to your own development workflow.
 
-Each module implements a functional aspect. The purpose is to provide you with various functions to accelerate development efficiency. Thank you for clicking the `Star` in the upper right corner to support my work.
+Each module implements one aspect of the function. The purpose is to provide you with various functions to accelerate development efficiency. Thank you for clicking `Star` in the upper right corner to support my work.
 
 `PluginHub`在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
-
-`PluginHub` is presented in the form of a `PluginHub` window in `Unity3D`. You can view and use the functions of all modules in the window, and you can also enable or disable modules in the `PluginHub` configuration file.
 
 中文视频教程：https://www.bilibili.com/video/BV1H94y1a79d/
 
@@ -57,7 +55,11 @@ Each module implements a functional aspect. The purpose is to provide you with v
 
 ### CommonComponentModule
 
-将场景中经常使用的、重要的`GameObject`统一到一个窗口中，方便您随时选择他们。也能根据场景相机的位置自动为您选择最近的`GameObject`。
+将场景中经常使用的、重要的`GameObject`统一到一个窗口中，方便您随时选择他们。
+
+也能根据场景相机的位置自动为您选择最近的`GameObject`。
+
+<img src="ReadmeImg/CommonComponentModule.png" width="400">
 
 ### BuildModule
 

@@ -104,6 +104,7 @@ namespace PluginHub.Data
             #endregion
         }
 
+        //最小模块配置
         private void MakeMinimalModuleConfig()
         {
             targetScript.tabConfigs.Clear();
@@ -116,6 +117,9 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NavigationBarModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}EditorExtension.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
                 }
             });
@@ -135,6 +139,7 @@ namespace PluginHub.Data
             AssetDatabase.SaveAssets();
         }
 
+        //默认模块配置
         private void MakeDefaultModuleConfig()
         {
             targetScript.tabConfigs.Clear();

@@ -1,10 +1,7 @@
-using System.Collections;
+
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Text;
-using NUnit.Framework.Internal;
-using PluginHub.Helper;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,6 +16,7 @@ namespace PluginHub.Module
 
         private Object selectedObject;//选中的对象
         private GameObject selectedGameObject;//选中的游戏对象
+        private GameObject[] selectedGameObjects;//选中的游戏对象们
 
         public override void OnUpdate()
         {
@@ -27,6 +25,7 @@ namespace PluginHub.Module
 
             selectedObject = Selection.activeObject;
             selectedGameObject = selectedObject as GameObject;
+            selectedGameObjects = Selection.gameObjects;
             bool isGameObject = selectedGameObject != null;
 
             if (isGameObject)
@@ -113,22 +112,54 @@ namespace PluginHub.Module
 
             GUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh中间创建父物体","会先计算物体下Mesh的中点位置，然后再该位置创建一个父物体，最后将该物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
+                if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh边界框中点创建父物体","会先计算物体下Mesh的中点位置，然后在该位置创建一个父物体，最后将初始物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
                 {
-                    MeshRenderer[] meshRenderers = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
-                    if (meshRenderers != null && meshRenderers.Length > 0 && meshRenderers[0] != null)
-                    {
-                        Bounds bounds = meshRenderers[0].bounds;
-                        for (int i = 1; i < meshRenderers.Length; i++)
-                            bounds.Encapsulate(meshRenderers[i].bounds);
+                    if(selectedGameObjects == null || selectedGameObjects.Length == 0)
+                        return;
 
+                    List<MeshRenderer> meshRendererList = new List<MeshRenderer>();
+                    //收集选中的所有MeshRenderer
+                    for (int i = 0; i < selectedGameObjects.Length; i++)
+                    {
+                        GameObject selectedGameObject = selectedGameObjects[i];
+                        MeshRenderer[] mrs = selectedGameObject.GetComponentsInChildren<MeshRenderer>();
+                        if (mrs != null && mrs.Length > 0)
+                            meshRendererList.AddRange(mrs);
+                    }
+
+
+                    if (meshRendererList != null && meshRendererList.Count > 0 && meshRendererList[0] != null)
+                    {
+                        //计算中点
+                        Bounds bounds = meshRendererList[0].bounds;
+                        for (int i = 1; i < meshRendererList.Count; i++)
+                            bounds.Encapsulate(meshRendererList[i].bounds);
                         Vector3 meshWorldCenter = bounds.center;
 
-                        GameObject parent = new GameObject("PluginHub_Parent");
+                        //获取所有选中对象中最大的姊妹Index
+                        int maxSiblingIndex = 0;
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            if (selectedGameObjects[i].transform.GetSiblingIndex() > maxSiblingIndex)
+                                maxSiblingIndex = selectedGameObjects[i].transform.GetSiblingIndex();
+                        }
+
+                        GameObject parent = new GameObject($"PluginHub_Parent_{maxSiblingIndex}");
                         parent.transform.SetParent(selectedGameObject.transform.parent);
                         parent.transform.position = meshWorldCenter;
-                        selectedGameObject.transform.SetParent(parent.transform);
                         Undo.RegisterCreatedObjectUndo(parent, "Create PluginHub_Parent");
+
+                        //设置到新的父物体下
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            Undo.SetTransformParent(selectedGameObjects[i].transform, parent.transform, "Set Parent");
+                        }
+
+                        //移动到合适的位置
+                        parent.transform.SetSiblingIndex(maxSiblingIndex - selectedGameObjects.Length + 1);
+
+                        //结束之后选中父物体
+                        Selection.activeGameObject = parent;
                     }
                     else
                     {
