@@ -10,6 +10,7 @@ using PluginHub.Data;
 using PluginHub.Helper;
 using PluginHub.ModuleScripts;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
@@ -19,8 +20,10 @@ using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Module
 {
-    public class BuildModule : PluginHubModuleBase
+    public class BuildModule : PluginHubModuleBase,IPreprocessBuildWithReport
     {
+        public override string moduleName { get { return "构建"; } }
+
         private float titleWidth = 70;
 
 
@@ -63,9 +66,30 @@ namespace PluginHub.Module
         //使用短小的构建路径
         private bool iosUseShortBuildPath
         {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_{Application.productName}_iosUseShortBuildPath", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_{Application.productName}_iosUseShortBuildPath", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_iosUseShortBuildPath", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_iosUseShortBuildPath", value); }
         }
+
+
+        private string updateInfo
+        {
+            get { return EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_updateInfo", ""); }
+            set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_updateInfo", value); }
+        }
+
+
+
+        //构建预处理
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            //写 BuildInfo.txt
+            INIParser iniParser = new INIParser();
+            iniParser.Open(Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt"));
+            //将updateInfo中的换行符替换为\n保存
+            iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n","\\n").Trim());
+            iniParser.Close();
+        }
+        public int callbackOrder { get; }
 
         //构建后处理
         [PostProcessBuild]
@@ -96,6 +120,14 @@ namespace PluginHub.Module
             DrawItem("公司名称:", PlayerSettings.companyName);
             DrawItem("产品名称:", PlayerSettings.productName);
             DrawItem("版本:", PlayerSettings.bundleVersion);
+
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("更新信息:", GUILayout.Width(titleWidth));
+                updateInfo = GUILayout.TextArea(updateInfo, GUILayout.Height(100));
+            }
+            GUILayout.EndHorizontal();
+
 
             SceneAsset currentScene =
                 AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
@@ -521,5 +553,6 @@ namespace PluginHub.Module
             var fastZip = new ICSharpCode.SharpZipLib.Zip.FastZip();
             fastZip.CreateZip(destinationZipFilePath, sourceFolderPath, true, null);
         }
+
     }
 }

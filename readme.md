@@ -39,6 +39,8 @@ Each module implements one aspect of the function. The purpose is to provide you
 
 已经过测试的`Unity3D`版本：`2021.3.x` 以上。更老的版本可能也可以使用，但是未经测试，可能会有API不兼容的情况。
 
+随着功能增加和框架变更，之前的旧模块可能会出现问题，目前还在积极开发中。任何使用问题请提交`Issue`。
+
 1. 将存储库克隆到本地
 2. 在`Unity3D`中打开`Package Manager`窗口
 3. 点击`+`按钮，选择`Add package from disk...`

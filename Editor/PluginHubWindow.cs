@@ -175,6 +175,17 @@ namespace PluginHub
             }
         }
 
+        //允许编辑器类方法在Unity加载时被初始化，而不需要用户的操作。
+        [InitializeOnLoadMethod]
+        private static void InitializeOnLoadMethod()
+        {
+            if (moduleList != null && moduleList.Count > 0)
+            {
+                foreach (var module in moduleList)
+                    module.OnInitOnload();
+            }
+        }
+
         //当前选择的tab索引
         private int currSelectTabIndex
         {

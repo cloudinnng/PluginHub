@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using PluginHub.Helper;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace PluginHub.Module
 {
@@ -39,6 +41,17 @@ namespace PluginHub.Module
                 GUILayout.Label("项目窗口：");
                 GUILayout.BeginHorizontal();
                 {
+                    // if (GUILayout.Button("test"))
+                    // {
+                    //     //Get window use reflection
+                    //     Type type = typeof(EditorWindow).Assembly.GetType("UnityEditor.ProjectSettingsWindow");
+                    //     EditorWindow window = EditorWindow.GetWindow(type);
+                    //     window.position = new Rect(500, 0, 500, 500);
+                    //     type = typeof(EditorWindow).Assembly.GetType("UnityEditor.PreferencesWindow");
+                    //     window = EditorWindow.GetWindow(type);
+                    //     window.position = new Rect(500, 0, 500, 500);
+                    // }
+
                     if (GUILayout.Button(PluginHubFunc.Icon("Settings","Project Settings"),GUILayout.Width(width3), GUILayout.Height(height_nor)))
                     {
                         EditorApplication.ExecuteMenuItem("Edit/Project Settings...");

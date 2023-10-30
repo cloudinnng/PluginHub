@@ -128,29 +128,28 @@ namespace PluginHub.Module
                 }
                 GUILayout.EndHorizontal();
 
-
-                if (moduleDebug) //画模块debug内容  Draw Debug
-                {
-                    GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
-                    {
-                        //画脚本行便于快速进入
-                        //draw script line for quick enter by double-click
-                        GUILayout.BeginHorizontal();
-                        {
-                            GUI.enabled = false;
-                            GUILayout.Label("Script File:");
-                            EditorGUILayout.ObjectField("", scriptObj, typeof(PluginHubModuleBase), false); //画出这个脚本对象
-                            GUI.enabled = true;
-                        }
-                        GUILayout.EndHorizontal();
-                        GUILayout.Label($"模块GUI时间：{guiTimeLastFrame}ms");
-                        DrawModuleDebug();
-                    }
-                    GUILayout.EndVertical();
-                }
-
                 if (expand)
                 {
+                    if (moduleDebug) //画模块debug内容  Draw Debug
+                    {
+                        GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
+                        {
+                            //画脚本行便于快速进入
+                            //draw script line for quick enter by double-click
+                            GUILayout.BeginHorizontal();
+                            {
+                                GUI.enabled = false;
+                                GUILayout.Label("Script File:");
+                                EditorGUILayout.ObjectField("", scriptObj, typeof(PluginHubModuleBase), false); //画出这个脚本对象
+                                GUI.enabled = true;
+                            }
+                            GUILayout.EndHorizontal();
+                            GUILayout.Label($"模块GUI时间：{guiTimeLastFrame}ms");
+                            DrawModuleDebug();
+                        }
+                        GUILayout.EndVertical();
+                    }
+
                     GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("ModulePanel"));
                     {
                         //画模块内容
@@ -224,6 +223,13 @@ namespace PluginHub.Module
         protected virtual bool OnSceneGUI(SceneView sceneView)
         {
             return false;
+        }
+
+
+        //这个方法在Unity打开时就会执行，不需要打开PluginHubWindow
+        public virtual void OnInitOnload()
+        {
+
         }
 
         #endregion

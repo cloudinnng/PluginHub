@@ -1,12 +1,23 @@
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace PluginHub.Module
 {
+
+    public class TransformValue
+    {
+        public Vector3 position;
+        public Vector3 eulerAngles;
+        public Vector3 scale;
+    }
+
+
     public class SelectionModule : PluginHubModuleBase
     {
         public override string moduleName
@@ -43,16 +54,8 @@ namespace PluginHub.Module
             }
             bool isGameObject = selectedGameObject != null;
 
-
-            GUILayout.BeginHorizontal();
-            {
-                DrawRow("Selection", isGameObject? "GameObject" : "Asset");
-
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(PluginHubFunc.Icon("CollabExclude Icon", "", "取消选择"), PluginHubFunc.IconBtnLayoutOptions))
-                    Selection.activeObject = null;
-            }
-            GUILayout.EndHorizontal();
+            DrawRow("Selection", isGameObject? "GameObject" : "Asset",false,150);
+            DrawRow("Count", Selection.objects.Length.ToString(),false,150);
 
 
             if (selectedGameObject != null)//选中的是游戏对象
@@ -71,8 +74,8 @@ namespace PluginHub.Module
             string path = AssetDatabase.GetAssetPath(Selection.activeObject);
             string name = Path.GetFileName(path);
 
-            DrawRow("Path", path,true);
-            DrawRow("FileName", name);
+            DrawRow("Path", path,true,150);
+            DrawRow("FileName", name,true,150);
         }
 
         private Bounds _gameObjectBounds = default;
@@ -99,8 +102,8 @@ namespace PluginHub.Module
             StringBuilder sb = new StringBuilder();
             PluginHubFunc.GetFindPath(selectedGameObject.transform, sb);
 
-            DrawRow("Name", selectedGameObject.name,false,150);
-            DrawRow("Path", sb.ToString(),true,150);
+            DrawRow("Name", selectedGameObject.name,true,150);
+            DrawRow("Hierarchy Path", sb.ToString(),true,150);
             DrawRow("Chind Count", selectedGameObject.transform.childCount.ToString(),false,150);
             if (_gameObjectBounds != default)
             {
@@ -109,13 +112,102 @@ namespace PluginHub.Module
             }
 
 
-
-            GUILayout.BeginHorizontal();
+            //选择--------------------------------------------------------------
+            GUILayout.BeginVertical("Box");
             {
+                GUILayout.Label("选择：");
+                GUILayout.BeginHorizontal();
+                {
+                    if (GUILayout.Button("选择所有直接子物体"))
+                    {
+                        List<GameObject> list = new List<GameObject>();
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            Transform transform = selectedGameObjects[i].transform;
+                            CollectDirectChild(transform, ref list, CollectType.ActiveChild | CollectType.DeactiveChild);
+                        }
+                        Debug.Log(list.Count);
+                        Selection.objects = list.ToArray();
+                    }
+                    if (GUILayout.Button("选择active直接子物体"))
+                    {
+                        List<GameObject> list = new List<GameObject>();
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            Transform transform = selectedGameObjects[i].transform;
+                            CollectDirectChild(transform,ref list, CollectType.ActiveChild);
+                        }
+                        Selection.objects = list.ToArray();
+                    }
+                    if (GUILayout.Button("选择Deactive直接子物体"))
+                    {
+                        List<GameObject> list = new List<GameObject>();
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            Transform transform = selectedGameObjects[i].transform;
+                            CollectDirectChild(transform,ref list, CollectType.DeactiveChild);
+                        }
+                        Selection.objects = list.ToArray();
+                    }
+                }
+                GUILayout.EndHorizontal();
+
+                if (GUILayout.Button("选择父物体"))
+                {
+                    List<GameObject> list = new List<GameObject>();
+                    for (int i = 0; i < selectedGameObjects.Length; i++)
+                    {
+                        GameObject selectedGameObject = selectedGameObjects[i];
+                        if (selectedGameObject.transform.parent != null)
+                            list.Add(selectedGameObject.transform.parent.gameObject);
+                    }
+                    Selection.objects = list.ToArray();
+                }
+            }
+            GUILayout.EndVertical();
+
+            //操作--------------------------------------------------------------
+            GUILayout.BeginVertical("Box");
+            {
+                GUILayout.Label("操作：");
+                if (GUILayout.Button("删除所选"))
+                {
+                    for (int i = 0; i < selectedGameObjects.Length; i++)
+                        Undo.DestroyObjectImmediate(selectedGameObjects[i]);
+                }
+            }
+            GUILayout.EndVertical();
+
+
+
+            //工具--------------------------------------------------------------
+            GUILayout.BeginVertical("Box");
+            {
+                GUILayout.Label("工具：");
                 if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh边界框中点创建父物体","会先计算物体下Mesh的中点位置，然后在该位置创建一个父物体，最后将初始物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
                 {
-                    if(selectedGameObjects == null || selectedGameObjects.Length == 0)
+                    if (selectedGameObjects == null || selectedGameObjects.Length == 0)
+                    {
+                        GUIUtility.ExitGUI();
                         return;
+                    }
+
+                    bool isParentPrefab = false;
+                    for (int i = 0; i < selectedGameObjects.Length; i++)
+                    {
+                        if (PrefabUtility.GetPrefabAssetType(selectedGameObjects[i].transform.parent) != PrefabAssetType.NotAPrefab)
+                        {
+                            isParentPrefab = true;
+                            break;
+                        }
+                    }
+                    if (isParentPrefab)
+                    {
+                        Debug.LogWarning("父物体是Prefab，不允许修改，请先解除Prefab连接");
+                        GUIUtility.ExitGUI();
+                        return;
+                    }
+
 
                     List<MeshRenderer> meshRendererList = new List<MeshRenderer>();
                     //收集选中的所有MeshRenderer
@@ -167,18 +259,54 @@ namespace PluginHub.Module
                     }
                 }
 
-                if (GUILayout.Button("选中直接子物体"))
+                GUILayout.BeginHorizontal();
                 {
-                    List<GameObject> list = new List<GameObject>();
-                    for (int i = 0; i < selectedGameObject.transform.childCount; i++)
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("归零 LocalPosition","归零物体的LocalPosition，但保持子物体Transform不变")))
                     {
-                        list.Add(selectedGameObject.transform.GetChild(i).gameObject);
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                            ResetTransformKeepChild(selectedGameObjects[i].transform,true,false,false);
                     }
-                    Selection.objects = list.ToArray();
+
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("归零 LocalRotation","归零物体的LocalRotation，但保持子物体Transform不变")))
+                    {
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                            ResetTransformKeepChild(selectedGameObjects[i].transform,false,true,false);
+                    }
+
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("归零 LocalScale","归零物体的LocalScale，但保持子物体Transform不变")))
+                    {
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                            ResetTransformKeepChild(selectedGameObjects[i].transform,false,false,true);
+                    }
                 }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                {
+                    if (GUILayout.Button("移动到SiblingIndex最前"))
+                    {
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            Transform transform = selectedGameObjects[i].transform;
+                            transform.SetSiblingIndex(0);
+                        }
+                    }
+                    if (GUILayout.Button("移动到SiblingIndex最后"))
+                    {
+                        for (int i = 0; i < selectedGameObjects.Length; i++)
+                        {
+                            Transform transform = selectedGameObjects[i].transform;
+                            transform.SetSiblingIndex(transform.parent.childCount - 1);
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
             }
-            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
         }
+
+
+
 
         protected override bool OnSceneGUI(SceneView sceneView)
         {
@@ -207,6 +335,7 @@ namespace PluginHub.Module
             return true;
         }
 
+        #region Helper Functions
         //在场景视图中画出文字
         public static void DrawText(Vector3 worldPos, string text)
         {
@@ -221,7 +350,71 @@ namespace PluginHub.Module
             GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
             GUI.color = Color.white;
             GUI.Label(rect, text, EditorStyles.boldLabel);
-
         }
+        private void ResetTransformKeepChild(Transform transform,bool resetPosition,bool resetRotation,bool resetScale)
+        {
+            //记录所有直接子物体的世界Transform
+            List<TransformValue> children = new List<TransformValue>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                Transform child = transform.GetChild(i);
+                TransformValue tv = new TransformValue();
+                tv.position = child.position;
+                tv.eulerAngles = child.rotation.eulerAngles;
+                tv.scale = child.localScale;
+                children.Add(tv);
+            }
+            Undo.RecordObject(transform, "Reset Transform");
+            //归零
+            if(resetPosition)
+                transform.localPosition = Vector3.zero;
+            if(resetRotation)
+                transform.localRotation = Quaternion.identity;
+            if(resetScale)
+                transform.localScale = Vector3.one;
+            //还原子物体Transform
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                Transform child = transform.GetChild(i);
+                TransformValue tv = children[i];
+                Undo.RecordObject(child, "Reset Transform");
+                child.position = tv.position;
+                child.eulerAngles = tv.eulerAngles;
+                child.localScale = tv.scale;
+            }
+        }
+
+
+        //标志枚举
+        [Flags]
+        private enum CollectType
+        {
+            None = 0,
+            DeactiveChild = 1,
+            ActiveChild = 2,
+        }
+
+        //仅收集直接子物体
+        private void CollectDirectChild(Transform transform,ref List<GameObject> list, CollectType collectType)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                Transform child = transform.GetChild(i);
+                if ((collectType & CollectType.DeactiveChild) == CollectType.DeactiveChild)
+                {
+                    if (!child.gameObject.activeSelf)
+                        list.Add(child.gameObject);
+                }
+                if ((collectType & CollectType.ActiveChild) == CollectType.ActiveChild)
+                {
+                    if (child.gameObject.activeSelf)
+                        list.Add(child.gameObject);
+                }
+            }
+        }
+
+
+        #endregion
+
     }
 }

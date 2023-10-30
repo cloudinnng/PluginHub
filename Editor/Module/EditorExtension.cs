@@ -49,9 +49,9 @@ namespace PluginHub.Module
             }
         }
 
-        public override void OnEnable()
+        public override void OnInitOnload()
         {
-            base.OnEnable();
+            base.OnInitOnload();
             if (isFirstTime)
             {
                 isFirstTime = false;
