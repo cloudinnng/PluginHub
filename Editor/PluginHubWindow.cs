@@ -298,7 +298,7 @@ namespace PluginHub
                 oldColor = GUI.color;
                 if (alwaysRepaintGUI)
                     GUI.color = PluginHubFunc.SelectedColor;
-                if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the PluginHubWindow GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     alwaysRepaintGUI = !alwaysRepaintGUI;
                 }

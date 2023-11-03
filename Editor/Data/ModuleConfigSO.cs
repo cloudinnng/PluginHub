@@ -77,19 +77,19 @@ namespace PluginHub.Data
                 if (GUILayout.Button("清空配置"))
                 {
                     targetScript.tabConfigs.Clear();
-                    //make dirty
-                    EditorUtility.SetDirty(targetScript);
-                    AssetDatabase.SaveAssets();
+                    MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
                 if (GUILayout.Button("载入最小模块配置"))
                 {
                     MakeMinimalModuleConfig();
+                    MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
                 if (GUILayout.Button("载入默认模块配置"))
                 {
                     MakeDefaultModuleConfig();
+                    MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
             }
@@ -98,10 +98,18 @@ namespace PluginHub.Data
 
             if (GUILayout.Button("重启 PluginHubWindow", GUILayout.Height(30)))
             {
+                MakeConfigDirtyAndSave();
                 PluginHubWindow.RestartWindow();
             }
 
             #endregion
+        }
+
+        private void MakeConfigDirtyAndSave()
+        {
+            //make dirty
+            EditorUtility.SetDirty(targetScript);
+            AssetDatabase.SaveAssets();
         }
 
         //最小模块配置
@@ -134,9 +142,6 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureProcessModule.cs"),
                 }
             });
-            //make dirty
-            EditorUtility.SetDirty(targetScript);
-            AssetDatabase.SaveAssets();
         }
 
         //默认模块配置
@@ -196,9 +201,6 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialReplaceModule.cs"),
                 }
             });
-            //make dirty
-            EditorUtility.SetDirty(targetScript);
-            AssetDatabase.SaveAssets();
         }
     }
 #endif
