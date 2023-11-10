@@ -30,7 +30,7 @@ namespace PluginHub.Module
             float width2 = PluginHubWindow.Window.CaculateButtonWidth(2);
             float width1 = PluginHubWindow.Window.CaculateButtonWidth(1);
             float height_nor = 19;
-            GUIStyle labelCenter = new GUIStyle(PluginHubFunc.PhguiSkinUse.label);
+            GUIStyle labelCenter = new GUIStyle(PluginHubFunc.PHGUISkinUse.label);
             labelCenter.alignment = TextAnchor.MiddleCenter;
 
             GUILayout.BeginVertical("Box");

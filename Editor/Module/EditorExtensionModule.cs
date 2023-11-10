@@ -6,7 +6,7 @@ namespace PluginHub.Module
 {
     //该模块比较特殊，他会为编辑器添加菜单以增强编辑器的功能
     //菜单使用预编译指令实现动态添加
-    public class EditorExtension : PluginHubModuleBase
+    public class EditorExtensionModule : PluginHubModuleBase
     {
         public override string moduleName { get { return "菜单 / 编辑器增强"; } }
 

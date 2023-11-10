@@ -48,7 +48,7 @@ namespace PluginHub
         private static GUISkin _skinUse;//do not call this, use PHGUISkin instead
 
         //Resources文件夹中的那个GUISkin
-        public static GUISkin PhguiSkinUse
+        public static GUISkin PHGUISkinUse
         {
             get
             {
@@ -65,7 +65,7 @@ namespace PluginHub
 
         public static GUIStyle GetCustomStyle(string styleName)
         {
-            GUIStyle style = PhguiSkinUse.customStyles.Where(s => s.name.Equals(styleName)).First();
+            GUIStyle style = PHGUISkinUse.customStyles.Where(s => s.name.Equals(styleName)).First();
             if (style == null)
                 Debug.LogError($"找不到样式：{styleName}");
             return style;
@@ -147,7 +147,7 @@ namespace PluginHub
         public static void TextBox(string text)
         {
             EditorGUILayout.BeginHorizontal("Box");
-            EditorGUILayout.LabelField(text, PhguiSkinUse.label);
+            EditorGUILayout.LabelField(text, PHGUISkinUse.label);
             EditorGUILayout.EndHorizontal();
         }
 
@@ -156,9 +156,9 @@ namespace PluginHub
         public static void RowTwoText(string text0, string text1)
         {
             EditorGUILayout.BeginHorizontal("Box");
-            EditorGUILayout.LabelField(text0, PhguiSkinUse.label);
+            EditorGUILayout.LabelField(text0, PHGUISkinUse.label);
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField(text1, PhguiSkinUse.label, GUILayout.Width(50));
+            EditorGUILayout.LabelField(text1, PHGUISkinUse.label, GUILayout.Width(50));
             EditorGUILayout.EndHorizontal();
         }
 

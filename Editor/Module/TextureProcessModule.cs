@@ -165,6 +165,36 @@ namespace PluginHub.Module
             }
             GUILayout.EndVertical();
 
+
+            GUILayout.BeginVertical();
+            {
+                GUILayout.Label("纹理镜像");
+                EditorGUILayout.HelpBox("这里可以将纹理镜像后保存成新纹理资产。", MessageType.Info);
+                inputTexture0 = EditorGUILayout.ObjectField("纹理", inputTexture0, typeof(Texture2D), false) as Texture2D;
+                if (GUILayout.Button("镜像纹理"))
+                {
+                    string path = AssetDatabase.GetAssetPath(inputTexture0);
+                    TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                    //先设置为可读写
+                    importer.isReadable = true;
+                    importer.SaveAndReimport();
+                    Texture2D newTexture = new Texture2D(inputTexture0.width, inputTexture0.height);
+                    for (int i = 0; i < inputTexture0.width; i++)
+                    {
+                        for (int j = 0; j < inputTexture0.height; j++)
+                        {
+                            Color color = inputTexture0.GetPixel(i, j);
+                            newTexture.SetPixel(inputTexture0.width - i - 1, j, color);
+                        }
+                    }
+                    newTexture.Apply();
+                    byte[] bytes = newTexture.EncodeToPNG();
+                    System.IO.File.WriteAllBytes(path.Replace(".png", "_Mirror.png"), bytes);
+                    AssetDatabase.Refresh();
+                }
+            }
+            GUILayout.EndVertical();
+
         }
     }
 }

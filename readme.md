@@ -55,6 +55,12 @@ Each module implements one aspect of the function. The purpose is to provide you
 # 已完成开发的模块
 这里只介绍一些常用且成熟稳定的模块，更多模块请自行查看源码。
 
+### NavigationBarModule
+
+将常用的窗口，Unity文件夹，个人文件夹做成按钮便于访问。
+
+<img src="ReadmeImg/NavigationBarModule.png" width="400">
+
 ### CommonComponentModule
 
 将场景中经常使用的、重要的`GameObject`统一到一个窗口中，方便您随时选择他们。
@@ -148,4 +154,14 @@ Each module implements one aspect of the function. The purpose is to provide you
 
 ### MeshToHeightModule
 
-模块会用竖直向下投射射线的方式，将任意Mesh转换为HeightMap，可用于生成地形图等场景。
+模块会用竖直向下投射射线的方式，将任意`Mesh`转换为`HeightMap`，可用于生成地形图等场景。
+
+
+### EditorExtensionModule
+
+编辑器扩展模块，一个特殊模块。为`Unity`编辑器提供额外菜单项，以增强编辑器功能。启用后，顶部菜单会出现`PluginHub`菜单项。
+
+<img src="ReadmeImg/EditorExtensionModule.png" width="400">
+<br>
+<br>
+<img src="ReadmeImg/EditorExtensionModule2.png" width="400">

@@ -563,6 +563,7 @@ namespace PluginHub.Module
         private static Vector2 iconBtnMaxSize = new Vector2(70, 70);
 
         private static Vector2 scrollPos = Vector2.zero;
+        private static int tempIconCounter = 0;
 
         protected override void DrawGuiContent()
         {
@@ -582,57 +583,60 @@ namespace PluginHub.Module
             if (!string.IsNullOrWhiteSpace(inputFilterText))
                 useNames = useNames.Where((name) => name.ToLower().Contains(inputFilterText.ToLower())).ToArray();
 
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
+            //显示icon总数
+            GUILayout.Label($"Icon count : {tempIconCounter}");
 
-            xCount = (int)(PluginHubWindow.Window.position.width / iconBtnMaxSize.x);
-
-            int lastStartRowIndex = -1;
-            int iconCounter = 0;
-            //绘制所有icon
-            for (int i = 0; i < useNames.Length; i++)
+            scrollPos = GUILayout.BeginScrollView(scrollPos,GUILayout.MinHeight(400),GUILayout.MaxHeight(1000),GUILayout.ExpandHeight(true));
             {
-                if (PluginHubFunc.ShouldBeginHorizontal(i, xCount))
+                xCount = (int)(PluginHubWindow.Window.position.width / iconBtnMaxSize.x);
+
+                int lastStartRowIndex = -1;
+                tempIconCounter = 0;
+                //绘制所有icon
+                for (int i = 0; i < useNames.Length; i++)
                 {
-                    GUILayout.BeginHorizontal();
-                    lastStartRowIndex = i;
-                }
-
-                string text = useNames[i];
-
-                //make shut up if icon not found 让控制台暂时安静闭嘴
-                Debug.unityLogger.logEnabled = false; //unity 5.4 以上可以用这个api关闭输出
-                GUIContent guiContent = EditorGUIUtility.IconContent(text);
-                Debug.unityLogger.logEnabled = true;
-
-                if (guiContent != null && guiContent.image != null)
-                {
-                    iconCounter++;
-                    guiContent.text = "";
-                    guiContent.tooltip = $"{text}({guiContent.image.width}x{guiContent.image.height})";
-
-                    //icon 按钮
-                    if (GUILayout.Button(guiContent,
-                            GUILayout.Width(guiContent.image.width), GUILayout.Height(guiContent.image.height),
-                            GUILayout.MaxWidth(iconBtnMaxSize.x), GUILayout.MaxHeight(iconBtnMaxSize.y),
-                            GUILayout.MinWidth(iconBtnMinSize.x), GUILayout.MinHeight(iconBtnMinSize.y)))
+                    if (PluginHubFunc.ShouldBeginHorizontal(i, xCount))
                     {
-                        EditorGUIUtility.systemCopyBuffer = text;
-                        Debug.Log($"已拷贝：{text}，可以在代码中使用EditorGUIUtility.IconContent({text})创建带图标的GUIContent");
+                        GUILayout.BeginHorizontal();
+                        lastStartRowIndex = i;
+                    }
+
+                    string text = useNames[i];
+
+                    //make shut up if icon not found 让控制台暂时安静闭嘴
+                    Debug.unityLogger.logEnabled = false; //unity 5.4 以上可以用这个api关闭输出
+                    GUIContent guiContent = EditorGUIUtility.IconContent(text);
+                    Debug.unityLogger.logEnabled = true;
+
+                    if (guiContent != null && guiContent.image != null)
+                    {
+                        tempIconCounter++;
+                        guiContent.text = "";
+                        guiContent.tooltip = $"{text}({guiContent.image.width}x{guiContent.image.height})";
+
+                        //icon 按钮
+                        if (GUILayout.Button(guiContent,
+                                GUILayout.Width(guiContent.image.width), GUILayout.Height(guiContent.image.height),
+                                GUILayout.MaxWidth(iconBtnMaxSize.x), GUILayout.MaxHeight(iconBtnMaxSize.y),
+                                GUILayout.MinWidth(iconBtnMinSize.x), GUILayout.MinHeight(iconBtnMinSize.y)))
+                        {
+                            EditorGUIUtility.systemCopyBuffer = text;
+                            Debug.Log($"已拷贝：{text}，可以在代码中使用EditorGUIUtility.IconContent({text})创建带图标的GUIContent");
+                        }
+                    }
+
+                    if (PluginHubFunc.ShouldEndHorizontal(i, xCount))
+                    {
+                        GUILayout.EndHorizontal();
+                        lastStartRowIndex = -1;
                     }
                 }
 
-                if (PluginHubFunc.ShouldEndHorizontal(i, xCount))
-                {
+                if (lastStartRowIndex != -1)
                     GUILayout.EndHorizontal();
-                    lastStartRowIndex = -1;
-                }
+
             }
-
-            if (lastStartRowIndex != -1)
-                GUILayout.EndHorizontal();
-
             GUILayout.EndScrollView();
-            GUILayout.Label($"Icon count : {iconCounter}");
         }
     }
 }

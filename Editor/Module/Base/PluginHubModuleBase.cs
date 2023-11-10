@@ -350,7 +350,7 @@ namespace PluginHub.Module
                 GUILayout.Label(title, GUILayout.Width(titleWidth));
 
                 //使用这个label，因为它是可以自动换行的
-                GUILayout.Label(content, PluginHubFunc.PhguiSkinUse.label);
+                GUILayout.Label(content, PluginHubFunc.PHGUISkinUse.label);
 
                 GUILayout.FlexibleSpace();
                 //拷贝按钮

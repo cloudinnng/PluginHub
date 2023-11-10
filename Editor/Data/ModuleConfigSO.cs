@@ -23,6 +23,21 @@ namespace PluginHub.Data
 
             GUILayout.Space(20);
             
+            DrawModuleAddTool();
+
+            GUILayout.Space(20);
+
+            CheckConfigIssue();
+
+            GUILayout.Space(20);
+
+            DrawBottomButton();
+        }
+
+        //绘制模块添加工具。
+        //显示所有模块，并显示是否添加。并有按钮可以添加到指定的Tab页
+        private void DrawModuleAddTool()
+        {
             //所有已添加的模块
             string[] addedModules = targetScript.tabConfigs.Select(x =>
             {
@@ -32,15 +47,14 @@ namespace PluginHub.Data
             string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.TopDirectoryOnly);
             //绘制模块搜索输入框
             moduleFillterStr = EditorGUILayout.TextField("模块搜索：", moduleFillterStr);
-            
-            
+
             GUILayout.Label($"共有{moduleFiles.Length}个模块，{moduleFiles.Length - addedModules.Length}个未添加。");
             moduleFiles = moduleFiles.Where(x => x.ToLower().Contains(moduleFillterStr.ToLower())).ToArray();
             //绘制所有未添加的模块
             for (int i = 0; i < moduleFiles.Length; i++)
             {
                 string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(moduleFiles[i]);
-                
+
                 GUILayout.BeginHorizontal();
                 {
                     GUI.enabled = false;
@@ -67,11 +81,33 @@ namespace PluginHub.Data
                 }
                 GUILayout.EndHorizontal();
             }
+        }
 
-            GUILayout.Space(20);
+        //检查配置的问题
+        private void CheckConfigIssue()
+        {
+            //检查是否有重复添加的模块
+            List<MonoScript> monoList = new List<MonoScript>();
+            HashSet<MonoScript> monoScripts = new HashSet<MonoScript>();
+            for (int i = 0; i < targetScript.tabConfigs.Count; i++)
+            {
+                ModuleTabConfig tabConfig = targetScript.tabConfigs[i];
+                for (int j = 0; j < tabConfig.moduleList.Count; j++)
+                {
+                    MonoScript monoScript = tabConfig.moduleList[j];
+                    monoList.Add(monoScript);
+                    monoScripts.Add(monoScript);
+                }
+            }
+            if (monoList.Count != monoScripts.Count)//利用HashSet的特性，如果有重复的，数量会不一样
+            {
+                EditorGUILayout.HelpBox("存在重复添加的模块！", MessageType.Warning);
+            }
+        }
 
-            #region Button
-
+        //绘制底部按钮
+        private void DrawBottomButton()
+        {
             GUILayout.BeginHorizontal();
             {
                 if (GUILayout.Button("清空配置"))
@@ -101,9 +137,8 @@ namespace PluginHub.Data
                 MakeConfigDirtyAndSave();
                 PluginHubWindow.RestartWindow();
             }
-
-            #endregion
         }
+
 
         private void MakeConfigDirtyAndSave()
         {
@@ -112,6 +147,7 @@ namespace PluginHub.Data
             AssetDatabase.SaveAssets();
         }
 
+        #region 两个预设配置
         //最小模块配置
         private void MakeMinimalModuleConfig()
         {
@@ -127,7 +163,7 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}EditorExtension.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}EditorExtensionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
                 }
             });
@@ -168,6 +204,7 @@ namespace PluginHub.Data
                 tabName = "工具",
                 moduleList = new List<MonoScript>()
                 {
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildInIconGalleryModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}LightProbePlacementModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}RotateAroundAnimationMakerModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}DistributionModule.cs"),
@@ -182,6 +219,9 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}GaiaTerrainModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}RedeemCodeModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureProcessModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}EditorExtensionModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NormalMapMakerModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TerrainToolModule.cs"),
                 }
             });
             targetScript.tabConfigs.Add(new ModuleTabConfig()
@@ -202,7 +242,9 @@ namespace PluginHub.Data
                 }
             });
         }
+        #endregion
     }
+
 #endif
 
     //代表一个Tab页的数据
