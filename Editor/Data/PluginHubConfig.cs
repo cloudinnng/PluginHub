@@ -7,8 +7,8 @@ namespace PluginHub.Data
     //与EditorPrefs不同，保存在ProjectSettings目录下，因此它可以被版本控制系统跟踪
     public static class PluginHubConfig
     {
+        public static string configPath { get; private set; }
         private static bool initialized = false;
-        private static string configPath;
         private static INIParser iniParser;
 
         static PluginHubConfig()

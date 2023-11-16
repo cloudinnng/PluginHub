@@ -115,7 +115,7 @@ namespace PluginHub
         }
 
         //绘制一个打开文件夹的按钮
-        public static void DrawOpenFolderIconButton(string path, bool checkExist)
+        public static void DrawOpenFolderIconButton(string path, bool checkExist, string buttonTxt = null)
         {
             path = path.Replace("/", "\\");
             path = path.Replace("Assets\\..\\", ""); //EditorUtility.RevealInFinder(path);不支持（..）因此需要处理
@@ -124,12 +124,15 @@ namespace PluginHub
             bool exist = checkExist ? Directory.Exists(checkPath) : true;
             GUI.enabled = exist;
             //open folder button
-            if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", "", path), PluginHubFunc.IconBtnLayoutOptions))
+            if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", buttonTxt, path),
+                    (string.IsNullOrWhiteSpace(buttonTxt))
+                        ? PluginHubFunc.IconBtnLayoutOptions[0]
+                        : GUILayout.ExpandWidth(false),
+                    PluginHubFunc.IconBtnLayoutOptions[1]))
             {
                 Debug.Log($"打开文件夹:{path}");
                 EditorUtility.RevealInFinder(path);
             }
-
             GUI.enabled = true;
         }
 

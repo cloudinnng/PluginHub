@@ -120,6 +120,8 @@ namespace PluginHub.Module
             DrawItem("公司名称:", PlayerSettings.companyName);
             DrawItem("产品名称:", PlayerSettings.productName);
             DrawItem("版本:", PlayerSettings.bundleVersion);
+            DrawItem("默认屏幕:", PlayerSettings.defaultScreenWidth + " x " + PlayerSettings.defaultScreenHeight);
+
 
             GUILayout.BeginHorizontal();
             {
@@ -303,13 +305,16 @@ namespace PluginHub.Module
 
 
 
-            //构件库
+            //构建库
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.Label(PluginHubFunc.Icon("VerticalLayoutGroup Icon"));
-                    GUILayout.Label(PluginHubFunc.GuiContent("构件库:", "下方显示项目Build目录下的所有打包文件"));
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label(PluginHubFunc.GuiContent("构建库:", "下方显示项目Build目录下的所有打包文件"));
+                    GUILayout.FlexibleSpace();
+                    PluginHubFunc.DrawOpenFolderIconButton(Path.Combine(Application.dataPath, "../Build/"), true);
                 }
                 GUILayout.EndHorizontal();
 
@@ -327,6 +332,10 @@ namespace PluginHub.Module
                         GUILayout.BeginHorizontal();
                         {
                             GUILayout.Label($"{i}. {folderName}");
+
+                            string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
+                            //打开StreamingAssets文件夹按钮
+                            PluginHubFunc.DrawOpenFolderIconButton(streamingAssetsPath,true,"StrmAs");
 
                             //打开文件夹按钮
                             PluginHubFunc.DrawOpenFolderIconButton(directory,true);
