@@ -348,6 +348,9 @@ namespace PluginHub.Module
                                 CreateZip(directory, destZipPath);
                             }
 
+                            // TODO
+                            // PluginHubFunc.DrawCopyFileButton(executeFullpath);
+
                             GUI.enabled = File.Exists(executeFullpath);
                             if (GUILayout.Button("运行", GUILayout.ExpandWidth(false)))
                             {

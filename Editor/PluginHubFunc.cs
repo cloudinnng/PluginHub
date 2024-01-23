@@ -14,6 +14,11 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
+# if PH_WINFORMS
+using System;
+using System.Windows.Forms;
+#endif
+
 namespace PluginHub
 {
     //this file contain common function in PluginHub
@@ -145,6 +150,27 @@ namespace PluginHub
             {
                 EditorGUIUtility.systemCopyBuffer = textToCopy;
             }
+        }
+
+        //绘制一个拷贝文件按钮，点击后会将文件拷贝到剪贴板,便于粘贴到支持Ctrl+v的应用程序中，如微信或文件管理器。
+        //需要注意的是，这个功能只能在Windows平台下使用，因为使用了Windows.Forms的API
+        //TODO
+        public static void DrawCopyFileButton(string filePath)
+        {
+# if PH_WINFORMS
+            if (GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", $"Duplicate file\n {filePath} to clipboard"),
+                    PluginHubFunc.IconBtnLayoutOptions))
+            {
+                // 创建一个包含文件路径的StringCollection
+                System.Collections.Specialized.StringCollection paths = new System.Collections.Specialized.StringCollection();
+                paths.Add(filePath);
+
+                // 将文件路径设置到剪切板
+                Clipboard.SetFileDropList(paths);
+            }
+#else
+            Debug.LogError("no PH_WINFORMS");
+#endif
         }
 
         public static void TextBox(string text)

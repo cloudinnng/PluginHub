@@ -104,8 +104,6 @@ namespace PluginHub.Module
                     replacedObjRoot = null;
                 }
             }
-
-
         }
 
         private void Replace(Material replaceToMat)
@@ -150,45 +148,43 @@ namespace PluginHub.Module
                 rootGameObject.SetActive(false);
             }
         }
-
-
-
     }
-}
 
-public static class TransformEx
-{
-    public static T[] FindAllsByType<T>(this Transform parent) where T:Component
+    public static class TransformEx
     {
-        T[] objs = Resources.FindObjectsOfTypeAll<T>() as T[];
-        List<T> returnList=new List<T>();
-        for (int i = 0; i < objs.Length; i++)
+        public static T[] FindAllsByType<T>(this Transform parent) where T : Component
         {
-            if (objs[i].hideFlags == HideFlags.None)
+            T[] objs = Resources.FindObjectsOfTypeAll<T>() as T[];
+            List<T> returnList = new List<T>();
+            for (int i = 0; i < objs.Length; i++)
             {
-                if (objs[i].GetType() == typeof(T) && parent.IsMyChild(objs[i].transform))
+                if (objs[i].hideFlags == HideFlags.None)
                 {
-                    returnList.Add(objs[i]);
+                    if (objs[i].GetType() == typeof(T) && parent.IsMyChild(objs[i].transform))
+                    {
+                        returnList.Add(objs[i]);
+                    }
                 }
             }
-        }
-        return returnList.OrderBy((item)=>item.transform.GetSiblingIndex()).ToArray();
-    }
 
-    //若A是B的父亲，返回真
-    //返回参数transform是否是调用者的直系孩子，或非直系孩子。（只要是孩子就返回真）
-    public static bool IsMyChild(this Transform A, Transform B)
-    {
-        if (B.parent == null)
-            return false;
-        Transform tmpParent = B.parent;
-        while (tmpParent != null)
-        {
-            if (tmpParent == A)
-                return true;
-            tmpParent = tmpParent.parent;
+            return returnList.OrderBy((item) => item.transform.GetSiblingIndex()).ToArray();
         }
-        return false;
+
+        //若A是B的父亲，返回真
+        //返回参数transform是否是调用者的直系孩子，或非直系孩子。（只要是孩子就返回真）
+        public static bool IsMyChild(this Transform A, Transform B)
+        {
+            if (B.parent == null)
+                return false;
+            Transform tmpParent = B.parent;
+            while (tmpParent != null)
+            {
+                if (tmpParent == A)
+                    return true;
+                tmpParent = tmpParent.parent;
+            }
+
+            return false;
+        }
     }
 }
-

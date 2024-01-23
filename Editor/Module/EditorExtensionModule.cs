@@ -113,7 +113,7 @@ namespace PluginHub.Module
 
         protected override void DrawGuiContent()
         {
-            EditorGUILayout.HelpBox("该模块比较特殊，他会为编辑器添加菜单以增强编辑器的功能。", MessageType.Info);
+            EditorGUILayout.HelpBox("该模块比较特殊，他会为编辑器添加菜单和快捷键以增强编辑器的功能。", MessageType.Info);
             enableEditorExtension = EditorGUILayout.Toggle("启用 PluginHub 编辑器增强", enableEditorExtension);
         }
 
