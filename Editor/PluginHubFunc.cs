@@ -70,7 +70,8 @@ namespace PluginHub
 
         public static GUIStyle GetCustomStyle(string styleName)
         {
-            GUIStyle style = PHGUISkinUse.customStyles.Where(s => s.name.Equals(styleName)).First();
+            IEnumerable<GUIStyle> styles = PHGUISkinUse.customStyles.Where(s => s.name.Equals(styleName));
+            GUIStyle style = styles.FirstOrDefault();
             if (style == null)
                 Debug.LogError($"找不到样式：{styleName}");
             return style;

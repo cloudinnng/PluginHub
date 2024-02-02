@@ -57,6 +57,7 @@ namespace PluginHub.Module
             DrawRow("Selection", isGameObject? "GameObject" : "Asset",false,150);
             DrawRow("Count", Selection.objects.Length.ToString(),false,150);
 
+            DrawRow("--------------------", "--------------------",false,150);
 
             if (selectedGameObject != null)//选中的是游戏对象
                 DrawGameObjectGUI();
@@ -72,10 +73,34 @@ namespace PluginHub.Module
         private void DrawAssetGUI()
         {
             string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-            string name = Path.GetFileName(path);
+            if (string.IsNullOrEmpty(path))
+                return;
 
-            DrawRow("Path", path,true,150);
+            string name = Path.GetFileName(path);
+            string fullPath = Path.GetFullPath(path);
+
             DrawRow("FileName", name,true,150);
+            DrawRow("Path", path,true,150);
+            DrawRow("FullPath", fullPath,true,150);
+
+            if (File.Exists(fullPath))
+            {
+                FileInfo fileInfo = new FileInfo(fullPath);
+                long sizeInBytes = fileInfo.Length;
+                DrawRow("Size", $"{GetPrttySize(sizeInBytes)}",false,150);
+            }
+        }
+
+        private string GetPrttySize(long sizeInBytes)
+        {
+            if (sizeInBytes < 1024)
+                return $"{sizeInBytes} 字节";
+            else if (sizeInBytes < 1024 * 1024)
+                return $"{sizeInBytes / 1024} KB";
+            else if (sizeInBytes < 1024 * 1024 * 1024)
+                return $"{sizeInBytes / 1024 / 1024} MB";
+            else
+                return $"{sizeInBytes / 1024 / 1024 / 1024} GB";
         }
 
         private Bounds _gameObjectBounds = default;

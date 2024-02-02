@@ -20,11 +20,14 @@ using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Module
 {
-    public class BuildModule : PluginHubModuleBase,IPreprocessBuildWithReport
+    public class BuildModule : PluginHubModuleBase, IPreprocessBuildWithReport
     {
-        public override string moduleName { get { return "构建"; } }
+        public override string moduleName
+        {
+            get { return "构建"; }
+        }
 
-        private float titleWidth = 70;
+        private static float titleWidth = 70;
 
 
         //项目文件夹名称（项目最顶层文件夹）
@@ -38,6 +41,29 @@ namespace PluginHub.Module
             }
         }
 
+        //是否是开发构建
+        private static bool devBuild
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_devBuild", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_devBuild", value); }
+        }
+
+        //是否构建前删除旧的构建
+        private static bool deleteOldBuildBeforeBuild
+        {
+            get
+            {
+                return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild",
+                    false);
+            }
+            set
+            {
+                EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild",
+                    value);
+            }
+        }
+
+
         //PC平台场景构建时,用于exe执行文件的名称和构建目录名，如果为空，则使用场景名称
         private static string sceneBuildName
         {
@@ -48,7 +74,7 @@ namespace PluginHub.Module
                     return "";
 
                 string value = PluginHubConfig.ReadConfig($"BuildModule_{sceneName}", "sceneBuildName", "");
-                if(string.IsNullOrWhiteSpace(value))
+                if (string.IsNullOrWhiteSpace(value))
                     return sceneName;
                 else
                     return value;
@@ -64,9 +90,13 @@ namespace PluginHub.Module
         }
 
         //使用短小的构建路径
-        private bool iosUseShortBuildPath
+        private static bool iosUseShortBuildPath
         {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_iosUseShortBuildPath", false); }
+            get
+            {
+                return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_iosUseShortBuildPath",
+                    false);
+            }
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_iosUseShortBuildPath", value); }
         }
 
@@ -78,6 +108,7 @@ namespace PluginHub.Module
         }
 
 
+        #region 构建预处理/后处理
 
         //构建预处理
         public void OnPreprocessBuild(BuildReport report)
@@ -86,9 +117,10 @@ namespace PluginHub.Module
             INIParser iniParser = new INIParser();
             iniParser.Open(Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt"));
             //将updateInfo中的换行符替换为\n保存
-            iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n","\\n").Trim());
+            iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n", "\\n").Trim());
             iniParser.Close();
         }
+
         public int callbackOrder { get; }
 
         //构建后处理
@@ -115,31 +147,41 @@ namespace PluginHub.Module
             }
         }
 
+        #endregion
+
         protected override void DrawGuiContent()
         {
+            GUILayout.Label("构建信息", PluginHubFunc.GetCustomStyle("TitleLabel"));
             DrawItem("公司名称:", PlayerSettings.companyName);
             DrawItem("产品名称:", PlayerSettings.productName);
             DrawItem("版本:", PlayerSettings.bundleVersion);
             DrawItem("默认屏幕:", PlayerSettings.defaultScreenWidth + " x " + PlayerSettings.defaultScreenHeight);
 
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("更新内容:", GUILayout.Width(titleWidth));
+                updateInfo = GUILayout.TextArea(updateInfo);
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("更新信息:", GUILayout.Width(titleWidth));
-                updateInfo = GUILayout.TextArea(updateInfo, GUILayout.Height(100));
+                GUILayout.Label("更多选项:", GUILayout.Width(titleWidth));
+                devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
+                deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建"));
             }
             GUILayout.EndHorizontal();
 
 
-            SceneAsset currentScene =
-                AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label("当前场景:", GUILayout.Width(titleWidth));
-                EditorGUILayout.ObjectField(currentScene, typeof(Scene), false);
-            }
-            GUILayout.EndHorizontal();
+            GUILayout.Label("快捷构建", PluginHubFunc.GetCustomStyle("TitleLabel"));
+            DrawPCBuildButtons();
+            DrawIOSBuildButtons();
+            DrawAndroidBuildButtons();
+            DrawBuildLibary();
+        }
 
+        private static void DrawPCBuildButtons()
+        {
             //PC平台快捷构建按钮
             GUILayout.BeginVertical("Box");
             {
@@ -163,7 +205,7 @@ namespace PluginHub.Module
                             GUIUtility.ExitGUI();
                         }
 
-                        PluginHubFunc.DrawOpenFolderIconButton(path,true);
+                        PluginHubFunc.DrawOpenFolderIconButton(path, true);
 
                         //运行按钮
                         GUI.enabled = File.Exists(path);
@@ -193,7 +235,8 @@ namespace PluginHub.Module
                             GUIUtility.ExitGUI();
                         }
 
-                        if (GUILayout.Button(PluginHubFunc.GuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
+                        if (GUILayout.Button(
+                                PluginHubFunc.GuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
                                 GUILayout.ExpandWidth(false)))
                         {
                             BuildCurrScene(true);
@@ -201,7 +244,7 @@ namespace PluginHub.Module
                         }
 
                         //open folder button
-                        PluginHubFunc.DrawOpenFolderIconButton(path,true);
+                        PluginHubFunc.DrawOpenFolderIconButton(path, true);
 
                         //运行按钮
                         GUI.enabled = File.Exists(path);
@@ -217,8 +260,10 @@ namespace PluginHub.Module
                 GUILayout.EndVertical();
             }
             GUILayout.EndVertical();
+        }
 
-            #region IOS平台快捷构建
+        public static void DrawIOSBuildButtons()
+        {
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.BeginHorizontal();
@@ -233,7 +278,7 @@ namespace PluginHub.Module
                 {
                     //ios build id
                     DrawItem("Build ID:", PlayerSettings.iOS.buildNumber);
-                    if (GUILayout.Button("归零构建ID",GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button("归零构建ID", GUILayout.ExpandWidth(false)))
                     {
                         PlayerSettings.iOS.buildNumber = "0";
                     }
@@ -255,7 +300,7 @@ namespace PluginHub.Module
                     fullPath = Path.Combine(fullPath, $"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode");
                     fullPath = fullPath.Replace('/', '\\');
                     string path = fullPath;
-                    if(iosUseShortBuildPath)
+                    if (iosUseShortBuildPath)
                         path = $@"D:\Build_IOS\{Application.productName}\";
 
                     if (GUILayout.Button(PluginHubFunc.GuiContent("构建IOS项目", $"将构建到{path}")))
@@ -264,16 +309,17 @@ namespace PluginHub.Module
                         BuildIOS(path);
                         GUIUtility.ExitGUI();
                     }
-                    PluginHubFunc.DrawOpenFolderIconButton(path,true);
+
+                    PluginHubFunc.DrawOpenFolderIconButton(path, true);
                     PluginHubFunc.DrawCopyIconButton(path);
                 }
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
-            #endregion
+        }
 
-
-            #region Android平台快捷构建按钮
+        public static void DrawAndroidBuildButtons()
+        {
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.BeginHorizontal();
@@ -296,15 +342,16 @@ namespace PluginHub.Module
                         BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
                         GUIUtility.ExitGUI();
                     }
-                    PluginHubFunc.DrawOpenFolderIconButton(path,true);
+
+                    PluginHubFunc.DrawOpenFolderIconButton(path, true);
                 }
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
-            #endregion
+        }
 
-
-
+        private static void DrawBuildLibary()
+        {
             //构建库
             GUILayout.BeginVertical("Box");
             {
@@ -335,10 +382,10 @@ namespace PluginHub.Module
 
                             string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
                             //打开StreamingAssets文件夹按钮
-                            PluginHubFunc.DrawOpenFolderIconButton(streamingAssetsPath,true,"StrmAs");
+                            PluginHubFunc.DrawOpenFolderIconButton(streamingAssetsPath, true, "StrmAs");
 
                             //打开文件夹按钮
-                            PluginHubFunc.DrawOpenFolderIconButton(directory,true);
+                            PluginHubFunc.DrawOpenFolderIconButton(directory, true);
 
                             //压缩这个构建到当前目录
                             if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))
@@ -356,6 +403,7 @@ namespace PluginHub.Module
                             {
                                 ExecuteExe(executeFullpath);
                             }
+
                             GUI.enabled = true;
                         }
                         GUILayout.EndHorizontal();
@@ -363,36 +411,37 @@ namespace PluginHub.Module
                 }
             }
             GUILayout.EndVertical();
-
         }
 
         public static void ExecuteExe(string exeFullPath, bool admin = false)
         {
             //Process.Start只支持windows的路径格式（左斜线分隔）
-            exeFullPath = exeFullPath.Replace('/','\\');
+            exeFullPath = exeFullPath.Replace('/', '\\');
             if (!exeFullPath.EndsWith(".exe"))
             {
                 Debug.LogError("ExecuteExe only support .exe");
                 return;
             }
+
             if (!File.Exists(exeFullPath))
             {
                 Debug.LogError($"{exeFullPath} do not exist");
                 return;
             }
-            string executeFileName = Path.GetFileName(exeFullPath);//文件名  xxx.exe
-            string workingDirectory = Path.GetDirectoryName(exeFullPath);//文件所在目录  D:\xxx\
+
+            string executeFileName = Path.GetFileName(exeFullPath); //文件名  xxx.exe
+            string workingDirectory = Path.GetDirectoryName(exeFullPath); //文件所在目录  D:\xxx\
 
             Process proc = new Process();
             proc.StartInfo.WorkingDirectory = workingDirectory;
             proc.StartInfo.FileName = executeFileName;
-            if(admin)
-                proc.StartInfo.Verb = "runas";//使用管理员运行
+            if (admin)
+                proc.StartInfo.Verb = "runas"; //使用管理员运行
             proc.Start();
             Debug.Log($"Run exe {exeFullPath}");
         }
 
-        private void DrawItem(string title, string content)
+        private static void DrawItem(string title, string content)
         {
             GUILayout.BeginHorizontal();
             {
@@ -402,7 +451,39 @@ namespace PluginHub.Module
             GUILayout.EndHorizontal();
         }
 
-        private void BuildProject()
+        private static BuildOptions GetBuildOptions()
+        {
+            BuildOptions options = BuildOptions.None;
+            if (devBuild)
+                options |= BuildOptions.Development;
+            return options;
+        }
+
+        #region for pc build
+
+        //E:\ProjectFolder\ProjectName\Build\folderName\exeName.exe
+        private static string GetBuildFullPath(string folderName, string exeName)
+        {
+            string fullPath = Application.dataPath;
+            fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
+            fullPath = Path.Combine(fullPath, $"Build/{folderName}/{exeName}.exe");
+            fullPath = fullPath.Replace('/', '\\');
+            return fullPath;
+        }
+
+        private static string CurrSceneBuildFullPath()
+        {
+            string buildName = sceneBuildName;
+            return GetBuildFullPath(buildName, buildName);
+        }
+
+        private static string CurrProjectBuildFullPath()
+        {
+            string currProjectName = projectFolderName;
+            return GetBuildFullPath(currProjectName, currProjectName);
+        }
+
+        private static void BuildProject()
         {
             string buildName = projectFolderName;
             AddCurrSceneToBuildSetting();
@@ -410,7 +491,7 @@ namespace PluginHub.Module
             BuildStandalone(buildName, buildName);
         }
 
-        private void BuildCurrScene(bool uncheckOtherScene)
+        private static void BuildCurrScene(bool uncheckOtherScene)
         {
             AddCurrSceneToBuildSetting();
             SetBuildSceneEnable(uncheckOtherScene);
@@ -419,13 +500,34 @@ namespace PluginHub.Module
             BuildStandalone(sceneBuildName, sceneBuildName);
         }
 
-        private void BuildStandalone(string folderName, string exeName)
+        #endregion
+
+
+        #region final build
+
+        private static void BuildStandalone(string folderName, string exeName)
         {
+            if (deleteOldBuildBeforeBuild)
+            {
+                string folder = Path.GetDirectoryName(GetBuildFullPath(folderName, exeName));
+                if (Directory.Exists(folder))
+                {
+                    if (EditorUtility.DisplayDialog("删除旧构建", $"是否删除旧构建{folder}？", "是,并继续构建", "否,取消构建"))
+                    {
+                        Directory.Delete(folder, true);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+            }
+
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.locationPathName = $"Build/{folderName}/{exeName}.exe";
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.target = BuildTarget.StandaloneWindows64;
-            buildPlayerOptions.options = BuildOptions.None;
+            buildPlayerOptions.options = GetBuildOptions();
             //开始构建
             //当没有项目名称文件夹的时候如（TimePuzzle），Unity 2021.3.16f1可能会在这里有个bug。需要在Build目录建立TimePuzzle文件夹后才能构建到时间拼图文件夹里。
             //构建的时候如果这里报一个警告，说用户脚本引用了WinForm。
@@ -447,13 +549,28 @@ namespace PluginHub.Module
         }
 
         //$"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode";
-        private void BuildIOS(string locationPathName)
+        private static void BuildIOS(string locationPathName)
         {
+            if (deleteOldBuildBeforeBuild)
+            {
+                if (Directory.Exists(locationPathName))
+                {
+                    if (EditorUtility.DisplayDialog("删除旧构建", $"是否删除旧构建{locationPathName}？", "是,并继续构建", "否,取消构建"))
+                    {
+                        Directory.Delete(locationPathName, true);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+            }
+
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.iOS;
-            buildPlayerOptions.options = BuildOptions.None;
+            buildPlayerOptions.options = GetBuildOptions();
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
@@ -468,14 +585,15 @@ namespace PluginHub.Module
                     break;
             }
         }
+
         //$"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
-        private void BuildAndroid(string locationPathName)
+        private static void BuildAndroid(string locationPathName)
         {
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.Android;
-            buildPlayerOptions.options = BuildOptions.None;
+            buildPlayerOptions.options = GetBuildOptions();
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
@@ -491,30 +609,8 @@ namespace PluginHub.Module
             }
         }
 
+        #endregion
 
-        ///获取构建当前场景时，应该构建到的完整路径。
-        ///例如：
-        ///场景名称：MainScene
-        ///返回：E:\ProjectFolder\ProjectName\Build\MainScene\MainScene.exe
-        private static string CurrSceneBuildFullPath()
-        {
-            string buildName = sceneBuildName;
-            string fullPath = Application.dataPath;
-            fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
-            fullPath = Path.Combine(fullPath, $"Build/{buildName}/{buildName}.exe");
-            fullPath = fullPath.Replace('/', '\\');
-            return fullPath;
-        }
-
-        private static string CurrProjectBuildFullPath()
-        {
-            string currProjectName = projectFolderName;
-            string fullPath = Application.dataPath;
-            fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
-            fullPath = Path.Combine(fullPath, $"Build/{currProjectName}/{currProjectName}.exe");
-            fullPath = fullPath.Replace('/', '\\');
-            return fullPath;
-        }
 
         private static void AddCurrSceneToBuildSetting()
         {
@@ -565,6 +661,5 @@ namespace PluginHub.Module
             var fastZip = new ICSharpCode.SharpZipLib.Zip.FastZip();
             fastZip.CreateZip(destinationZipFilePath, sourceFolderPath, true, null);
         }
-
     }
 }
