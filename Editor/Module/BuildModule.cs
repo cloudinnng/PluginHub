@@ -51,16 +51,15 @@ namespace PluginHub.Module
         //是否构建前删除旧的构建
         private static bool deleteOldBuildBeforeBuild
         {
-            get
-            {
-                return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild",
-                    false);
-            }
-            set
-            {
-                EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild",
-                    value);
-            }
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild", value); }
+        }
+
+        //构建前清空StreamingAssets
+        private static bool clearStreamingAssetsBeforeBuild
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_clearStreamingAssetsBeforeBuild", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_clearStreamingAssetsBeforeBuild", value); }
         }
 
 
@@ -119,9 +118,22 @@ namespace PluginHub.Module
             //将updateInfo中的换行符替换为\n保存
             iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n", "\\n").Trim());
             iniParser.Close();
+
+            if (clearStreamingAssetsBeforeBuild)
+            {
+                if(EditorUtility.DisplayDialog("清空StreamingAssets", "您选择了 clearStreamingAssetsBeforeBuild 是否删除 StreamingAssets 文件夹下的所有文件？", "是", "否"))
+                {
+                    string path = Application.streamingAssetsPath;
+                    string[] files = System.IO.Directory.GetFiles(path);
+                    foreach (var file in files)
+                    {
+                        System.IO.File.Delete(file);
+                    }
+                }
+            }
         }
 
-        public int callbackOrder { get; }
+        public int callbackOrder => -999999;
 
         //构建后处理
         [PostProcessBuild]
@@ -169,6 +181,7 @@ namespace PluginHub.Module
                 GUILayout.Label("更多选项:", GUILayout.Width(titleWidth));
                 devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
                 deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建"));
+                clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
             }
             GUILayout.EndHorizontal();
 
