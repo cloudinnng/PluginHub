@@ -48,7 +48,7 @@ namespace PluginHub.Module
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_devBuild", value); }
         }
 
-        //是否构建前删除旧的构建
+        //是否构建前删除旧的构建目录
         private static bool deleteOldBuildBeforeBuild
         {
             get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild", false); }
@@ -515,26 +515,36 @@ namespace PluginHub.Module
 
         #endregion
 
+        //删除旧构建的确认
+        private static bool DeleteOldBuildConfirm(string folder)
+        {
+            bool continueBuild = true;
+            if (!deleteOldBuildBeforeBuild)
+                return continueBuild;
+
+            if (Directory.Exists(folder))
+            {
+                if (EditorUtility.DisplayDialog("删除旧构建", $"是否在构建前删除旧构建目录{folder}？", "是,继续构建", "否,取消构建"))
+                {
+                    Directory.Delete(folder, true);
+                    continueBuild = true;
+                }
+                else
+                {
+                    continueBuild = false;
+                }
+            }
+            return continueBuild;
+        }
 
         #region final build
 
+
         private static void BuildStandalone(string folderName, string exeName)
         {
-            if (deleteOldBuildBeforeBuild)
-            {
-                string folder = Path.GetDirectoryName(GetBuildFullPath(folderName, exeName));
-                if (Directory.Exists(folder))
-                {
-                    if (EditorUtility.DisplayDialog("删除旧构建", $"是否删除旧构建{folder}？", "是,并继续构建", "否,取消构建"))
-                    {
-                        Directory.Delete(folder, true);
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-            }
+            string folder = Path.GetDirectoryName(GetBuildFullPath(folderName, exeName));
+            if (!DeleteOldBuildConfirm(folder))
+                return;
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.locationPathName = $"Build/{folderName}/{exeName}.exe";
@@ -564,20 +574,8 @@ namespace PluginHub.Module
         //$"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode";
         private static void BuildIOS(string locationPathName)
         {
-            if (deleteOldBuildBeforeBuild)
-            {
-                if (Directory.Exists(locationPathName))
-                {
-                    if (EditorUtility.DisplayDialog("删除旧构建", $"是否删除旧构建{locationPathName}？", "是,并继续构建", "否,取消构建"))
-                    {
-                        Directory.Delete(locationPathName, true);
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-            }
+            if (!DeleteOldBuildConfirm(locationPathName))
+                return;
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
