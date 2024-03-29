@@ -17,6 +17,8 @@ namespace PluginHub.Module
         }
         // private float littleBarWidth;
 
+        public override string moduleDescription => "快速选中常用游戏对象.便于美术师、程序员快速定位";
+
         public static Vector3 SceneViewCameraPosition()
         {
             if (SceneView.lastActiveSceneView == null)

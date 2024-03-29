@@ -12,7 +12,7 @@ namespace PluginHub.Module
         {
             get { return "问题分析"; }
         }
-
+        public override string moduleDescription => "";
         private Material matObject;
 
 

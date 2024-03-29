@@ -15,6 +15,9 @@ namespace PluginHub.Module
         private GameObject replacedObjRoot; //替换后的物体根
 
 
+        public override string moduleDescription { get; }
+            = "一键替换场景中模型的材质,仅用于测试目的.例如可以创建一个带有棋盘格纹理的材质,使用此模块替换后可以很容易查看模型UV密度是否合理.";
+
         public override void OnEnable()
         {
             base.OnEnable();

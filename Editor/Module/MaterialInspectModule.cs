@@ -13,6 +13,8 @@ namespace PluginHub.Module
     {
         public override string moduleName { get; } = "材质检视";
 
+        public override string moduleDescription => "将材质统一放在一个位置,便于赋值";
+
         //这里将存储文件夹路径的key添加了项目名称，这样每一个项目的目录都不会冲突
         private string key = $"{PluginHubFunc.ProjectUniquePrefix}_SeamlessMatPath_{Application.companyName}_{Application.productName}";
 

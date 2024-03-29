@@ -15,6 +15,7 @@ namespace PluginHub.Module
         {
             get { return "光探头摆放"; }
         }
+        public override string moduleDescription => "光探头摆放";
 
         private MeshRenderer _mrToPlaceLP;
         private LightProbeGroup _lightProbeGroup;

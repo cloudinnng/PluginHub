@@ -22,6 +22,8 @@ namespace PluginHub.Module
         private TextureImporterType textureImporterType;
         private int maxTextureSize = 2048;
 
+        public override string moduleDescription { get; } = "纹理元数据批处理,这个模块想制作：拖一个路径进来后一键设置这个路径里所有子纹理的元数据";
+
         protected override void DrawGuiContent()
         {
             if (moduleDebug)

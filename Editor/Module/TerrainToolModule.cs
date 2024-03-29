@@ -22,7 +22,7 @@ namespace PluginHub.Module
         private int _globalTerrainCount;
         private Terrain[] _globalTerrains;
 
-
+        public override string moduleDescription => "";
         //返回是否所有地形都已经赋值
         private bool AllGlobalTerrainVaild()
         {

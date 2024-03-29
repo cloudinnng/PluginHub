@@ -27,6 +27,8 @@ namespace PluginHub.Module
             get { return "构建"; }
         }
 
+        public override string moduleDescription => "一键Build,便于快速迭代";
+
         private static float titleWidth = 70;
 
 

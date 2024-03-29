@@ -17,6 +17,8 @@ namespace PluginHub.Module
             get { return "内置图标库"; }
         }
 
+        public override string moduleDescription => "用于查看Unity内置的所有图标，方便编写插件时使用";
+
         //Unity所有内置icon的名称字符串  来源：https://unitylist.com/p/5c3/Unity-editor-icons
         //或者这里： https://github.com/halak/unity-editor-icons
         //某些icon由于unity版本原因不存在，旧版unity会有更多缺少的icon

@@ -18,7 +18,7 @@ namespace PluginHub.Module
         //     base.DrawModuleDebug();
         //     // GUILayout.Space(50);
         // }
-
+        public override string moduleDescription => "";
         protected override void DrawGuiContent()
         {
             GUILayout.BeginVertical("Box");

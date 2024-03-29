@@ -15,6 +15,8 @@ namespace PluginHub.Module
             }
         }
 
+        public override string moduleDescription => "";
+
         //用于放置的对象
         private GameObject placeGameObject;
         private Transform axisRootTransform; //放置的轴的根节点

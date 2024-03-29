@@ -14,6 +14,7 @@ namespace PluginHub.Module
         private Terrain terrainComponent;
         private List<TerrainData> terrainDatas = new List<TerrainData>();
 
+        public override string moduleDescription => "";
         private int terrainTileCountX
         {
             get { return EditorPrefs.GetInt($"{PluginHubFunc.ProjectUniquePrefix}_{GetType()}_GaiaTerrainTileCountX", 4); }

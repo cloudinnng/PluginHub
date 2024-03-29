@@ -10,6 +10,9 @@ namespace PluginHub.Module
     {
         private Texture2D _heightTex;
 
+
+        public override string moduleDescription => "";
+
         protected override void DrawGuiContent()
         {
             _heightTex =

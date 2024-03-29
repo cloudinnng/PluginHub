@@ -18,6 +18,8 @@ namespace PluginHub.Module
 
         private Color _colorPicker = Color.white;
 
+        public override string moduleDescription => "一个在HTML颜色和0-1颜色范围之间转换颜色的小工具";
+
         protected override void DrawGuiContent()
         {
             _colorPicker = EditorGUILayout.ColorField("Color Picker", _colorPicker);

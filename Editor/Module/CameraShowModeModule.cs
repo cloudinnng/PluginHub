@@ -15,6 +15,8 @@ namespace PluginHub.Module
             get { return "场景相机着色模式"; }
         }
 
+        public override string moduleDescription => "一键切换场景视图相机的着色模式,方便美术师查看";
+
         DrawCameraMode[] commonCameraModes = new DrawCameraMode[]
         {
             DrawCameraMode.Textured, DrawCameraMode.Wireframe, DrawCameraMode.TexturedWire,

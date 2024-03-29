@@ -21,7 +21,7 @@ namespace PluginHub.Module
         {
             get { return "常用/导航"; }
         }
-
+        public override string moduleDescription => "";
         private string lastSelectionGUID;
 
         protected override void DrawGuiContent()

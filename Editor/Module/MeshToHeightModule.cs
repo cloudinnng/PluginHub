@@ -12,7 +12,7 @@ namespace PluginHub.Module
     public class MeshToHeightModule : PluginHubModuleBase
     {
         public override string moduleName { get; } = "网格转高度图";
-
+        public override string moduleDescription => "";
         private BoxCollider _boxCollider;
         private bool useBoxColliderYRange = false;
         private Vector2 heightMapResolutionSize = Vector2.zero; //生成的高度图的分辨率

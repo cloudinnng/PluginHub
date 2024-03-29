@@ -21,6 +21,7 @@ namespace PluginHub.Module
 
         private int selectAxis = -1;//选择的对齐方向
 
+        public override string moduleDescription => "";
         protected override void DrawGuiContent()
         {
             GUILayout.BeginVertical("Box");

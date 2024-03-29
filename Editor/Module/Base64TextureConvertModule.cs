@@ -13,6 +13,8 @@ namespace PluginHub.Module
         private string _textTmp;
         private Texture2D _texture2DTmp;
 
+        public override string moduleDescription => "";
+
         protected override void DrawGuiContent()
         {
             GUIStyle style = new GUIStyle(EditorStyles.textField);

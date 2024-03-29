@@ -14,7 +14,7 @@ namespace PluginHub.Module
         {
             get { return "兑换码模块"; }
         }
-        
+        public override string moduleDescription => "";
         private string userInput;
 
         protected override void DrawGuiContent()

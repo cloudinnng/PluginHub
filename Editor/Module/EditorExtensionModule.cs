@@ -9,7 +9,7 @@ namespace PluginHub.Module
     public class EditorExtensionModule : PluginHubModuleBase
     {
         public override string moduleName { get { return "菜单 / 编辑器增强"; } }
-
+        public override string moduleDescription => "";
         //菜单前缀
         private const string MenuPrefix = "PluginHub/";
         //预编译指令名称

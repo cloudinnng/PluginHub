@@ -7,6 +7,7 @@ namespace PluginHub.Module
     public class TextureProcessModule : PluginHubModuleBase
     {
         public override string moduleName { get { return "纹理处理"; } }
+        public override string moduleDescription => "";
 
         private Texture2D inputTexture0;
         private Texture2D inputTexture1;

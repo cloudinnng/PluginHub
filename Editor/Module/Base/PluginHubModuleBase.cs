@@ -11,8 +11,7 @@ namespace PluginHub.Module
 {
     /// <summary>
     /// 模块是一个可展开的卷展栏
-    /// 这个类是基类
-    /// 表示插件中心一个模块的基类，所以模块都应继承这个类
+    /// 这个类是 PluginHub 中模块的基类，所有模块都应继承这个类
     /// </summary>
     [System.Serializable]
     public abstract class PluginHubModuleBase
@@ -45,6 +44,9 @@ namespace PluginHub.Module
                 return m_ModuleName;
             }
         }
+
+        //模块功能描述
+        public abstract string moduleDescription { get; }
 
         public bool expand //展开状态
         {
@@ -93,7 +95,7 @@ namespace PluginHub.Module
                 GUILayout.BeginHorizontal();
                 {
                     string charStr = expand ? "▼" : "▶";
-                    GUIContent guiContent = PluginHubFunc.GuiContent($"{charStr} {moduleName}", "展开/收起");
+                    GUIContent guiContent = PluginHubFunc.GuiContent($"{charStr} {moduleName}", moduleDescription);
                     //模块折叠按钮
                     GUI.color = expand ? PluginHubFunc.SelectedColor : Color.white;
                     if (GUILayout.Button(guiContent, GUILayout.Height(19)))

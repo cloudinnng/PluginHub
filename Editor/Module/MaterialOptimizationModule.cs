@@ -18,7 +18,7 @@ namespace PluginHub.Module
             get { return "材质优化"; }
         }
 
-
+        public override string moduleDescription => "";
         /// <summary>
         /// MeshRenderer材质索引信息
         /// </summary>
