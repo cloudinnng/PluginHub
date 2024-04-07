@@ -44,7 +44,10 @@ namespace PluginHub.Data
                 return x.moduleList.Select(y => y.name).ToArray();
             }).SelectMany(x => x).ToArray();
             //所有模块
-            string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.TopDirectoryOnly);
+            string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.AllDirectories);
+            //过滤掉非模块文件, 无法将非模块类作为模块添加
+            moduleFiles = moduleFiles.Where(x => x.EndsWith("Module.cs")).ToArray();
+
             //绘制模块搜索输入框
             moduleFillterStr = EditorGUILayout.TextField("模块搜索：", moduleFillterStr);
 
@@ -163,7 +166,6 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}EditorExtensionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
                 }
             });
@@ -219,7 +221,6 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}GaiaTerrainModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}RedeemCodeModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureProcessModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}EditorExtensionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NormalMapMakerModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TerrainToolModule.cs"),
                 }

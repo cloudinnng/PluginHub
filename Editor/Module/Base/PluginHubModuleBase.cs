@@ -227,12 +227,12 @@ namespace PluginHub.Module
             return false;
         }
 
-
+        // 2024年4月7日 该模块生命周期方法暂时被禁用了,有bug,无法很好的使用
         //这个方法在Unity打开时就会执行，不需要打开PluginHubWindow
-        public virtual void OnInitOnload()
-        {
-
-        }
+        // public virtual void OnInitOnload()
+        // {
+        //     Debug.Log($"{moduleName} mudule : OnInitOnload");
+        // }
 
         #endregion
 

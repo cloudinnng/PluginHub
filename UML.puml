@@ -15,18 +15,29 @@ abstract class PluginHubModuleBase {
     模块基类
 }
 
+abstract class DefineSymbolsModuleBase {
+    具有定义符号功能的模块基类
+    此种模块可以动态开启或关闭Scripting Define Symbols
+    以达到动态编译的目的
+    符号指的是Unity的Scripting Define Symbols
+    在PlayerSettings OtherSettings中可以看到
+}
+
 static class PluginHubFunc{
     PluginHub常用的功能函数都在这里
 }
 
+PluginHubModuleBase <|-- DefineSymbolsModuleBase
 PluginHubModuleBase <|-- SceneModule
 PluginHubModuleBase <|-- BuildModule
 PluginHubModuleBase <|-- NavigationBarModule
 PluginHubModuleBase <|-- 等等模块
 
+DefineSymbolsModuleBase <|-- CameraShowModeModule
+DefineSymbolsModuleBase <|-- 其他模块
+
 'PluginHubWindow依赖ModuleConfigSO，
 PluginHubWindow -> ModuleConfigSO : 依赖
-
 
 
 @enduml

@@ -26,6 +26,42 @@ namespace PluginHub.Module
 
             GUILayout.BeginHorizontal();
             {
+                GUILayout.Label("0-1 Color：", GUILayout.Width(150));
+                string text = $"{_colorPicker.r:F2}{(addFSuffix ? "f" : "")},{_colorPicker.g:F2}{(addFSuffix ? "f" : "")},{_colorPicker.b:F2}{(addFSuffix ? "f" : "")},{_colorPicker.a:F2}{(addFSuffix ? "f" : "")}";
+                GUILayout.Label(text);
+
+                //添加f后缀按钮
+                if (GUILayout.Button(PluginHubFunc.GuiContent("F", "add 'f' suffix"), GUILayout.ExpandWidth(false),
+                        GUILayout.Height(17)))
+                {
+                    addFSuffix = !addFSuffix;
+                }
+
+                //拷贝按钮
+                if (GUILayout.Button(PluginHubFunc.Icon("Clipboard", "", "Copy"), GUILayout.ExpandWidth(false)))
+                    GUIUtility.systemCopyBuffer = text;
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("0-255 Color:", GUILayout.Width(150));
+                string text =
+                    $"{_colorPicker.r * 255:F0},{_colorPicker.g * 255:F0},{_colorPicker.b * 255:F0},{_colorPicker.a * 255:F0}";
+                GUILayout.Label(text);
+                //拷贝按钮
+                if (GUILayout.Button(PluginHubFunc.Icon("Clipboard", "", "Copy"), GUILayout.ExpandWidth(false)))
+                    GUIUtility.systemCopyBuffer = text;
+            }
+            GUILayout.EndHorizontal();
+
+
+
+
+            GUILayout.Space(10);
+            GUILayout.Label("手动输入:");
+
+            GUILayout.BeginHorizontal();
+            {
                 GUILayout.Label("HTML Color：", GUILayout.Width(150));
                 inputHexColor = GUILayout.TextField(inputHexColor);
                 if (!inputHexColor.StartsWith("#"))
