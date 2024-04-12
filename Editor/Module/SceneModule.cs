@@ -75,7 +75,7 @@ namespace PluginHub.Module
                 GUI.color = oldColor;
 
                 //画出收藏的场景
-                List<Object> foreachList = new List<Object>(RecordableObjects);
+                List<Object> foreachList = new List<Object>(RecordableAssets);
                 for (int i = 0; i < foreachList.Count; i++)
                 {
                     SceneAsset sceneAsset = foreachList[i] as SceneAsset;
@@ -233,18 +233,18 @@ namespace PluginHub.Module
                     GUI.enabled = id > 0;
                     if (GUILayout.Button("↑", PluginHubFunc.IconBtnLayoutOptions))
                     {
-                        Object o = RecordableObjects[id];
-                        RecordableObjects[id] = RecordableObjects[id - 1];
-                        RecordableObjects[id - 1] = o;
+                        Object o = RecordableAssets[id];
+                        RecordableAssets[id] = RecordableAssets[id - 1];
+                        RecordableAssets[id - 1] = o;
                         SyncRecordableObjectsToEditorPrefs();
                     }
 
-                    GUI.enabled = id < RecordableObjects.Count - 1;
+                    GUI.enabled = id < RecordableAssets.Count - 1;
                     if (GUILayout.Button("↓", PluginHubFunc.IconBtnLayoutOptions))
                     {
-                        Object o = RecordableObjects[id];
-                        RecordableObjects[id] = RecordableObjects[id + 1];
-                        RecordableObjects[id + 1] = o;
+                        Object o = RecordableAssets[id];
+                        RecordableAssets[id] = RecordableAssets[id + 1];
+                        RecordableAssets[id + 1] = o;
                         SyncRecordableObjectsToEditorPrefs();
                     }
 

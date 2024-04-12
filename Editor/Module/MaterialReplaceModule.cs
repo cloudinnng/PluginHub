@@ -18,17 +18,11 @@ namespace PluginHub.Module
         public override string moduleDescription { get; }
             = "一键替换场景中模型的材质,仅用于测试目的.例如可以创建一个带有棋盘格纹理的材质,使用此模块替换后可以很容易查看模型UV密度是否合理.";
 
-        public override void OnEnable()
-        {
-            base.OnEnable();
-            InitRecordableObjects();
-        }
-
         protected override void DrawGuiContent()
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label($"材质库：{RecordableObjects.Count}");
+                GUILayout.Label($"材质库：{RecordableAssets.Count}");
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("添加选中的材质"))
                 {
@@ -45,11 +39,11 @@ namespace PluginHub.Module
             GUILayout.EndHorizontal();
 
             //画
-            for (int i = RecordableObjects.Count - 1; i >= 0; i--)
+            for (int i = RecordableAssets.Count - 1; i >= 0; i--)
             {
                 GUILayout.BeginHorizontal();
                 {
-                    Object obj = RecordableObjects[i];
+                    Object obj = RecordableAssets[i];
                     EditorGUILayout.ObjectField(obj, typeof(GameObject), true);
 
                     GUI.enabled = replacedObjRoot == null;

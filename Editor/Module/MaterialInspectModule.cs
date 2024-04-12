@@ -34,12 +34,6 @@ namespace PluginHub.Module
         private bool showSceneMaterials = false;
         private Material[] sceneMaterials;
 
-        public override void OnEnable()
-        {
-            base.OnEnable();
-            InitRecordableObjects();
-        }
-
         protected override void DrawGuiContent()
         {
             if (moduleDebug)
@@ -51,9 +45,9 @@ namespace PluginHub.Module
             GUILayout.Label("Favorites : ");
 
 
-            for (int i = RecordableObjects.Count - 1; i >= 0; i--)
+            for (int i = RecordableAssets.Count - 1; i >= 0; i--)
             {
-                var obj = RecordableObjects[i];
+                var obj = RecordableAssets[i];
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.ObjectField(obj, typeof(Object), true);
                 if (GUILayout.Button("X", GUILayout.Width(28)))

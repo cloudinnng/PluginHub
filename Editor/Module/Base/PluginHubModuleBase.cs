@@ -69,9 +69,16 @@ namespace PluginHub.Module
         public bool isDrawingSceneGUI { private get; set; }
 
 
-        //data
-        private Object scriptObj; //脚本对象,指示该脚本自身对象
-
+        private Object scriptObj
+        {
+            get
+            {
+                //获取脚本对象，便于快速进入模块的脚本文件
+                string[] guids = AssetDatabase.FindAssets(GetType().Name); //找出这个脚本文件对象
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                return AssetDatabase.LoadAssetAtPath<Object>(path);
+            }
+        }
 
         public PluginHubModuleBase() { }
 
@@ -179,15 +186,6 @@ namespace PluginHub.Module
         {
             if (!isDataDirty) return;
             isDataDirty = false;
-
-
-            //获取脚本对象，绘制，用于快速进入脚本。
-            string filter = $"t:Script {this.GetType()}";//Cloudinnng.CFramework.Editor.MaterialInspectModule
-            filter = filter.Substring(filter.LastIndexOf('.')+1);//MaterialInspectModule
-            // Debug.Log(filter);
-            string[] guids = AssetDatabase.FindAssets(filter); //找出这个脚本文件对象
-            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-            scriptObj = AssetDatabase.LoadAssetAtPath<Object>(path);
         }
 
         //draw module own debug content
@@ -254,8 +252,6 @@ namespace PluginHub.Module
         //OnUpdate会一直调用，不论PluginHubWindow是否获得焦点，但在模块折叠时不调用
         public virtual void OnUpdate()
         {
-            InitRecordableObjects();
-
             //if(muduleDebug)Debug.Log($"{muduleName} mudule : OnUpdate");
         }
 
@@ -273,46 +269,53 @@ namespace PluginHub.Module
 
         #endregion
 
-        #region 为子模块提供记录 Object 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。
+        #region 为子模块提供记录 Asset 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。
 
-        public List<Object> RecordableObjects => recordableObjects;
+        public List<Object> RecordableAssets => _recordableAssets;
 
         //可记录对象,用于为模块保存每个模块可能用到的默认值。例如场景模块中，喜爱的场景作为可记录对象存储到了EditorPrefs中永久保存。
-        private List<Object> recordableObjects = new List<Object>();
-        private string recordableObjectsKey = ""; //用于存取EditorPrefs的key
+        private List<Object> _recordableAssets = new List<Object>();
 
-        //子类不需要调用
-        protected void InitRecordableObjects()
-        {
-            //初始化所有的记录对象
-            if (string.IsNullOrWhiteSpace(recordableObjectsKey))
+
+        //用于存取EditorPrefs的key
+        private string _recordableAssetsKey = "";
+        private string RecordableAssetsKey {
+            get
             {
-                recordableObjectsKey = $"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_RecordableObjectsKey";
-
-                recordableObjects.Clear();
-                string savedDataStr = EditorPrefs.GetString(recordableObjectsKey, "");
-                //存储格式 guid;guid;...
-                string[] guids = savedDataStr.Split(';');
-                //load 
-                for (int i = 0; i < guids.Length; i++)
+                //初始化所有的记录对象
+                if (string.IsNullOrWhiteSpace(_recordableAssetsKey))
                 {
-                    string guid = guids[i];
-                    if (!string.IsNullOrWhiteSpace(guid))
+                    _recordableAssetsKey = $"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_RecordableObjectsKey";
+
+                    _recordableAssets.Clear();
+                    string savedDataStr = EditorPrefs.GetString(RecordableAssetsKey, "");
+                    //存储格式 guid;guid;...
+                    string[] guids = savedDataStr.Split(';');
+                    //load
+                    for (int i = 0; i < guids.Length; i++)
                     {
-                        string path = AssetDatabase.GUIDToAssetPath(guid);
-                        Object objAsset = AssetDatabase.LoadAssetAtPath<Object>(path);
-                        recordableObjects.Add(objAsset);
+                        string guid = guids[i];
+                        if (!string.IsNullOrWhiteSpace(guid))
+                        {
+                            // 原理是存储的是资产文件
+                            string path = AssetDatabase.GUIDToAssetPath(guid);
+                            Object objAsset = AssetDatabase.LoadAssetAtPath<Object>(path);
+                            _recordableAssets.Add(objAsset);
+                        }
                     }
                 }
+                return _recordableAssetsKey;
             }
         }
 
+        // 手动同步记录对象到EditorPrefs,除了添加和删除的其他需要同步的时候调用
+        // 例如在排序的时候需要调用这个方法
         public void SyncRecordableObjectsToEditorPrefs()
         {
             StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < recordableObjects.Count; j++)
+            for (int j = 0; j < _recordableAssets.Count; j++)
             {
-                string assetPath = AssetDatabase.GetAssetPath(recordableObjects[j]);
+                string assetPath = AssetDatabase.GetAssetPath(_recordableAssets[j]);
                 string guid = AssetDatabase.AssetPathToGUID(assetPath);
                 if (!string.IsNullOrWhiteSpace(guid))
                 {
@@ -320,31 +323,30 @@ namespace PluginHub.Module
                     sb.Append(";");
                 }
             }
-
-            EditorPrefs.SetString(recordableObjectsKey, sb.ToString());
+            EditorPrefs.SetString(RecordableAssetsKey, sb.ToString());
         }
 
         protected bool RecordableObjectsContain(Object obj)
         {
-            return recordableObjects.Contains(obj);
+            return _recordableAssets.Contains(obj);
         }
 
         protected void AddRecordableObject(Object obj)
         {
-            recordableObjects.Add(obj);
+            _recordableAssets.Add(obj);
             SyncRecordableObjectsToEditorPrefs();
         }
 
         protected void RemoveRecordableObject(Object obj)
         {
-            recordableObjects.Remove(obj);
+            _recordableAssets.Remove(obj);
             SyncRecordableObjectsToEditorPrefs();
         }
 
         #endregion
 
         #region Layout Helper Function 快捷绘制GUI的方法
-        //绘制一个标签项目行，包含标题和内容，以及可选的复制内容按钮
+        //绘制一个标签行，提供标题和内容，以及可选的复制内容按钮
         public void DrawRow(string title, string content, bool copyBtn = false, float titleWidth = 100)
         {
             GUILayout.BeginHorizontal();

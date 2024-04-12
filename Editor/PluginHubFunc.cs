@@ -174,6 +174,19 @@ namespace PluginHub
 #endif
         }
 
+        // 画一个星星icon按钮,这种按钮一般用于添加到收藏夹
+        public static bool DrawStarBtn(string tooltip = "Add to favorite")
+        {
+            return GUILayout.Button(PluginHubFunc.Icon("d_Favorite@2x", "", tooltip), PluginHubFunc.IconBtnLayoutOptions);
+        }
+
+        // 画一个删除icon按钮
+        public static bool DrawDeleteBtn(string toolTip = "delete")
+        {
+            return GUILayout.Button(PluginHubFunc.Icon("P4_DeletedLocal@2x", "", toolTip),
+                PluginHubFunc.IconBtnLayoutOptions);
+        }
+
         public static void TextBox(string text)
         {
             EditorGUILayout.BeginHorizontal("Box");
