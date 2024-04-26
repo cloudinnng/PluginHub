@@ -10,6 +10,7 @@ namespace PluginHub.Module
 {
     public class Base64TextureConvertModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Tool;
         private string _textTmp;
         private Texture2D _texture2DTmp;
 

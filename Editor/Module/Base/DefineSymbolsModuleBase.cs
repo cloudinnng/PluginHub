@@ -9,18 +9,19 @@ namespace PluginHub.Module
     public abstract class DefineSymbolsModuleBase : PluginHubModuleBase
     {
         public override string moduleDescription => "支持动态添加脚本宏定义的模块基类";
-        // PH_HierachyExtension
+        // 表示该模块的自定宏符号名称,例:PH_HierachyExtension, 会添加到 PlayerSettings->ScriptDefineSymbols 中
         public abstract string baseSymbolName { get; }
         //菜单前缀
         protected const string MenuPrefix = "PluginHub/";
 
 
-        private GUIContent _guiContent = new GUIContent("启用", "启用基础宏");
+        private GUIContent _guiContent = new GUIContent("启用 DefineSymbol", "启用基础宏");
 
         protected override void DrawGuiContent()
         {
-            EditorGUILayout.HelpBox("该模块具有编辑宏功能,能够动态添加一些功能.", MessageType.Info);
+            EditorGUILayout.HelpBox($"该模块具有编辑宏功能,能够动态添加一些功能.下面的开关控制 {baseSymbolName} DefineSymbol的启用", MessageType.Info);
             enableBaseSymbols = EditorGUILayout.Toggle(_guiContent, enableBaseSymbols);
+            GUILayout.Space(10);
         }
 
         //是否启用基础宏.每个继承自该类的模块都会有一个基础宏,用于控制基础功能是否启用

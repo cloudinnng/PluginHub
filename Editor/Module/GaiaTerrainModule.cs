@@ -11,6 +11,7 @@ namespace PluginHub.Module
 {
     public class GaiaTerrainModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Construction;
         private Terrain terrainComponent;
         private List<TerrainData> terrainDatas = new List<TerrainData>();
 
@@ -118,7 +119,7 @@ namespace PluginHub.Module
 
             highMapPathTemplate = EditorGUILayout.TextField("高程图路径模板", highMapPathTemplate);
             string highMapPath = string.Format(highMapPathTemplate, useIndex);
-            PluginHubFunc.DrawTitleContentLabelRow("高程图路径", highMapPath);
+            DrawRow("高程图路径", highMapPath);
             bool highMapExist = File.Exists(highMapPath); //高图是否存在
 
             GUILayout.BeginHorizontal();
@@ -142,12 +143,12 @@ namespace PluginHub.Module
             //颜色----------------------------------------------------------------------------------------------------
             colorMapPathTemplate = EditorGUILayout.TextField("颜色图路径模板", colorMapPathTemplate);
             string colorMapPath = string.Format(colorMapPathTemplate, useIndex);
-            PluginHubFunc.DrawTitleContentLabelRow("颜色图路径", colorMapPath);
+            DrawRow("颜色图路径", colorMapPath);
             bool colorMapExist = File.Exists(colorMapPath);
 
             layerSavePathTemplate = EditorGUILayout.TextField("图层保存路径模板", layerSavePathTemplate);
             string layerSavePath = string.Format(layerSavePathTemplate, zCount, xCount);
-            PluginHubFunc.DrawTitleContentLabelRow("图层保存路径", layerSavePath);
+            DrawRow("图层保存路径", layerSavePath);
 
 
             GUI.enabled = highMapExist;

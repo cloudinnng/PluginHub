@@ -6,11 +6,13 @@ using System.Reflection;
 using PluginHub.Helper;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace PluginHub.Module
 {
     public class CommonComponentModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Shortcut;
         public override string moduleName
         {
             get { return "频繁使用"; }
@@ -44,7 +46,7 @@ namespace PluginHub.Module
                         //这个按钮是默认选中第一个
                         if (drawObj != null && drawObj.Length > 0)
                         {
-                            PluginHubFunc.SelectObjectAndShowInspector(drawObj[0]);
+                            SelectObjectAndShowInspector(drawObj[0]);
                         }
                     }
 
@@ -65,7 +67,7 @@ namespace PluginHub.Module
                     GUILayout.MinWidth(30));
                 if (GUILayout.Button("Select", GUILayout.Width(48)))
                 {
-                    PluginHubFunc.SelectObjectAndShowInspector(objects2Draw[i]);
+                    SelectObjectAndShowInspector(objects2Draw[i]);
                 }
 
                 GUILayout.EndHorizontal();
@@ -170,6 +172,16 @@ namespace PluginHub.Module
             }
             GUILayout.EndVertical();
         }
+        //选择对象然后自动跳转到检视面板
+        private static void SelectObjectAndShowInspector(Object obj)
+        {
+            Selection.objects = new[] { obj };
+            //open unity Inspector editor window
+            EditorWindow.GetWindow(Type.GetType("UnityEditor.InspectorWindow,UnityEditor")).Show();
+            // if(!EditorApplication.ExecuteMenuItem("Window/Panels/6 Inspector"))
+            //     EditorApplication.ExecuteMenuItem("Window/Panels/7 Inspector");
+        }
+
 
         #region TryFind
 

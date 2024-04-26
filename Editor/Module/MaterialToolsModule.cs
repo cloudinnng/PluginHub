@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using PluginHub.Extends;
 using PluginHub.Helper;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -11,14 +12,17 @@ using UnityEngine;
 
 namespace PluginHub.Module
 {
-    public class MaterialOptimizationModule : PluginHubModuleBase
+    public class MaterialToolsModule : DefineSymbolsModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Construction;
         public override string moduleName
         {
-            get { return "材质优化"; }
+            get { return "材质工具"; }
         }
 
-        public override string moduleDescription => "";
+        public override string moduleDescription => "包含材质提取,材质引用替换,相同材质搜索等功能";
+        public override string baseSymbolName => "PH_MaterialTools";
+
         /// <summary>
         /// MeshRenderer材质索引信息
         /// </summary>
@@ -45,8 +49,15 @@ namespace PluginHub.Module
 
         protected override void DrawGuiContent()
         {
+            base.DrawGuiContent();
+
+            #if PH_MaterialTools
+            GUILayout.Label("现在可以使用Ctrl+M快捷键在场景中查找选中物体在鼠标指针位置的材质");
+            #endif
+
+
             //DrawSimgleSearchModule
-            globalSlotMat = PluginHubFunc.DrawMaterialRow("材质槽", globalSlotMat);
+            globalSlotMat = DrawMaterialRow("材质槽", globalSlotMat);
 
             GUILayout.BeginHorizontal();
             {
@@ -59,7 +70,7 @@ namespace PluginHub.Module
                 GUI.enabled = globalSlotMat != null && PluginHubFunc.IsEmbeddedMaterial(globalSlotMat);
                 if (GUILayout.Button("提取材质", GUILayout.Width(100)))
                 {
-                    Material materialE = PluginHubFunc.ExtractMaterial(globalSlotMat);
+                    Material materialE = ExtractMaterial(globalSlotMat);
                     if (materialE != null) //提取材质成功
                     {
                         oldMat = globalSlotMat;
@@ -77,7 +88,7 @@ namespace PluginHub.Module
                         {
                             Material mat = selecteds[i] as Material;
                             if(mat != null)
-                                PluginHubFunc.ExtractMaterial(mat);
+                                ExtractMaterial(mat);
                         }
                     }
                 }
@@ -129,7 +140,7 @@ namespace PluginHub.Module
                 {
                     EditorGUILayout.ObjectField("", mat, typeof(Material), false);
 
-                    PluginHubFunc.DrawMaterialTypeLabel(mat);
+                    DrawMaterialTypeLabel(mat);
 
                     if (GUILayout.Button(PluginHubFunc.GuiContent("替换为该材质", "将所有引用材质槽中材质的Meshrenderer替换为对该材质的引用"),
                             GUILayout.ExpandWidth(false)))
@@ -211,7 +222,7 @@ namespace PluginHub.Module
             {
                 GUILayout.Label("Old", GUILayout.Width(50));
                 oldMat = (Material)EditorGUILayout.ObjectField("", oldMat, typeof(Material), false);
-                PluginHubFunc.DrawMaterialTypeLabel(oldMat);
+                DrawMaterialTypeLabel(oldMat);
             }
             GUILayout.EndHorizontal();
             GUILayout.Label("替换成此材质：");
@@ -219,7 +230,7 @@ namespace PluginHub.Module
             {
                 GUILayout.Label("New", GUILayout.Width(50));
                 newMat = (Material)EditorGUILayout.ObjectField("", newMat, typeof(Material), false);
-                PluginHubFunc.DrawMaterialTypeLabel(newMat);
+                DrawMaterialTypeLabel(newMat);
             }
             GUILayout.EndHorizontal();
 
@@ -294,7 +305,7 @@ namespace PluginHub.Module
 
                             EditorGUILayout.ObjectField(material, typeof(Material), true); //材质域
 
-                            PluginHubFunc.DrawMaterialTypeLabel(material);
+                            DrawMaterialTypeLabel(material);
                             //🔍 Search icon
                             GUIContent searchGC = PluginHubFunc.Icon("Search On Icon", "");
                             searchGC.tooltip = "在场景中搜索所有引用该材质的Meshrender";
@@ -453,7 +464,7 @@ namespace PluginHub.Module
                     {
                         Material material = matList[i];
 
-                        PluginHubFunc.DrawMaterialRow(i.ToString(), material);
+                        DrawMaterialRow(i.ToString(), material);
                     }
                 }
             }
@@ -793,5 +804,171 @@ namespace PluginHub.Module
 
             return matList; //将提取的材质路径返回
         }
+
+
+        //提取单个材质到同目录Materials文件夹内
+        private static Material ExtractMaterial(Material embeddedMat)
+        {
+            //原理是复制该材质，存为材质资产，因此不会丢失原嵌入式材质
+            //一般在检视面板都是提取整个fbx的材质，这个是提取单个材质，原理采用新建一个材质资产，复制其参数和纹理引用
+            string savePath = Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(embeddedMat)),
+                $"Materials/{embeddedMat.name}.mat");
+            string folderPath = Path.GetDirectoryName(savePath);
+
+            if (Directory.Exists(folderPath) == false)
+            {
+                Debug.Log($"创建文件夹{folderPath}");
+                Directory.CreateDirectory(folderPath);
+                AssetDatabase.Refresh();
+            }
+
+            if (AssetDatabase.IsValidFolder(folderPath))
+            {
+                Material newMat = Object.Instantiate(embeddedMat);
+                AssetDatabase.CreateAsset(newMat, savePath);
+                Debug.Log($"已生产，点击定位。{savePath}。", newMat);
+                // Selection.objects = new[] {newMat};//选中
+                return newMat;
+            }
+
+            return null;
+        }
+
+        #region Draw
+
+        public static Material DrawMaterialRow(string text, Material material)
+        {
+            Material returnMat;
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label(text);
+
+                returnMat = (Material)EditorGUILayout.ObjectField(material, typeof(Material), true);
+
+                DrawMaterialTypeLabel(material);
+            }
+            GUILayout.EndHorizontal();
+            return returnMat;
+        }
+
+        //画材质类型标签(嵌入式材质还是自由材质)
+        public static void DrawMaterialTypeLabel(Material material)
+        {
+            string matType = "";
+            if (material == null)
+                matType = "";
+            else if (PluginHubFunc.IsEmbeddedMaterial(material))
+                matType = "Embedded"; //嵌入式材质
+            else
+                matType = "Free"; //自由材质
+            GUILayout.Label(matType, GUILayout.MaxWidth(50));
+        }
+
+        #endregion
+        
+
+        #region DefineSymbol
+        #if PH_MaterialTools
+
+        //ctrl+M
+        [MenuItem(MenuPrefix + "MaterialTools/寻找鼠标指针位置材质（需使用快捷键执行） %M", false, 0)]
+        public static void FindMaterial()
+        {
+            //场景相机的平面，共六个平面
+            Plane[] sceneCameraPlanes = GeometryUtility.CalculateFrustumPlanes(SceneView.lastActiveSceneView.camera);
+            MeshRenderer[] meshRenderers = GameObject.FindObjectsOfType<MeshRenderer>();
+            //排除不在场景相机范围内的meshrenderer
+            meshRenderers = meshRenderers.Where((mr) => GeometryUtility.TestPlanesAABB(sceneCameraPlanes, mr.bounds))
+                .ToArray();
+
+            //这里仅仅为选中的对象添加MeshCollider为射线检测做准备
+            GameObject[] selection = Selection.gameObjects;
+            List<MeshCollider> meshCollidersByCode = new List<MeshCollider>();
+            if (selection != null && selection.Length > 0)
+            {
+                for (int i = 0; i < selection.Length; i++)
+                {
+                    GameObject obj = selection[i];
+                    MeshCollider meshCollider = obj.GetComponent<MeshCollider>();
+                    if (meshCollider == null)
+                    {
+                        meshCollidersByCode.Add(obj.AddComponent<MeshCollider>());
+                    }
+                }
+            }
+
+            //Debug.Log(meshRenderers.Length);
+            Ray ray = SceneViewMouseRay();
+            RaycastHit[] hits = Physics.RaycastAll(ray); //这个用时其实没多少
+            hits = hits.OrderBy((hit) => hit.distance).ToArray(); //按照顺序排序
+            bool hited = false;
+            for (int i = 0; i < hits.Length; i++)
+            {
+                RaycastHit hit = hits[i];
+                if (hit.Equals(default(RaycastHit))) continue;
+                if (hit.collider as MeshCollider == null) continue;
+
+                Mesh mesh = hit.collider.GetComponent<MeshFilter>().sharedMesh;
+                MeshRenderer meshRenderer = hit.collider.GetComponent<MeshRenderer>();
+                int index = GetSubMeshIndex(mesh, hit.triangleIndex);
+                if (index == -1) break;
+                if (meshRenderer == null) continue; //碰撞器没有meshrenderer
+                if (meshRenderer.enabled == false) continue; //碰撞器没有激活
+
+                Selection.objects = new Object[] { meshRenderer.sharedMaterials[index] };
+                Debug.Log($"选择了{meshRenderer.name},第{index}个材质,开启Scene视图Gizmos查看击中具体位置,单击这条Debug语句选中对象",
+                    meshRenderer.gameObject);
+                DebugEx.DebugArrow(hit.point + hit.normal * .3f, -hit.normal * .3f, Color.red, 10f);
+                DebugEx.DebugPoint(hit.point, Color.white, 0.1f, 10f);
+                hited = true;
+                break;
+            }
+
+            if (!hited)
+                Debug.Log("没有任何击中");
+
+            //移除meshcollider
+            for (int i = 0; i < meshCollidersByCode.Count; i++)
+            {
+                GameObject.DestroyImmediate(meshCollidersByCode[i]);
+            }
+        }
+
+        //获取一个由场景视图相机鼠标位置发出的射线
+        private static Ray SceneViewMouseRay()
+        {
+            Vector2 mousePos = Event.current.mousePosition;
+            mousePos.y = SceneView.lastActiveSceneView.camera.pixelHeight - mousePos.y+40;
+            Ray ray = SceneView.lastActiveSceneView.camera.ScreenPointToRay(mousePos);
+            return ray;
+        }
+
+        //用三角形索引号，获取子网格索引（材质索引），默认认为子mesh中三角形索引不会重复。
+        private static int GetSubMeshIndex(Mesh mesh, int triangleIndex)
+        {
+            // if (mesh.isReadable == false)//need this in run time
+            // {
+            //     Debug.LogError("You need to mark model's mesh as Read/Write Enabled in Import Settings.", mesh);
+            //     return -1;
+            // }
+            int triangleCounter = 0;
+            for (int subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; subMeshIndex++)
+            {
+                var indexCount = mesh.GetSubMesh(subMeshIndex).indexCount;
+                triangleCounter += indexCount / 3;
+                if (triangleIndex < triangleCounter)
+                {
+                    return subMeshIndex;
+                }
+            }
+
+            Debug.LogError(
+                $"Failed to find triangle with index {triangleIndex} in mesh '{mesh.name}'. Total triangle count: {triangleCounter}",
+                mesh);
+            return 0;
+        }
+        #endif
+        #endregion
+
     }
 }

@@ -29,7 +29,7 @@ namespace PluginHub.Module
             }
         }
 
-        public override string moduleDescription => "";
+        public override ModuleType moduleType => ModuleType.Tool;
         private float _radius
         {
             get => EditorPrefs.GetFloat("RotateAroundAnimationMakerModule_radius", 10);

@@ -18,7 +18,7 @@ namespace PluginHub.Module
         private Dictionary<Object, int> referenceObjects = new Dictionary<Object, int>();
         private Vector2 scrollPosition;
         private Stopwatch searchTimer = new Stopwatch();
-        public override string moduleDescription => "";
+        public override ModuleType moduleType => ModuleType.Tool;
         private Object guidObject;
         protected override void DrawGuiContent()
         {

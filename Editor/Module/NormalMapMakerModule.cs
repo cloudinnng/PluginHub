@@ -20,7 +20,7 @@ namespace PluginHub.Module
         public static string normalSuffix = "_normal.png";
         public static string specularSuffix = "_specular.png";
 
-        public override string moduleDescription => "";
+        public override ModuleType moduleType => ModuleType.Tool;
         protected override void DrawGuiContent()
         {
             EditorGUILayout.BeginHorizontal();

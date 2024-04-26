@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using PluginHub.Module;
+using PluginHub.Module.ModuleScripts;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ namespace PluginHub.Module
 {
     public class AlignModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Construction;
+
         private Vector3 placeOffset = Vector3.zero; //摆放的偏移
         private Vector3 rayOffset = Vector3.zero; //射线原点偏移
 
@@ -21,7 +24,7 @@ namespace PluginHub.Module
 
         private int selectAxis = -1;//选择的对齐方向
 
-        public override string moduleDescription => "";
+
         protected override void DrawGuiContent()
         {
             GUILayout.BeginVertical("Box");
@@ -199,13 +202,12 @@ namespace PluginHub.Module
 
         private void MoveGameObjectTo(GameObject obj, Vector3 rayDir)
         {
-            RaycastHit hitInfo;
             Ray ray = new Ray(obj.transform.position + rayOffset, rayDir);
-
-            if (Physics.Raycast(ray, out hitInfo))
+            bool rcresult = RaycastWithoutCollider.RaycastMeshRenderer(ray.origin, ray.direction, out RaycastWithoutCollider.RaycastResult result);
+            if (rcresult)
             {
-                obj.transform.position = hitInfo.point + placeOffset;
-                Debug.Log($"天花板名称：{hitInfo.collider.name}");
+                obj.transform.position = result.hitPoint + placeOffset;
+                Debug.Log($"天花板名称：{result.meshRenderer.name}");
             }
             else
             {

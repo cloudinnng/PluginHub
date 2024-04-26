@@ -12,9 +12,8 @@ namespace PluginHub.Module
         {
             get { return "问题分析"; }
         }
-        public override string moduleDescription => "";
+        public override ModuleType moduleType => ModuleType.Analyse;
         private Material matObject;
-
 
         protected override void DrawGuiContent()
         {

@@ -12,6 +12,7 @@ namespace PluginHub.Module
     //展示出所有unity内置的icon，编写插件的时候可以查找合适的直接使用
     public class BuildInIconGalleryModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Tool;
         public override string moduleName
         {
             get { return "内置图标库"; }

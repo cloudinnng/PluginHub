@@ -18,7 +18,7 @@ namespace PluginHub.Module
         {
             get { return "场景"; }
         }
-        public override string moduleDescription => "";
+        public override ModuleType moduleType => ModuleType.Shortcut;
         private List<SceneAsset> recentScene = new List<SceneAsset>(); //最近场景资产
         private bool showAllScene = false;
 

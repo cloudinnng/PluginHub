@@ -4,10 +4,10 @@ using UnityEngine;
 namespace PluginHub.Module
 {
     //纹理处理
-    public class TextureProcessModule : PluginHubModuleBase
+    public class TextureModule : PluginHubModuleBase
     {
-        public override string moduleName { get { return "纹理处理"; } }
-        public override string moduleDescription => "";
+        public override string moduleName { get { return "纹理模块"; } }
+        public override ModuleType moduleType => ModuleType.Tool;
 
         private Texture2D inputTexture0;
         private Texture2D inputTexture1;
@@ -30,7 +30,8 @@ namespace PluginHub.Module
         {
             GUILayout.BeginVertical("Box");
             {
-                GUILayout.Label("纹理翻转");
+                DrawSplitLine("纹理翻转");
+
                 EditorGUILayout.HelpBox("这里可以将纹理翻转后保存成新纹理资产。Unity接受Smoothness纹理，这在下载的纹理是Roughness的时候很有用。", MessageType.Info);
 
                 inputTexture0 = EditorGUILayout.ObjectField("纹理", inputTexture0, typeof(Texture2D), false) as Texture2D;
@@ -60,12 +61,10 @@ namespace PluginHub.Module
                     AssetDatabase.Refresh();
                 }
                 GUI.enabled = true;
-            }
-            GUILayout.EndVertical();
 
-            GUILayout.BeginVertical("Box");
-            {
-                GUILayout.Label("纹理合并");
+
+                DrawSplitLine("纹理合并");
+
                 EditorGUILayout.HelpBox("这里可以将两张纹理选择的通道合并为一张纹理。在HDRP中，通常要求金属度贴图的Alpha通道保存光滑度信息。", MessageType.Info);
 
                 GUILayout.BeginHorizontal();
@@ -163,13 +162,8 @@ namespace PluginHub.Module
                 }
                 GUI.enabled = true;
 
-            }
-            GUILayout.EndVertical();
+                DrawSplitLine("纹理镜像");
 
-
-            GUILayout.BeginVertical();
-            {
-                GUILayout.Label("纹理镜像");
                 EditorGUILayout.HelpBox("这里可以将纹理镜像后保存成新纹理资产。", MessageType.Info);
                 inputTexture0 = EditorGUILayout.ObjectField("纹理", inputTexture0, typeof(Texture2D), false) as Texture2D;
                 if (GUILayout.Button("镜像纹理"))

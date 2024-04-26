@@ -11,6 +11,7 @@ namespace PluginHub.Module
 //检视一个目录中的所有材质，便于挑选
     public class MaterialInspectModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Construction;
         public override string moduleName { get; } = "材质检视";
 
         public override string moduleDescription => "将材质统一放在一个位置,便于赋值";

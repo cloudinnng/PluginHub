@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 # if PH_WINFORMS
@@ -21,7 +23,7 @@ using System.Windows.Forms;
 
 namespace PluginHub
 {
-    //this file contain common function in PluginHub
+    //TODO 这个类可以整理一下
     public static class PluginHubFunc
     {
         // static PluginHubFunc() { }
@@ -81,77 +83,8 @@ namespace PluginHub
 
         #region Draw
 
-        public static Material DrawMaterialRow(string text, Material material)
-        {
-            Material returnMat;
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label(text);
 
-                returnMat = (Material)EditorGUILayout.ObjectField(material, typeof(Material), true);
 
-                DrawMaterialTypeLabel(material);
-            }
-            GUILayout.EndHorizontal();
-            return returnMat;
-        }
-
-        //画材质类型标签(嵌入式材质还是自由材质)
-        public static void DrawMaterialTypeLabel(Material material)
-        {
-            string matType = "";
-            if (material == null)
-                matType = "";
-            else if (PluginHubFunc.IsEmbeddedMaterial(material))
-                matType = "Embedded"; //嵌入式材质
-            else
-                matType = "Free"; //自由材质
-            GUILayout.Label(matType, GUILayout.MaxWidth(50));
-        }
-
-        //绘制一个显示标题和内容的Label行，由两个label左右布局组成。
-        public static void DrawTitleContentLabelRow(string title, string content)
-        {
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label(title, GUILayout.MaxWidth(150));
-                GUILayout.Label(content);
-            }
-            GUILayout.EndHorizontal();
-        }
-
-        //绘制一个打开文件夹的按钮
-        public static void DrawOpenFolderIconButton(string path, bool checkExist, string buttonTxt = null)
-        {
-            path = path.Replace("/", "\\");
-            path = path.Replace("Assets\\..\\", ""); //EditorUtility.RevealInFinder(path);不支持（..）因此需要处理
-
-            string checkPath = Path.GetDirectoryName(path);
-            bool exist = checkExist ? Directory.Exists(checkPath) : true;
-            GUI.enabled = exist;
-            //open folder button
-            if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", buttonTxt, path),
-                    (string.IsNullOrWhiteSpace(buttonTxt))
-                        ? PluginHubFunc.IconBtnLayoutOptions[0]
-                        : GUILayout.ExpandWidth(false),
-                    PluginHubFunc.IconBtnLayoutOptions[1]))
-            {
-                Debug.Log($"打开文件夹:{path}");
-                EditorUtility.RevealInFinder(path);
-            }
-            GUI.enabled = true;
-        }
-
-        //绘制一个拷贝文本的按钮，点击后会将文本拷贝到剪贴板
-        public static void DrawCopyIconButton(string textToCopy)
-        {
-            //拷贝按钮
-            if (GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
-                    PluginHubFunc.IconBtnLayoutOptions))
-            {
-                EditorGUIUtility.systemCopyBuffer = textToCopy;
-            }
-        }
 
         //绘制一个拷贝文件按钮，点击后会将文件拷贝到剪贴板,便于粘贴到支持Ctrl+v的应用程序中，如微信或文件管理器。
         //需要注意的是，这个功能只能在Windows平台下使用，因为使用了Windows.Forms的API
@@ -173,91 +106,6 @@ namespace PluginHub
             Debug.LogError("no PH_WINFORMS");
 #endif
         }
-
-        // 画一个星星icon按钮,这种按钮一般用于添加到收藏夹
-        public static bool DrawStarBtn(string tooltip = "Add to favorite")
-        {
-            return GUILayout.Button(PluginHubFunc.Icon("d_Favorite@2x", "", tooltip), PluginHubFunc.IconBtnLayoutOptions);
-        }
-
-        // 画一个删除icon按钮
-        public static bool DrawDeleteBtn(string toolTip = "delete")
-        {
-            return GUILayout.Button(PluginHubFunc.Icon("P4_DeletedLocal@2x", "", toolTip),
-                PluginHubFunc.IconBtnLayoutOptions);
-        }
-
-        public static void TextBox(string text)
-        {
-            EditorGUILayout.BeginHorizontal("Box");
-            EditorGUILayout.LabelField(text, PHGUISkinUse.label);
-            EditorGUILayout.EndHorizontal();
-        }
-
-
-        //一行两个文本
-        public static void RowTwoText(string text0, string text1)
-        {
-            EditorGUILayout.BeginHorizontal("Box");
-            EditorGUILayout.LabelField(text0, PHGUISkinUse.label);
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField(text1, PHGUISkinUse.label, GUILayout.Width(50));
-            EditorGUILayout.EndHorizontal();
-        }
-
-        private const float labelWidth = 130;
-        private const bool expandWidth = false;
-
-        public static T LableWithObjectFiled<T>(string lableText, Object obj) where T : Object
-        {
-            T objReturn;
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label(lableText, GUILayout.Width(labelWidth), GUILayout.ExpandWidth(expandWidth));
-                objReturn = (T)EditorGUILayout.ObjectField(obj, typeof(T), true);
-            }
-            GUILayout.EndHorizontal();
-            return objReturn;
-        }
-
-        public static bool LabelWithToggle(string lableText, bool toggleOldValue)
-        {
-            bool toggleReturn = false;
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label(lableText, GUILayout.Width(labelWidth), GUILayout.ExpandWidth(expandWidth));
-                toggleReturn = GUILayout.Toggle(toggleOldValue, "");
-            }
-            GUILayout.EndHorizontal();
-            return toggleReturn;
-        }
-
-        public static float LabelWithSlider(string lableText, float sliderOldValue, float leftValue, float rightValue)
-        {
-            float toggleReturn;
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label(lableText, GUILayout.Width(labelWidth));
-                toggleReturn = GUILayout.HorizontalSlider(sliderOldValue, leftValue, rightValue);
-                toggleReturn = EditorGUILayout.FloatField("", toggleReturn, GUILayout.Width(50));
-            }
-            GUILayout.EndHorizontal();
-            return toggleReturn;
-        }
-
-        public static Vector3 LabelWithVector3Field(string lableText, Vector3 oldVector3)
-        {
-            Vector3 returnValue;
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label(lableText, GUILayout.Width(labelWidth));
-                returnValue = EditorGUILayout.Vector3Field("", oldVector3);
-            }
-            GUILayout.EndHorizontal();
-            return returnValue;
-        }
-
-
 
         #endregion
 
@@ -281,49 +129,33 @@ namespace PluginHub
 
         #endregion
 
-        #region Operation
-
-        //提取单个材质到同目录Materials文件夹内
-        public static Material ExtractMaterial(Material embeddedMat)
-        {
-            //原理是复制该材质，存为材质资产，因此不会丢失原嵌入式材质
-            //一般在检视面板都是提取整个fbx的材质，这个是提取单个材质，原理采用新建一个材质资产，复制其参数和纹理引用
-            string savePath = Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(embeddedMat)),
-                $"Materials/{embeddedMat.name}.mat");
-            string folderPath = Path.GetDirectoryName(savePath);
-
-            if (Directory.Exists(folderPath) == false)
-            {
-                Debug.Log($"创建文件夹{folderPath}");
-                Directory.CreateDirectory(folderPath);
-                AssetDatabase.Refresh();
-            }
-
-            if (AssetDatabase.IsValidFolder(folderPath))
-            {
-                Material newMat = Object.Instantiate(embeddedMat);
-                AssetDatabase.CreateAsset(newMat, savePath);
-                Debug.Log($"已生产，点击定位。{savePath}。", newMat);
-                // Selection.objects = new[] {newMat};//选中
-                return newMat;
-            }
-
-            return null;
-        }
-
-        //选择对象然后自动跳转到检视面板
-        public static void SelectObjectAndShowInspector(Object obj)
-        {
-            Selection.objects = new[] { obj };
-            //open unity Inspector editor window
-            EditorWindow.GetWindow(Type.GetType("UnityEditor.InspectorWindow,UnityEditor")).Show();
-            // if(!EditorApplication.ExecuteMenuItem("Window/Panels/6 Inspector"))
-            //     EditorApplication.ExecuteMenuItem("Window/Panels/7 Inspector");
-        }
-
-        #endregion
-
         #region Function
+
+        // 使用文件管理器打开指定路径
+        public static void OpenFileExplorer(string path, bool isCreate = true)
+        {
+            if (!Directory.Exists(path))
+            {
+                //如果目录不存在 创建之
+                if (isCreate)
+                {
+                    Debug.Log($"Make dir {path}");
+                    Directory.CreateDirectory(path);
+                }
+                else
+                {
+                    Debug.LogWarning(path + " not exist");
+                    return;
+                }
+            }
+            string args = $"/Select, {path}";
+            args = args.Replace("/","\\");
+            ProcessStartInfo pfi=new ProcessStartInfo("Explorer.exe",args);
+            Process.Start(pfi);
+            //该代码也是打开文件管理器，但是打开的目录在指向目录的上一层，稳定就行，不要随意换。
+            //不支持D:\UnityProject\TopWellCustomPattern\Assets\..\Build\ 这种带..的路径
+            //EditorUtility.RevealInFinder(path);
+        }
 
         //使用递归获取一个Transform的查找路径
         public static void GetFindPath(Transform transform, StringBuilder sb)
@@ -442,175 +274,6 @@ namespace PluginHub
                 animWasRunning = false;
             }
         }
-
-        // private static Texture2D rightArrow;
-        //
-        // private static GUIContent ArrowRight(string text)
-        // {
-        //     GUIContent guiContent = Icon("UpArrow",text);
-        //     if (rightArrow == null)
-        //         rightArrow = rotateTexture(guiContent.image as Texture2D, true);
-        //     guiContent.image = rightArrow;
-        //     return guiContent;
-        // }
-        //
-        // private static Texture2D rotateTexture(Texture2D originalTexture, bool clockwise)
-        // {
-        //     Texture2D newTexture= new Texture2D(originalTexture.width,originalTexture.height);
-        //     Graphics.CopyTexture(originalTexture,0,0, newTexture,0,0);
-        //
-        //     Color32[] original = newTexture.GetPixels32();
-        //     Color32[] rotated = new Color32[original.Length];
-        //     int w = newTexture.width;
-        //     int h = newTexture.height;
-        //     int iRotated, iOriginal;
-        //
-        //     for (int j = 0; j < h; ++j)
-        //     {
-        //         for (int i = 0; i < w; ++i)
-        //         {
-        //             iRotated = (i + 1) * h - j - 1;
-        //             iOriginal = clockwise ? original.Length - 1 - (j * w + i) : j * w + i;
-        //             rotated[iRotated] = original[iOriginal];
-        //         }
-        //     }
-        //
-        //     Texture2D rotatedTexture = new Texture2D(h, w);
-        //     rotatedTexture.SetPixels32(rotated);
-        //     rotatedTexture.Apply();
-        //     return rotatedTexture;
-        // }
-
-        #endregion
-
-        #region 快速折叠层级视图和项目文件夹功能
-
-        //修改自 https://gist.github.com/yasirkula/0b541b0865eba11b55518ead45fba8fc
-
-        private const BindingFlags INSTANCE_FLAGS =
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-
-        private const BindingFlags STATIC_FLAGS = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-
-        public static void CollapseFolders()
-        {
-            Selection.objects = null;
-            Selection.activeObject = null;
-            EditorWindow projectWindow =
-                typeof(EditorWindow).Assembly.GetType("UnityEditor.ProjectBrowser")
-                    .GetField("s_LastInteractedProjectBrowser", STATIC_FLAGS).GetValue(null) as EditorWindow;
-            if (projectWindow)
-            {
-                object assetTree = projectWindow.GetType().GetField("m_AssetTree", INSTANCE_FLAGS)
-                    .GetValue(projectWindow);
-                if (assetTree != null)
-                    CollapseTreeViewController(projectWindow, assetTree,
-                        (TreeViewState)projectWindow.GetType().GetField("m_AssetTreeState", INSTANCE_FLAGS)
-                            .GetValue(projectWindow));
-
-                object folderTree = projectWindow.GetType().GetField("m_FolderTree", INSTANCE_FLAGS)
-                    .GetValue(projectWindow);
-                if (folderTree != null)
-                {
-                    object treeViewDataSource = folderTree.GetType().GetProperty("data", INSTANCE_FLAGS)
-                        .GetValue(folderTree, null);
-                    int searchFiltersRootInstanceID = (int)typeof(EditorWindow).Assembly
-                        .GetType("UnityEditor.SavedSearchFilters").GetMethod("GetRootInstanceID", STATIC_FLAGS)
-                        .Invoke(null, null);
-                    bool isSearchFilterRootExpanded = (bool)treeViewDataSource.GetType()
-                        .GetMethod("IsExpanded", INSTANCE_FLAGS, null, new System.Type[] { typeof(int) }, null)
-                        .Invoke(treeViewDataSource, new object[] { searchFiltersRootInstanceID });
-
-                    CollapseTreeViewController(projectWindow, folderTree,
-                        (TreeViewState)projectWindow.GetType().GetField("m_FolderTreeState", INSTANCE_FLAGS)
-                            .GetValue(projectWindow),
-                        isSearchFilterRootExpanded ? new int[1] { searchFiltersRootInstanceID } : null);
-
-                    // Preserve Assets and Packages folders' expanded states because they aren't automatically preserved inside ProjectBrowserColumnOneTreeViewDataSource.SetExpandedIDs
-                    // https://github.com/Unity-Technologies/UnityCsReference/blob/e740821767d2290238ea7954457333f06e952bad/Editor/Mono/ProjectBrowserColumnOne.cs#L408-L420
-                    InternalEditorUtility.expandedProjectWindowItems = (int[])treeViewDataSource.GetType()
-                        .GetMethod("GetExpandedIDs", INSTANCE_FLAGS).Invoke(treeViewDataSource, null);
-
-                    TreeViewItem rootItem = (TreeViewItem)treeViewDataSource.GetType()
-                        .GetField("m_RootItem", INSTANCE_FLAGS).GetValue(treeViewDataSource);
-                    if (rootItem.hasChildren)
-                    {
-                        foreach (TreeViewItem item in rootItem.children)
-                            EditorPrefs.SetBool("ProjectBrowser" + item.displayName,
-                                (bool)treeViewDataSource.GetType()
-                                    .GetMethod("IsExpanded", INSTANCE_FLAGS, null, new System.Type[] { typeof(int) },
-                                        null).Invoke(treeViewDataSource, new object[] { item.id }));
-                    }
-                }
-            }
-        }
-
-        public static void CollapseGameObjects()
-        {
-            Selection.objects = null;
-            EditorWindow hierarchyWindow =
-                typeof(EditorWindow).Assembly.GetType("UnityEditor.SceneHierarchyWindow")
-                    .GetField("s_LastInteractedHierarchy", STATIC_FLAGS).GetValue(null) as EditorWindow;
-            if (hierarchyWindow)
-            {
-#if UNITY_2018_3_OR_NEWER
-                object hierarchyTreeOwner = hierarchyWindow.GetType().GetField("m_SceneHierarchy", INSTANCE_FLAGS)
-                    .GetValue(hierarchyWindow);
-#else
-			object hierarchyTreeOwner = hierarchyWindow;
-#endif
-                object hierarchyTree = hierarchyTreeOwner.GetType().GetField("m_TreeView", INSTANCE_FLAGS)
-                    .GetValue(hierarchyTreeOwner);
-                if (hierarchyTree != null)
-                {
-                    List<int> expandedSceneIDs = new List<int>(4);
-                    foreach (string expandedSceneName in (IEnumerable<string>)hierarchyTreeOwner.GetType()
-                                 .GetMethod("GetExpandedSceneNames", INSTANCE_FLAGS).Invoke(hierarchyTreeOwner, null))
-                    {
-                        Scene scene = SceneManager.GetSceneByName(expandedSceneName);
-                        if (scene.IsValid())
-                            expandedSceneIDs.Add(scene
-                                .GetHashCode()); // GetHashCode returns m_Handle which in turn is used as the Scene's instanceID by SceneHierarchyWindow
-                    }
-
-                    CollapseTreeViewController(hierarchyWindow, hierarchyTree,
-                        (TreeViewState)hierarchyTreeOwner.GetType().GetField("m_TreeViewState", INSTANCE_FLAGS)
-                            .GetValue(hierarchyTreeOwner), expandedSceneIDs);
-                }
-            }
-        }
-
-
-        private static void CollapseTreeViewController(EditorWindow editorWindow, object treeViewController,
-            TreeViewState treeViewState, IList<int> additionalInstanceIDsToExpand = null)
-        {
-            object treeViewDataSource = treeViewController.GetType().GetProperty("data", INSTANCE_FLAGS)
-                .GetValue(treeViewController, null);
-            List<int> treeViewSelectedIDs = new List<int>(treeViewState.selectedIDs);
-            int[] additionalInstanceIDsToExpandArray;
-            if (additionalInstanceIDsToExpand != null && additionalInstanceIDsToExpand.Count > 0)
-            {
-                treeViewSelectedIDs.AddRange(additionalInstanceIDsToExpand);
-
-                additionalInstanceIDsToExpandArray = new int[additionalInstanceIDsToExpand.Count];
-                additionalInstanceIDsToExpand.CopyTo(additionalInstanceIDsToExpandArray, 0);
-            }
-            else
-                additionalInstanceIDsToExpandArray = new int[0];
-
-            treeViewDataSource.GetType().GetMethod("SetExpandedIDs", INSTANCE_FLAGS).Invoke(treeViewDataSource,
-                new object[] { additionalInstanceIDsToExpandArray });
-#if UNITY_2019_1_OR_NEWER
-            treeViewDataSource.GetType().GetMethod("RevealItems", INSTANCE_FLAGS).Invoke(treeViewDataSource,
-                new object[] { treeViewSelectedIDs.ToArray() });
-#else
-		foreach( int treeViewSelectedID in treeViewSelectedIDs )
-			treeViewDataSource.GetType().GetMethod( "RevealItem", INSTANCE_FLAGS ).Invoke( treeViewDataSource, new object[] { treeViewSelectedID } );
-#endif
-
-            editorWindow.Repaint();
-        }
-
         #endregion
 
 

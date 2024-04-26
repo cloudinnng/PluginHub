@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.ModuleScripts
+namespace PluginHub.Module.ModuleScripts
 {
     [CustomEditor(typeof(LightProbesVolumePlaceHelper)), CanEditMultipleObjects]
     //编辑器GUI

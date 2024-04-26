@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using PluginHub.Helper;
-using PluginHub.ModuleScripts;
+using PluginHub.Module.ModuleScripts;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -15,6 +15,7 @@ namespace PluginHub.Module
         {
             get { return "光探头摆放"; }
         }
+        public override ModuleType moduleType => ModuleType.Construction;
         public override string moduleDescription => "光探头摆放";
 
         private MeshRenderer _mrToPlaceLP;
@@ -31,121 +32,118 @@ namespace PluginHub.Module
 
         protected override void DrawGuiContent()
         {
-            //PluginHubFunc.TextBox("为小物体摆放8个光探头到指定组中");
+            DrawSplitLine("为小物体摆放");
 
-            GUILayout.BeginVertical("Box");
+            GUILayout.BeginHorizontal();
             {
-                GUILayout.BeginHorizontal();
+                autoUseSelectObject = GUILayout.Toggle(autoUseSelectObject, "自动使用选择的对象当作目标");
+                if (autoUseSelectObject && Selection.gameObjects != null && Selection.gameObjects.Length > 0)
                 {
-                    autoUseSelectObject = GUILayout.Toggle(autoUseSelectObject, "自动使用选择的对象当作目标");
-                    if (autoUseSelectObject && Selection.gameObjects != null && Selection.gameObjects.Length > 0)
+                    MeshRenderer meshRenderer = Selection.gameObjects[0].GetComponent<MeshRenderer>();
+                    if (meshRenderer != null && meshRenderer != _mrToPlaceLP)
                     {
-                        MeshRenderer meshRenderer = Selection.gameObjects[0].GetComponent<MeshRenderer>();
-                        if (meshRenderer != null && meshRenderer != _mrToPlaceLP)
+                        //对象无ContributeGI静态标志
+                        if ((GameObjectUtility.GetStaticEditorFlags(meshRenderer.gameObject) &
+                             StaticEditorFlags.ContributeGI) == 0)
                         {
-                            //对象无ContributeGI静态标志
-                            if ((GameObjectUtility.GetStaticEditorFlags(meshRenderer.gameObject) &
-                                 StaticEditorFlags.ContributeGI) == 0)
-                            {
-                                _mrToPlaceLP = meshRenderer;
-                            }
-                        }
-                    }
-
-                    //Tools.hidden = true 这将隐藏当前选定游戏对象的默认移动、旋转和调整大小工具，它不会干扰脚本添加的自定义 Gizmo 或手柄。
-                    hideDefaultHandle = GUILayout.Toggle(hideDefaultHandle, "Hide default transform handle");
-                    Tools.hidden = hideDefaultHandle;
-                }
-                GUILayout.EndHorizontal();
-
-                _mrToPlaceLP = PluginHubFunc.LableWithObjectFiled<MeshRenderer>("Target Object", _mrToPlaceLP);
-
-                _lightProbeGroup =
-                    PluginHubFunc.LableWithObjectFiled<LightProbeGroup>("Light Probe Group", _lightProbeGroup);
-
-                if (Selection.gameObjects != null && Selection.gameObjects.Length > 0)
-                {
-                    LightProbeGroup lightProbeGroup = Selection.gameObjects[0].GetComponent<LightProbeGroup>();
-                    if (lightProbeGroup != null && lightProbeGroup != _lightProbeGroup)
-                    {
-                        if (GUILayout.Button("使用选中对象"))
-                        {
-                            _lightProbeGroup = lightProbeGroup;
+                            _mrToPlaceLP = meshRenderer;
                         }
                     }
                 }
 
-                gizmosPreviewSize = PluginHubFunc.LabelWithSlider("Gizmos预览显示大小", gizmosPreviewSize, 0f, .5f);
+                //Tools.hidden = true 这将隐藏当前选定游戏对象的默认移动、旋转和调整大小工具，它不会干扰脚本添加的自定义 Gizmo 或手柄。
+                hideDefaultHandle = GUILayout.Toggle(hideDefaultHandle, "Hide default transform handle");
+                Tools.hidden = hideDefaultHandle;
+            }
+            GUILayout.EndHorizontal();
 
-                zTestEnable = PluginHubFunc.LabelWithToggle("Enable Gizmos zTest", zTestEnable);
+            _mrToPlaceLP = (MeshRenderer)EditorGUILayout.ObjectField("Target Object", _mrToPlaceLP, typeof(MeshRenderer), true);
 
-                distanceMultiplier = PluginHubFunc.LabelWithSlider("距离乘数", distanceMultiplier, .5f, 3);
 
-                placeOffset = PluginHubFunc.LabelWithVector3Field("放置偏移", placeOffset);
+            _lightProbeGroup = (LightProbeGroup)EditorGUILayout.ObjectField("LightProbeGroup", _lightProbeGroup, typeof(LightProbeGroup), true);
 
-                if (GUILayout.Button("Reset"))
+            if (Selection.gameObjects != null && Selection.gameObjects.Length > 0)
+            {
+                LightProbeGroup lightProbeGroup = Selection.gameObjects[0].GetComponent<LightProbeGroup>();
+                if (lightProbeGroup != null && lightProbeGroup != _lightProbeGroup)
                 {
-                    placeOffset = Vector3.zero;
-                }
-
-                axisScale = PluginHubFunc.LabelWithVector3Field("轴向缩放", axisScale);
-
-                if (GUILayout.Button("Reset"))
-                {
-                    axisScale = Vector3.one;
-                }
-
-                placeMinDistance = PluginHubFunc.LabelWithSlider("放置光探头的最近距离", placeMinDistance, .01f, 3);
-
-                GUI.enabled = _mrToPlaceLP && _lightProbeGroup;
-                if (GUILayout.Button("在LightProbes中放置这8个点", GUILayout.Height(30)))
-                {
-                    Vector3[] old = _lightProbeGroup.probePositions;
-                    //距离检测  太近了 不放
-                    List<Vector3> posToPlace = new List<Vector3>();
-                    for (int j = 0; j < _lightProbePos.Length; j++)
+                    if (GUILayout.Button("使用选中对象"))
                     {
-                        Vector3 pos = _lightProbePos[j];
-                        float minDistance = 9999;
-                        for (int i = 0; i < old.Length; i++)
-                        {
-                            float dis = Vector3.Distance(old[i], pos);
-                            if (minDistance > dis)
-                            {
-                                minDistance = dis;
-                            }
-                        }
-
-                        //找出最近的距离   最近距离满足最小距离要求 允许放置
-                        if (minDistance >= placeMinDistance)
-                            posToPlace.Add(pos);
-                    }
-
-                    List<Vector3> list = new List<Vector3>();
-                    list.AddRange(old);
-                    list.AddRange(posToPlace);
-                    _lightProbeGroup.probePositions = list.ToArray();
-                    Debug.Log($"已执行放置{posToPlace.Count}");
-                }
-
-                GUI.enabled = true;
-
-                GUILayout.Space(30);
-
-                if (GUILayout.Button("使用体积摆放方式,添加LightProbesVolumePlaceHelper组件"))
-                {
-                    if (Selection.gameObjects.Length > 0)
-                    {
-                        GameObject obj = Selection.gameObjects[0];
-                        LightProbeGroup lightProbeGroup = obj.GetComponent<LightProbeGroup>();
-                        if (lightProbeGroup != null)
-                            obj.AddComponent<LightProbesVolumePlaceHelper>();
-                        else
-                            Debug.LogWarning($"{obj.name}没有LightProbeGroup组件");
+                        _lightProbeGroup = lightProbeGroup;
                     }
                 }
             }
-            GUILayout.EndVertical();
+
+            gizmosPreviewSize = EditorGUILayout.Slider("Gizmos预览显示大小", gizmosPreviewSize, 0f, .5f);
+
+            zTestEnable = EditorGUILayout.Toggle("Enable Gizmos zTest", zTestEnable);
+
+            distanceMultiplier = EditorGUILayout.Slider("距离乘数", distanceMultiplier, .5f, 3);
+
+            placeOffset = EditorGUILayout.Vector3Field("放置偏移", placeOffset);
+
+            if (GUILayout.Button("Reset"))
+            {
+                placeOffset = Vector3.zero;
+            }
+            axisScale = EditorGUILayout.Vector3Field("轴向缩放", axisScale);
+
+            if (GUILayout.Button("Reset"))
+            {
+                axisScale = Vector3.one;
+            }
+            placeMinDistance = EditorGUILayout.Slider("放置的最近距离(小于则不放)", placeMinDistance, .01f, 3);
+            placeMinDistance = EditorGUILayout.Slider("放置的最近距离(小于则不放)", placeMinDistance, .01f, 3);
+
+            GUI.enabled = _mrToPlaceLP && _lightProbeGroup;
+            if (GUILayout.Button("在LightProbes中放置这8个点", GUILayout.Height(30)))
+            {
+                Vector3[] old = _lightProbeGroup.probePositions;
+                //距离检测  太近了 不放
+                List<Vector3> posToPlace = new List<Vector3>();
+                for (int j = 0; j < _lightProbePos.Length; j++)
+                {
+                    Vector3 pos = _lightProbePos[j];
+                    float minDistance = 9999;
+                    for (int i = 0; i < old.Length; i++)
+                    {
+                        float dis = Vector3.Distance(old[i], pos);
+                        if (minDistance > dis)
+                        {
+                            minDistance = dis;
+                        }
+                    }
+
+                    //找出最近的距离   最近距离满足最小距离要求 允许放置
+                    if (minDistance >= placeMinDistance)
+                        posToPlace.Add(pos);
+                }
+
+                List<Vector3> list = new List<Vector3>();
+                list.AddRange(old);
+                list.AddRange(posToPlace);
+                _lightProbeGroup.probePositions = list.ToArray();
+                Debug.Log($"已执行放置{posToPlace.Count}");
+            }
+
+            GUI.enabled = true;
+
+            GUILayout.Space(30);
+
+            DrawSplitLine("为体积摆放");
+
+            if (GUILayout.Button("使用体积摆放方式,添加LightProbesVolumePlaceHelper组件"))
+            {
+                if (Selection.gameObjects.Length > 0)
+                {
+                    GameObject obj = Selection.gameObjects[0];
+                    LightProbeGroup lightProbeGroup = obj.GetComponent<LightProbeGroup>();
+                    if (lightProbeGroup != null)
+                        obj.AddComponent<LightProbesVolumePlaceHelper>();
+                    else
+                        Debug.LogWarning($"{obj.name}没有LightProbeGroup组件");
+                }
+            }
         }
 
         //绘制光探头工具的场景视图GUI
@@ -268,5 +266,6 @@ namespace PluginHub.Module
 
             return true;
         }
+
     }
 }

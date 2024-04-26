@@ -11,6 +11,7 @@ namespace PluginHub.Module
 {
     public class MeshToHeightModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Tool;
         public override string moduleName { get; } = "网格转高度图";
         public override string moduleDescription => "";
         private BoxCollider _boxCollider;

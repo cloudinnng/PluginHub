@@ -8,6 +8,7 @@ namespace PluginHub.Module
 {
     public class MaterialReplaceModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Construction;
         public override string moduleName { get; } = "材质替换助手";
 
 

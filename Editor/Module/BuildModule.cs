@@ -8,7 +8,7 @@ using System.Text;
 using PluginHub;
 using PluginHub.Data;
 using PluginHub.Helper;
-using PluginHub.ModuleScripts;
+using PluginHub.Module.ModuleScripts;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -22,6 +22,7 @@ namespace PluginHub.Module
 {
     public class BuildModule : PluginHubModuleBase, IPreprocessBuildWithReport
     {
+        public override ModuleType moduleType => ModuleType.Shortcut;
         public override string moduleName
         {
             get { return "构建"; }
@@ -220,7 +221,7 @@ namespace PluginHub.Module
                             GUIUtility.ExitGUI();
                         }
 
-                        PluginHubFunc.DrawOpenFolderIconButton(path, true);
+                        DrawIconBtnOpenFolder(path, true);
 
                         //运行按钮
                         GUI.enabled = File.Exists(path);
@@ -259,7 +260,7 @@ namespace PluginHub.Module
                         }
 
                         //open folder button
-                        PluginHubFunc.DrawOpenFolderIconButton(path, true);
+                        DrawIconBtnOpenFolder(path, true);
 
                         //运行按钮
                         GUI.enabled = File.Exists(path);
@@ -325,8 +326,8 @@ namespace PluginHub.Module
                         GUIUtility.ExitGUI();
                     }
 
-                    PluginHubFunc.DrawOpenFolderIconButton(path, true);
-                    PluginHubFunc.DrawCopyIconButton(path);
+                    DrawIconBtnOpenFolder(path, true);
+                    DrawIconBtnCopy(path);
                 }
                 GUILayout.EndHorizontal();
             }
@@ -358,7 +359,7 @@ namespace PluginHub.Module
                         GUIUtility.ExitGUI();
                     }
 
-                    PluginHubFunc.DrawOpenFolderIconButton(path, true);
+                    DrawIconBtnOpenFolder(path, true);
                 }
                 GUILayout.EndHorizontal();
             }
@@ -376,7 +377,7 @@ namespace PluginHub.Module
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(PluginHubFunc.GuiContent("构建库:", "下方显示项目Build目录下的所有打包文件"));
                     GUILayout.FlexibleSpace();
-                    PluginHubFunc.DrawOpenFolderIconButton(Path.Combine(Application.dataPath, "../Build/"), true);
+                    DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"), true);
                 }
                 GUILayout.EndHorizontal();
 
@@ -397,10 +398,10 @@ namespace PluginHub.Module
 
                             string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
                             //打开StreamingAssets文件夹按钮
-                            PluginHubFunc.DrawOpenFolderIconButton(streamingAssetsPath, true, "StrmAs");
+                            DrawIconBtnOpenFolder(streamingAssetsPath, true, "StrmAs");
 
                             //打开文件夹按钮
-                            PluginHubFunc.DrawOpenFolderIconButton(directory, true);
+                            DrawIconBtnOpenFolder(directory, true);
 
                             //压缩这个构建到当前目录
                             if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))

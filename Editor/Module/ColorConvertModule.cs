@@ -11,6 +11,7 @@ namespace PluginHub.Module
 {
     public class ColorConvertModule : PluginHubModuleBase
     {
+        public override ModuleType moduleType => ModuleType.Tool;
         private bool addFSuffix = false; //是否添加f后缀
         private bool addPrefix = false; //是否添加#前缀
 

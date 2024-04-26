@@ -1,9 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using PluginHub.Module;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 
 
 namespace PluginHub.Data
@@ -31,7 +35,7 @@ namespace PluginHub.Data
 
             GUILayout.Space(20);
 
-            DrawBottomButton();
+            DrawBottomButton();// 底部按钮
         }
 
         //绘制模块添加工具。
@@ -41,12 +45,11 @@ namespace PluginHub.Data
             //所有已添加的模块
             string[] addedModules = targetScript.tabConfigs.Select(x =>
             {
+                // 如果这里报异常,检查是不是修改了模块名字但添加时候还是用的旧名字
                 return x.moduleList.Select(y => y.name).ToArray();
             }).SelectMany(x => x).ToArray();
             //所有模块
-            string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.AllDirectories);
-            //过滤掉非模块文件, 无法将非模块类作为模块添加
-            moduleFiles = moduleFiles.Where(x => x.EndsWith("Module.cs")).ToArray();
+            string[] moduleFiles = GetAllModulePath();
 
             //绘制模块搜索输入框
             moduleFillterStr = EditorGUILayout.TextField("模块搜索：", moduleFillterStr);
@@ -119,15 +122,15 @@ namespace PluginHub.Data
                     MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
-                if (GUILayout.Button("载入最小模块配置"))
+                if (GUILayout.Button("载入精简模块配置"))
                 {
                     MakeMinimalModuleConfig();
                     MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
-                if (GUILayout.Button("载入默认模块配置"))
+                if (GUILayout.Button("载入所有模块配置"))
                 {
-                    MakeDefaultModuleConfig();
+                    MakeAllModuleConfig();
                     MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
@@ -142,6 +145,19 @@ namespace PluginHub.Data
             }
         }
 
+        #region Tool Function
+
+        //获取所有模块的路径
+        //Packages/com.hellottw.pluginhub/Editor/Module/Base64TextureConvertModule.cs
+        private string[] GetAllModulePath()
+        {
+            //所有模块
+            string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.AllDirectories);
+            //过滤掉非模块文件, 无法将非模块类作为模块添加
+            moduleFiles = moduleFiles.Where(x => x.EndsWith("Module.cs")).ToArray();
+            return moduleFiles;
+        }
+
 
         private void MakeConfigDirtyAndSave()
         {
@@ -149,6 +165,7 @@ namespace PluginHub.Data
             EditorUtility.SetDirty(targetScript);
             AssetDatabase.SaveAssets();
         }
+        #endregion
 
         #region 两个预设配置
         //最小模块配置
@@ -161,7 +178,6 @@ namespace PluginHub.Data
                 tabName = "快捷方式",
                 moduleList = new List<MonoScript>()
                 {
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NavigationBarModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
@@ -177,71 +193,56 @@ namespace PluginHub.Data
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ShaderDebuggerModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ReferenceFinderModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}AlignModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureProcessModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureModule.cs"),
                 }
             });
         }
 
         //默认模块配置
-        private void MakeDefaultModuleConfig()
+        private void MakeAllModuleConfig()
         {
             targetScript.tabConfigs.Clear();
+            // TODO 添加所有模块到配置中
+            string[] allModule = GetAllModulePath();
+            //<模块分类名,模块名列表>
+            Dictionary<string,List<string>> moduleDic = new Dictionary<string, List<string>>();
 
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
+            for (int i = 0; i < allModule.Length; i++)
             {
-                tabName = "快捷方式",
-                moduleList = new List<MonoScript>()
-                {
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NavigationBarModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectionModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialInspectModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
-                }
-            });
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
+                string modulePath = allModule[i];
+                string moduleName = System.IO.Path.GetFileNameWithoutExtension(modulePath);
+                // Debug.Log(moduleName);
+                //使用反射获取ModuleType
+                Type moduleCSharpType = Type.GetType($"PluginHub.Module.{moduleName}");
+                object obj = Activator.CreateInstance(moduleCSharpType);
+                //获取ModuleType
+                ModuleType moduleType = (ModuleType)moduleCSharpType.GetProperty("moduleType").GetValue(obj);
+                // Debug.Log(moduleType);
+
+                string tabName = moduleType.ToString();
+                if(moduleDic.ContainsKey(tabName))
+                    moduleDic[tabName].Add(modulePath);
+                else
+                    moduleDic.Add(tabName,new List<string>(){modulePath});
+            }
+
+            foreach (KeyValuePair<string, List<string>> keyValuePair in moduleDic)
             {
-                tabName = "工具",
-                moduleList = new List<MonoScript>()
+                string tabName = keyValuePair.Key;
+                List<string> moduleList = keyValuePair.Value;
+                moduleList.Sort();
+
+                List<MonoScript> monoScripts = new List<MonoScript>();
+                for (int i = 0; i < moduleList.Count; i++)
+                    monoScripts.Add(AssetDatabase.LoadAssetAtPath<MonoScript>(moduleList[i]));
+
+                targetScript.tabConfigs.Add(new ModuleTabConfig()
                 {
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildInIconGalleryModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}LightProbePlacementModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}RotateAroundAnimationMakerModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}DistributionModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MeshToHeightModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}Base64TextureConvertModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ShaderDebuggerModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ReferenceFinderModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}AlignModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ColorConvertModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ConvertHeightToNormalModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureMetaDataBatchModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}GaiaTerrainModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}RedeemCodeModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureProcessModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}NormalMapMakerModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TerrainToolModule.cs"),
-                }
-            });
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
-            {
-                tabName = "优化",
-                moduleList = new List<MonoScript>()
-                {
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialOptimizationModule.cs"),
-                }
-            });
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
-            {
-                tabName = "问题分析",
-                moduleList = new List<MonoScript>()
-                {
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ProblemAnalysisModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialReplaceModule.cs"),
-                }
-            });
+                    tabName = tabName,
+                    moduleList = monoScripts
+                });
+            }
+
         }
         #endregion
     }

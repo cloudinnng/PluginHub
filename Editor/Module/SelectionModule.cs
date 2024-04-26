@@ -24,7 +24,7 @@ namespace PluginHub.Module
         {
             get { return "选择的对象"; }
         }
-        public override string moduleDescription => "";
+        public override ModuleType moduleType => ModuleType.Shortcut;
         private Object selectedObject;//选中的对象
         private GameObject selectedGameObject;//选中的游戏对象
         private GameObject[] selectedGameObjects;//选中的游戏对象们
