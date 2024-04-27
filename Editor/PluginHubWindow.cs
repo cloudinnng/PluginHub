@@ -110,12 +110,6 @@ namespace PluginHub
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showSettingPanel", value); }
         }
 
-        public static bool showQuickAccess
-        {
-            get{ return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showQuickAccess", false); }
-            set{ EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showQuickAccess", value); }
-        }
-        
         //是否启用全局debug模式，在ui上显示一些调试信息，开发目的
         public static bool globalDebugMode
         {
@@ -228,8 +222,6 @@ namespace PluginHub
 
             DrawSettingPanel();
 
-            DrawQuickAccess();
-
             if (globalDebugMode)
             {
                 stopwatch.Reset();
@@ -303,12 +295,6 @@ namespace PluginHub
                 if (GUILayout.Button(PluginHubFunc.Icon("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLayoutOptions))
                     showSettingPanel = !showSettingPanel;
                 GUI.color = oldColor;
-                //快捷导航按钮
-                if (showQuickAccess)
-                    GUI.color = PluginHubFunc.SelectedColor;
-                if (GUILayout.Button(PluginHubFunc.Icon("d_CollabChangesDeleted Icon", "", ""),PluginHubFunc.IconBtnLayoutOptions))
-                    showQuickAccess = !showQuickAccess;
-                GUI.color = oldColor;
 
                 //全局调试按钮
                 oldColor = GUI.color;
@@ -348,167 +334,6 @@ namespace PluginHub
                         EditorUtility.RevealInFinder(PluginHubConfig.configPath);
                 }
                 GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
-        }
-
-        //绘制快捷导航
-        private void DrawQuickAccess()
-        {
-            if(!showQuickAccess)return;
-
-            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("SettingPanel"));
-            {
-                GUILayoutOption[] layoutOptions = new GUILayoutOption[] {GUILayout.Height(19) };
-                GUIStyle labelCenter = PluginHubFunc.GetCustomStyle("TitleLabel");
-
-                GUILayout.BeginVertical("Box");
-                {
-                    GUILayout.Label("快捷导航：",labelCenter);
-
-                    GUILayout.Label("项目窗口：");
-                    GUILayout.BeginHorizontal();
-                    {
-                        if (GUILayout.Button(PluginHubFunc.Icon("Settings","Project Settings"),layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
-                        }
-                        if (GUILayout.Button(PluginHubFunc.Icon("Settings","Preferences"),layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Edit/Preferences...");
-                        }
-                        if (GUILayout.Button(PluginHubFunc.Icon("Package Manager","Package Manager"),layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Window/Package Manager");
-                        }
-                    }
-                    GUILayout.EndHorizontal();
-
-
-                    GUILayout.Label("动画窗口：");
-                    GUILayout.BeginHorizontal();
-                    {
-                        if (GUILayout.Button(PluginHubFunc.Icon("UnityEditor.AnimationWindow","Animation"),layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
-                        }
-                        if (GUILayout.Button(PluginHubFunc.Icon("UnityEditor.Timeline.TimelineWindow","Timeline"),layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
-                        }
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.Label("场景搭建相关：");
-                    GUILayout.BeginHorizontal();
-                    {
-                        if (GUILayout.Button(PluginHubFunc.Icon("d_PositionAsUV1 Icon", "UVInspector"), layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Window/nTools/UV Inspector");
-                        }
-
-                        if (GUILayout.Button(PluginHubFunc.Icon("d_Lighting@2x", "Light Explorer"), layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Window/Rendering/Light Explorer");
-                        }
-
-                        if (GUILayout.Button(PluginHubFunc.Icon("d_Lighting@2x", "Lighting"), layoutOptions))
-                        {
-                            EditorApplication.ExecuteMenuItem("Window/Rendering/Lighting");
-                        }
-                    }
-                    GUILayout.EndHorizontal();
-
-
-                    if (GUILayout.Button(PluginHubFunc.Icon("LightmapParameters On Icon", " 转到 LightmapParameters"),layoutOptions))
-                    {
-        #if UNITY_2020_1_OR_NEWER
-                        //报错如下时，请在Lighting->Scene面板中新建或者选择一个LightingSettings
-                        //Exception: Lightmapping.lightingSettings is null. Please assign it to an existing asset or a new instance.
-                        LightingSettings lightingSettings = Lightmapping.lightingSettings;
-                        Selection.objects = new Object[]
-                            { LightmapParameters.GetLightmapParametersForLightingSettings(lightingSettings) };
-                        //打开inspector面板
-                        EditorApplication.ExecuteMenuItem("Window/General/Inspector");
-        #endif
-                    }
-
-                    if (GUILayout.Button(PluginHubFunc.Icon("d_PlayButton", "Bake Lighting"), GUILayout.Height(50)))
-                    {
-                        Lightmapping.BakeAsync();
-                    }
-
-                    }
-                GUILayout.EndVertical();
-
-
-                GUILayout.BeginVertical("Box");
-                {
-                    GUILayout.Label("快捷打开文件夹：",labelCenter);
-
-                    GUILayout.Label(PluginHubFunc.GuiContent("系统文件夹：","Unity引擎自带的文件夹或者特殊文件夹"));
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.BeginVertical();
-                        {
-                            if (GUILayout.Button("StreamingAssets",layoutOptions))
-                            {
-                                PluginHubFunc.OpenFileExplorer(Application.streamingAssetsPath);
-                            }
-                            if (GUILayout.Button("PersistentDataPath",layoutOptions))
-                            {
-                                PluginHubFunc.OpenFileExplorer(Application.persistentDataPath);
-                            }
-                            if (GUILayout.Button("DataPath",layoutOptions))
-                            {
-                                PluginHubFunc.OpenFileExplorer(Application.dataPath);
-                            }
-                        }
-                        GUILayout.EndVertical();
-
-
-                        GUILayout.BeginVertical();
-                        {
-                            if (GUILayout.Button("Packages",layoutOptions))
-                            {
-                                PluginHubFunc.OpenFileExplorer(Path.Combine(Application.dataPath, "../Packages"));
-                            }
-                            if (GUILayout.Button("ProjectSettings",layoutOptions))
-                            {
-                                PluginHubFunc.OpenFileExplorer(Path.Combine(Application.dataPath, "../ProjectSettings"));
-                            }
-                            if (GUILayout.Button("Logs",layoutOptions))
-                            {
-                                PluginHubFunc.OpenFileExplorer(Path.Combine(Application.dataPath, "../Logs"));
-                            }
-                        }
-                        GUILayout.EndVertical();
-
-                    }
-                    GUILayout.EndHorizontal();
-
-
-                    GUILayout.Label(PluginHubFunc.GuiContent("我的文件夹：","根据个人使用习惯设置的项目文件夹"));
-                    GUILayout.BeginHorizontal();
-                    {
-                        if (GUILayout.Button("Build",layoutOptions))
-                        {
-                            PluginHubFunc.OpenFileExplorer(Path.Combine(Application.dataPath, "../Build"));
-                        }
-                        if (GUILayout.Button("Recordings",layoutOptions))
-                        {
-                            PluginHubFunc.OpenFileExplorer(Path.Combine(Application.dataPath, "../Recordings"));
-                        }
-                        if (GUILayout.Button("ExternalAssets",layoutOptions))
-                        {
-                            PluginHubFunc.OpenFileExplorer(Path.Combine(Application.dataPath, "../ExternalAssets"));
-                        }
-
-                    }
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.EndVertical();
-
             }
             GUILayout.EndVertical();
         }
