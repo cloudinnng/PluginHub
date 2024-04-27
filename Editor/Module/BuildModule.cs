@@ -196,7 +196,7 @@ namespace PluginHub.Module
             DrawBuildLibary();
         }
 
-        private static void DrawPCBuildButtons()
+        private void DrawPCBuildButtons()
         {
             //PC平台快捷构建按钮
             GUILayout.BeginVertical("Box");
@@ -278,7 +278,7 @@ namespace PluginHub.Module
             GUILayout.EndVertical();
         }
 
-        public static void DrawIOSBuildButtons()
+        public void DrawIOSBuildButtons()
         {
             GUILayout.BeginVertical("Box");
             {
@@ -334,7 +334,7 @@ namespace PluginHub.Module
             GUILayout.EndVertical();
         }
 
-        public static void DrawAndroidBuildButtons()
+        public void DrawAndroidBuildButtons()
         {
             GUILayout.BeginVertical("Box");
             {
@@ -366,7 +366,7 @@ namespace PluginHub.Module
             GUILayout.EndVertical();
         }
 
-        private static void DrawBuildLibary()
+        private void DrawBuildLibary()
         {
             //构建库
             GUILayout.BeginVertical("Box");

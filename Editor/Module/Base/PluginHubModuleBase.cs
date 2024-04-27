@@ -375,7 +375,7 @@ namespace PluginHub.Module
             GUILayout.Space(5);
         }
 
-        public static void DrawIconBtnOpenFolder(string path, bool checkExist, string buttonTxt = null)
+        public void DrawIconBtnOpenFolder(string path, bool checkExist, string buttonTxt = null)
         {
             path = path.Replace("/", "\\");
             path = path.Replace("Assets\\..\\", ""); //EditorUtility.RevealInFinder(path);不支持（..）因此需要处理
@@ -396,7 +396,7 @@ namespace PluginHub.Module
         }
 
         //绘制一个拷贝文本的按钮，点击后会将文本拷贝到剪贴板
-        public static void DrawIconBtnCopy(string textToCopy)
+        public void DrawIconBtnCopy(string textToCopy)
         {
             //拷贝按钮
             if (GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
@@ -407,13 +407,13 @@ namespace PluginHub.Module
         }
 
         // 画一个星星icon按钮,这种按钮一般用于添加到收藏夹
-        public static bool DrawIconBtnStar(string tooltip = "Add to favorite")
+        public bool DrawIconBtnStar(string tooltip = "Add to favorite")
         {
             return GUILayout.Button(PluginHubFunc.Icon("d_Favorite@2x", "", tooltip), PluginHubFunc.IconBtnLayoutOptions);
         }
 
         // 画一个删除icon按钮
-        public static bool DrawIconBtnDelete(string toolTip = "delete")
+        public bool DrawIconBtnDelete(string toolTip = "delete")
         {
             return GUILayout.Button(PluginHubFunc.Icon("P4_DeletedLocal@2x", "", toolTip),
                 PluginHubFunc.IconBtnLayoutOptions);

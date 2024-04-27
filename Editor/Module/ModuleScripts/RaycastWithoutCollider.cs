@@ -20,27 +20,47 @@ namespace PluginHub.Module.ModuleScripts
             public float distance;//射线起点到击中点的距离
         }
 
+        // 通用射线检测，先检测MeshRenderer，再检测Terrain
+        public static bool Raycast(Vector3 origin, Vector3 direction, out RaycastResult result)
+        {
+            bool raycastResult = RaycastMeshRenderer(origin,direction,out result);
+            if (raycastResult)
+                return true;
+            raycastResult = RaycastTerrain(origin,direction,out result);
+            return raycastResult;
+        }
 
-        // public static bool RaycastMesh(Vector3 origin, Vector3 direction, out RaycastResult result)
-        // {
-            // RaycastMeshRenderer();
-            // RaycastTerrainMesh();
-        // }
+        // 检查射线是否与场景中的Terrain相交,由于Terrain自带碰撞器，所以使用Unity自带的射线检测方法
+        public static bool RaycastTerrain(Vector3 origin, Vector3 direction, out RaycastResult result)
+        {
+            result = null;
+            RaycastHit hit;
+            if (Physics.Raycast(origin, direction, out hit))
+            {
+                result = new RaycastResult()
+                {
+                    hitPoint = hit.point,
+                    hitNormal = hit.normal,
+                    meshRenderer = null,
+                    triangleIndex = -1,
+                    distance = hit.distance
+                };
+                return true;
+            }
+            return false;
+        }
 
-
-        // 检查射线是否与场景中的任意MeshRenderer相交
+        // 检查射线是否与场景中的MeshRenderer相交
         // 并返回: 是否发生相交,交点坐标、交点法线、MeshRenderer、碰撞点到射线起点的距离
-        // TODO
-        // 这个方法需要优化时间
         public static bool RaycastMeshRenderer(Vector3 origin,Vector3 direction,out RaycastResult result)
         {
             PerformanceTest.Start();
-
             //默认值
             result = null;
 
             List<RaycastResult> hitResults = new List<RaycastResult>();
             Ray ray = new Ray(origin,direction);
+            // DebugEx.DebugRay(ray,9999,Color.green,3f);
 
             // 获取场景中所有MeshRenderer
             MeshRenderer[] meshRenderers = Object.FindObjectsOfType<MeshRenderer>();
@@ -98,7 +118,7 @@ namespace PluginHub.Module.ModuleScripts
             result = hitResults.OrderBy(r => r.distance).First();
 
             //绘制一个箭头指示击中点
-            DebugEx.DebugPointArrow(result.hitPoint,result.hitNormal,Color.red,0.2f,3f);
+            // DebugEx.DebugPointArrow(result.hitPoint,result.hitNormal,Color.red,0.2f,3f);
             return true;
         }
 

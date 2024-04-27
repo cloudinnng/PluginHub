@@ -10,20 +10,32 @@ namespace PluginHub.Helper
     // 当场景相机fov是60时, 若size=10, 则相机到pivot的距离是20,也就是两倍的关系
     public class SceneCameraTween
     {
-        private const double TWEEN_DURATION = 0.15;
+        private const double TWEEN_DURATION = 0.2;
         private Vector3 targetPosition;
         private float targetSize;
+        private Quaternion targetRotation;
+
         private Vector3 initPosition;
         private float initSize;
         private double startTime;
         private SceneView sceneView;
 
-        public bool Complete { get; private set; }
+        private bool Complete;
 
-        public SceneCameraTween(Vector3 targetPosition,float targetSize)
+
+        // 可以直接调用这个方法,让场景相机移动到指定位置
+        public static void GoTo(Vector3 targetPosition,float targetSize,Quaternion targetRotation)
+        {
+            SceneView sceneView = SceneView.lastActiveSceneView;
+            SceneCameraTween tween = new SceneCameraTween(targetPosition, targetSize, targetRotation);
+            tween.PlayTween(sceneView);
+        }
+
+        public SceneCameraTween(Vector3 targetPosition,float targetSize,Quaternion targetRotation)
         {
             this.targetPosition = targetPosition;
             this.targetSize = targetSize;
+            this.targetRotation = targetRotation;
         }
 
         public void PlayTween(SceneView sceneView)
@@ -47,6 +59,7 @@ namespace PluginHub.Helper
 
                 sceneView.pivot = Vector3.Lerp(initPosition, targetPosition, progress);
                 sceneView.size = Mathf.Lerp(initSize, targetSize, progress);
+                sceneView.rotation = Quaternion.Slerp(sceneView.rotation, targetRotation, progress);
 
                 if (progress >= 1)
                 {

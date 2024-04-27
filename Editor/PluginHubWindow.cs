@@ -105,15 +105,29 @@ namespace PluginHub
         }
 
         //是否显示顶部设置面板
-        public static bool showSettingPanel = false;
+        public static bool showSettingPanel {
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showSettingPanel", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showSettingPanel", value); }
+        }
 
-        public static bool showQuickAccess = false;
+        public static bool showQuickAccess
+        {
+            get{ return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showQuickAccess", false); }
+            set{ EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showQuickAccess", value); }
+        }
         
         //是否启用全局debug模式，在ui上显示一些调试信息，开发目的
-        public static bool globalDebugMode = false;
+        public static bool globalDebugMode
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_globalDebugMode", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_globalDebugMode", value); }
+        }
 
         //是否总是刷新gui，会让鼠标指针不处于窗口内也刷新UI,这在某些耗时模块的gui绘制中会产生一定编辑器性能消耗，但是可以让某些模块功能更新更加及时
-        public static bool alwaysRepaintGUI = false;
+        public static bool alwaysRepaintGUI {
+            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_alwaysRepaintGUI", false); }
+            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_alwaysRepaintGUI", value); }
+        }
 
         private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch(); //秒表 用于计算代码执行时间
         private float lastTime;

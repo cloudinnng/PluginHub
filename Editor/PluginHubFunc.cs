@@ -44,7 +44,7 @@ namespace PluginHub
         public static readonly GUILayoutOption[] IconBtnLayoutOptions = new[]
             { GUILayout.Width(iconBtnSize.x), GUILayout.Height(iconBtnSize.y) };
 
-        //项目唯一前缀(每个项目不一样，这样可以为每个项目存储不同的偏好)，用于存储EditorPrefs
+        //项目唯一前缀(每个项目不一样，这样可以为每个项目存储不同的偏好)，用于存储 EditorPrefs
         public static readonly string ProjectUniquePrefix = $"PH_{Application.companyName}_{Application.productName}";
 
         #endregion

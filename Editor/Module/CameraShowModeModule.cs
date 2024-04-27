@@ -154,7 +154,7 @@ namespace PluginHub.Module
             GUILayout.EndVertical();
         }
 
-        public bool CurrDrawCameraModeIs(DrawCameraMode mode)
+        public static bool CurrDrawCameraModeIs(DrawCameraMode mode)
         {
             if (SceneView.lastActiveSceneView == null) return false;
 
