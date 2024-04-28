@@ -5,7 +5,7 @@ using PluginHub.Extends;
 using PluginHub.Helper;
 using UnityEngine;
 
-namespace PluginHub.Module.ModuleScripts
+namespace PluginHub.Helper
 {
     //无碰撞器的射线检测
     public static class RaycastWithoutCollider

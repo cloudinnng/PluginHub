@@ -8,7 +8,6 @@ using System.Text;
 using PluginHub;
 using PluginHub.Data;
 using PluginHub.Helper;
-using PluginHub.Module.ModuleScripts;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;

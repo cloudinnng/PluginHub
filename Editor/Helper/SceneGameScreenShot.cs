@@ -88,12 +88,12 @@ namespace PluginHub.Helper
         {
             //确保打开Game视图,不然会截图失败
             EditorApplication.ExecuteMenuItem("Window/General/Game");
-
             string path = newPath;
             ScreenCapture.CaptureScreenshot(path); //进行截图
             Debug.Log($"截图已保存到 {path}");
+            string dir = Path.GetDirectoryName(path);
             //打开截图文件夹
-            EditorUtility.RevealInFinder(path);
+            EditorUtility.RevealInFinder(dir);
         }
 
 

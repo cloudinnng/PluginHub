@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.Module.WindowLessModule
+namespace PluginHub.MenuExtend
 {
     // 项目视图资产右键上下文菜单
     public static class ProjectContextMenu

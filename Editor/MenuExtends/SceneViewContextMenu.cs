@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using PluginHub.Extends;
 using PluginHub.Helper;
-using PluginHub.Module.ModuleScripts;
+using PluginHub.Module;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.Module.WindowLessModule
+namespace PluginHub.MenuExtend
 {
     // 添加场景视图任意空白位置的右键菜单
     public static class SceneViewContextMenu

@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace PluginHub.Module.WindowLessModule
+namespace PluginHub.MenuExtend
 {
     public static class InspectorComponentContextMenu
     {

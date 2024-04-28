@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.Module.WindowLessModule
+namespace PluginHub.MenuExtend
 {
     public static class InspectorAssetContextMenu
     {

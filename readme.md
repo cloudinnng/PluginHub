@@ -48,11 +48,11 @@
 9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
 
 # 目录
-`Editor/Extends` 下是一些扩展类,一些常用的功能函数  
-`Editor/Helper` 下是一些辅助类,一些常用的助手函数
+`Editor/Extends` 下是一些内置类扩展  
+`Editor/Helper` 下是一些辅助类,常用的助手函数
 `Editor/Module` 下是所有继承自`PluginHubModuleBase`的模块入口类,在`PluginHubWindow`中展示一套GUI  
 `Editor/Module/ModuleScripts` 如果模块过于复杂(无法在一个文件中写完)，可以将模块的脚本放在这个目录下  
-`Editor/Module/WindowLessModule` 目录下是一些不基于PH窗口的模块(文件不以Module结尾),一般是为编辑器添加一些功能.相应的UI界面位于各个ContextMenu或菜单中  
+`Editor/MenuExtends` 下是一些菜单扩展  
 
 # 已完成开发的模块
 这里只介绍一些常用和功能强大，且成熟稳定的模块，更多模块请自行查看源码。
