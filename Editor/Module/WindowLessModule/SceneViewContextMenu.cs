@@ -47,6 +47,7 @@ namespace PluginHub.Module.WindowLessModule
         private static void ShowContextMenu(Event e)
         {
             GenericMenu menu = new GenericMenu();
+
             menu.AddItem(new GUIContent("Go To Mouse Pos"), false, GoToMousePos);
             menu.AddItem(new GUIContent("Move Selection To Here"), false, Selection.gameObjects.Length > 0 ? MoveSelectionToHere : null);
             menu.AddItem(new GUIContent("The Material Here"), false, TheMaterialHere);
@@ -94,6 +95,10 @@ namespace PluginHub.Module.WindowLessModule
             menu.AddItem(new GUIContent("Camera Draw Mode/Wireframe"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.Wireframe), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.Wireframe));
             menu.AddItem(new GUIContent("Camera Draw Mode/Shaded Wireframe"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.TexturedWire), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.TexturedWire));
             menu.AddItem(new GUIContent("Camera Draw Mode/Lightmap"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.BakedLightmap), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.BakedLightmap));
+            menu.AddSeparator("");
+            // 截图
+            menu.AddItem(new GUIContent("Scene View Screenshot"), false, () => SceneGameScreenShot.ScreenShotSceneView());
+            menu.AddItem(new GUIContent("Game View ScreenShot"), false, () => SceneGameScreenShot.ScreenShotGameView());
 
             menu.ShowAsContext();//显示菜单
         }
