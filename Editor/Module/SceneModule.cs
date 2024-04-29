@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PluginHub.Helper;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.VersionControl;

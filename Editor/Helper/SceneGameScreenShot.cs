@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.Helper
+namespace PluginHub.Editor.Helper
 {
     // 实现场景视图和游戏视图截图功能
     public static class SceneGameScreenShot

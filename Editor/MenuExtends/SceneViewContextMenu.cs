@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PluginHub.Extends;
-using PluginHub.Helper;
+using PluginHub.Editor.Helper;
 using PluginHub.Module;
+using PluginHub.Runtime.Extends;
 using UnityEditor;
 using UnityEngine;
 
@@ -54,6 +54,11 @@ namespace PluginHub.MenuExtend
             menu.AddSeparator("");
             // 命令
             menu.AddItem(new GUIContent("Bake Lighting"), false, () => Lightmapping.BakeAsync());
+            menu.AddItem(new GUIContent("Force Stop Bake"), false, () => Lightmapping.ForceStop());
+            menu.AddItem(new GUIContent("Clear"), false, () => Lightmapping.Clear());
+            menu.AddItem(new GUIContent("More/Cancel Bake"), false, () => Lightmapping.Cancel());
+            menu.AddItem(new GUIContent("More/Clear Disk Cache"), false, () => Lightmapping.ClearDiskCache());
+
             menu.AddSeparator("");
 
             // 打开窗口和打开文件夹
@@ -95,6 +100,7 @@ namespace PluginHub.MenuExtend
             menu.AddItem(new GUIContent("Camera Draw Mode/Wireframe"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.Wireframe), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.Wireframe));
             menu.AddItem(new GUIContent("Camera Draw Mode/Shaded Wireframe"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.TexturedWire), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.TexturedWire));
             menu.AddItem(new GUIContent("Camera Draw Mode/Lightmap"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.BakedLightmap), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.BakedLightmap));
+            menu.AddItem(new GUIContent("Camera Draw Mode/BakedUVOverlap"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.BakedUVOverlap), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.BakedUVOverlap));
             menu.AddSeparator("");
             // 截图
             menu.AddItem(new GUIContent("Scene View Screenshot"), false, () => SceneGameScreenShot.ScreenShotSceneView());

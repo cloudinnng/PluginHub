@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace PluginHub.Extends
+namespace PluginHub.Runtime.Extends
 {
     public static class HandlesEx
     {

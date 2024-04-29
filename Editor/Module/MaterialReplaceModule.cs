@@ -148,7 +148,7 @@ namespace PluginHub.Module
         }
     }
 
-    public static class TransformEx
+    public static class TransformEx2
     {
         public static T[] FindAllsByType<T>(this Transform parent) where T : Component
         {

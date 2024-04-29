@@ -1,7 +1,9 @@
 {
     "name": "hellottw.pluginhub.editor",
-    "rootNamespace": "",
-    "references": [],
+    "rootNamespace": "PluginHub.Editor",
+    "references": [
+        "GUID:e84112d53cb63974aa5a4c767fc338c3"
+    ],
     "includePlatforms": [
         "Editor"
     ],

@@ -11,7 +11,7 @@ using System.Text;
 using UnityEngine;
 
 
-namespace PluginHub.Helper
+namespace PluginHub.Editor.Helper
 {
     //INI文件读写工具
     //不需要调用save，直接Close即可保存

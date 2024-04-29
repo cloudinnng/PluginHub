@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using PluginHub.Extends;
-using PluginHub.Helper;
+using PluginHub.Editor.Helper;
+using PluginHub.Runtime.Extends;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;

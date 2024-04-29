@@ -4,11 +4,11 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.Helper
+namespace PluginHub.Module.ModuleScripts
 {
     [CustomEditor(typeof(LightProbesVolumePlaceHelper)), CanEditMultipleObjects]
     //编辑器GUI
-    public class LightProbesVolumePlaceHelperEditor : Editor
+    public class LightProbesVolumePlaceHelperEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using PluginHub.Extends;
-using PluginHub.Helper;
 using UnityEngine;
 
-namespace PluginHub.Helper
+namespace PluginHub.Editor.Helper
 {
     //无碰撞器的射线检测
     public static class RaycastWithoutCollider

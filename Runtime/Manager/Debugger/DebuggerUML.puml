@@ -1,0 +1,17 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+
+class IDebuggerWindow {
+void OnStart();
+void OnDraw();
+}
+
+IDebuggerWindow <--- ConsoleWindow
+IDebuggerWindow <-- ScrollableDebuggerWindowBase
+ScrollableDebuggerWindowBase <-- InfoWindow
+ScrollableDebuggerWindowBase <-- CustomWindow
+ScrollableDebuggerWindowBase <-- UtilitiesWindow
+MonoBehaviour <-- Debugger
+
+
+@enduml
