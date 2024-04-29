@@ -28,7 +28,7 @@ namespace PluginHub.Module
 
         //
         private float lightPlaceOffsetY {
-            get => EditorPrefs.GetFloat($"{moduleIdentifyPrefix}_lightPlaceOffsetY", -0.02f);
+            get => EditorPrefs.GetFloat($"{moduleIdentifyPrefix}_lightPlaceOffsetY", -0.05f);
             set => EditorPrefs.SetFloat($"{moduleIdentifyPrefix}_lightPlaceOffsetY", value);
         }
 
@@ -41,7 +41,7 @@ namespace PluginHub.Module
             isShowAllLightPosition = EditorGUILayout.Toggle("显示所有灯光位置", isShowAllLightPosition);
             autoSetLightName = EditorGUILayout.Toggle("自动设置灯光名字", autoSetLightName);
 
-            lightPlaceOffsetY = EditorGUILayout.Slider("灯光向上偏移Y", lightPlaceOffsetY, -0.1f, 0.1f);
+            lightPlaceOffsetY = EditorGUILayout.Slider("灯光放置竖直偏移Y", lightPlaceOffsetY, -0.1f, 0.1f);
             if (GUILayout.Button("将选中的灯光对象向上移动到最近的'天花板'"))
             {
                 MoveSelectionToCeiling();

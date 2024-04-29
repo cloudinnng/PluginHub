@@ -105,6 +105,31 @@ namespace PluginHub.Module
 
         private Bounds _gameObjectBounds = default;
 
+
+        //获取选中所有物体的包围盒
+        public static Bounds GetSelectionBounds()
+        {
+            Bounds bounds = new Bounds();
+            if (Selection.gameObjects != null && Selection.gameObjects.Length > 0)
+            {
+                List<MeshRenderer> meshRenderers = new List<MeshRenderer>();
+                for  (int i = 0; i < Selection.gameObjects.Length; i++)
+                {
+                    GameObject gameObject = Selection.gameObjects[i];
+                    MeshRenderer[] mrs = gameObject.GetComponentsInChildren<MeshRenderer>();
+                    if (mrs != null && mrs.Length > 0)
+                        meshRenderers.AddRange(mrs);
+                }
+                if (meshRenderers != null && meshRenderers.Count > 0)
+                {
+                    bounds = meshRenderers[0].bounds;
+                    for (int i = 1; i < meshRenderers.Count; i++)
+                        bounds.Encapsulate(meshRenderers[i].bounds);
+                }
+            }
+            return bounds;
+        }
+
         private void UpdateGameObject()
         {
             //计算显示包围盒尺寸

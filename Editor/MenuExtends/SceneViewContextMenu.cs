@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace PluginHub.MenuExtend
 {
+    // 场景视图上下文菜单
     // 添加场景视图任意空白位置的右键菜单
     public static class SceneViewContextMenu
     {
@@ -52,13 +53,18 @@ namespace PluginHub.MenuExtend
             menu.AddItem(new GUIContent("Move Selection To Here"), false, Selection.gameObjects.Length > 0 ? MoveSelectionToHere : null);
             menu.AddItem(new GUIContent("The Material Here"), false, TheMaterialHere);
             menu.AddSeparator("");
-            // 命令
+
+            // 移动命令
+            // menu.AddItem(new GUIContent("Move Selection To Ceiling"), false, () => MoveSelectionToCeiling());
+            // menu.AddItem(new GUIContent("Move Selection To Ground"), false, () => MoveSelectionToGround());
+            // menu.AddSeparator("");
+
+            // 烘焙命令
             menu.AddItem(new GUIContent("Bake Lighting"), false, () => Lightmapping.BakeAsync());
             menu.AddItem(new GUIContent("Force Stop Bake"), false, () => Lightmapping.ForceStop());
-            menu.AddItem(new GUIContent("Clear"), false, () => Lightmapping.Clear());
+            menu.AddItem(new GUIContent("Clear Baked Data"), false, () => Lightmapping.Clear());
             menu.AddItem(new GUIContent("More/Cancel Bake"), false, () => Lightmapping.Cancel());
             menu.AddItem(new GUIContent("More/Clear Disk Cache"), false, () => Lightmapping.ClearDiskCache());
-
             menu.AddSeparator("");
 
             // 打开窗口和打开文件夹
@@ -105,6 +111,15 @@ namespace PluginHub.MenuExtend
             // 截图
             menu.AddItem(new GUIContent("Scene View Screenshot"), false, () => SceneGameScreenShot.ScreenShotSceneView());
             menu.AddItem(new GUIContent("Game View ScreenShot"), false, () => SceneGameScreenShot.ScreenShotGameView());
+
+
+            if (Selection.gameObjects.Length > 0)
+            {
+                menu.AddSeparator("");
+                Bounds b = SelectionModule.GetSelectionBounds();
+                menu.AddItem(new GUIContent($"Selection Bounds: {b.size}"), false, null);
+            }
+
 
             menu.ShowAsContext();//显示菜单
         }
@@ -236,6 +251,32 @@ namespace PluginHub.MenuExtend
                 case CameraOrientation.TopXNegative:
                     SceneCameraTween.GoTo(worldPoint, SceneView.lastActiveSceneView.size, Quaternion.LookRotation(Vector3.down, Vector3.left));
                     break;
+            }
+        }
+
+        private static void MoveSelectionToGround()
+        {
+            foreach (var obj in Selection.gameObjects)
+            {
+                bool raycastResult = RaycastWithoutCollider.Raycast(obj.transform.position, Vector3.down, out RaycastWithoutCollider.RaycastResult result);
+                if (raycastResult)
+                {
+                    Undo.RecordObject(obj.transform, "Move Selection To Ground");
+                    obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y, obj.transform.position.z);
+                }
+            }
+        }
+
+        private static void MoveSelectionToCeiling()
+        {
+            foreach (var obj in Selection.gameObjects)
+            {
+                bool raycastResult = RaycastWithoutCollider.Raycast(obj.transform.position, Vector3.up, out RaycastWithoutCollider.RaycastResult result);
+                if (raycastResult)
+                {
+                    Undo.RecordObject(obj.transform, "Move Selection To Ceiling");
+                    obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y, obj.transform.position.z);
+                }
             }
         }
 
