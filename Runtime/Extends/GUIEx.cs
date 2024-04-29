@@ -42,7 +42,7 @@ namespace PluginHub.Runtime.Extends
             }, 12);
             _style.font = font;
 
-            _myCustonSkin = CFHelper.GetGUISkin();
+            _myCustonSkin = PHHelper.GetGUISkin();
         }
 
         /// <summary>

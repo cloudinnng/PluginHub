@@ -3,7 +3,6 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Profiling;
 using System.IO;
-using CFramework.Tools;
 using PluginHub.Runtime.Extends;
 
 #if UNITY_EDITOR
@@ -12,7 +11,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 #endif
 
-namespace Cloudinnng.CFramework
+namespace PluginHub.Runtime
 {
     public partial class Debugger
     {
@@ -88,20 +87,20 @@ namespace Cloudinnng.CFramework
                             DrawRow("Device Name", SystemInfo.deviceName);
                             DrawRow("Device Unique Identifier", SystemInfo.deviceUniqueIdentifier);
                             DrawRow("Internet Reachability",Application.internetReachability.ToString());
-                            DrawRow("Device Mac", CFHelper.DeviceMac());
+                            DrawRow("Device Mac", PHHelper.DeviceMac());
 
                             GUILayout.Label("<b>Path:</b>");
                             if (Application.platform == RuntimePlatform.WindowsPlayer ||
                                 Application.platform == RuntimePlatform.WindowsEditor)
                             {
                                 DrawRow("Persistent Data Path", Application.persistentDataPath, "Open",
-                                    () => CFHelper.OpenFileExplorer(Application.persistentDataPath));
+                                    () => PHHelper.OpenFileExplorer(Application.persistentDataPath));
                                 DrawRow("Temporary Cache Path", Application.temporaryCachePath, "Open",
-                                    () => CFHelper.OpenFileExplorer(Application.temporaryCachePath));
+                                    () => PHHelper.OpenFileExplorer(Application.temporaryCachePath));
                                 DrawRow("Data Path", Application.dataPath, "Open",
-                                    () => CFHelper.OpenFileExplorer(Application.dataPath));
+                                    () => PHHelper.OpenFileExplorer(Application.dataPath));
                                 DrawRow("Streaming Assets Path", Application.streamingAssetsPath, "Open",
-                                    () => CFHelper.OpenFileExplorer(Application.streamingAssetsPath));
+                                    () => PHHelper.OpenFileExplorer(Application.streamingAssetsPath));
                             }
                             else
                             {

@@ -121,7 +121,7 @@ public class ToastManager : SceneSingleton<ToastManager>
 
     protected void Awake()
     {
-        _myCustonSkin= CFHelper.GetGUISkin();
+        // _myCustonSkin = GUI.skin;
     }
 
     private void Update()
@@ -226,13 +226,13 @@ public class ToastManager : SceneSingleton<ToastManager>
         {
             this.mode = mode;
             this.Text = text;
-            this.textSize = _myCustonSkin.label.CalcSize(new GUIContent(this.Text));
         }
 
         //布局这个toast文本的坐标
         //startY 屏幕底边为0，往上为正
         public void Layout(float startY)
         {
+            this.textSize = GUI.skin.label.CalcSize(new GUIContent(this.Text));
             //padding 是盒子内填充的空间大小
             float padding = 15;
             //外面的盒子  左上角是0，0
@@ -255,8 +255,8 @@ public class ToastManager : SceneSingleton<ToastManager>
         public void Draw()
         {
             GUI.color = Color.white;
-            GUI.Box(boxRect, "", _myCustonSkin.box);
-            GUI.Label(_labelRect, Text, _myCustonSkin.label);
+            GUI.Box(boxRect, "", GUI.skin.box);
+            GUI.Label(_labelRect, Text, GUI.skin.label);
 
             if (mode == ToastMode.OneFrame)
             {

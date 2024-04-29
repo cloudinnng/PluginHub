@@ -8,9 +8,9 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 /// <summary>
-/// 另外还有一个CFEditorHelper类，编辑器中的脚本可以写那个类中
+/// 另外还有一个PHEditorHelper类，编辑器中的脚本可以写那个类中
 /// </summary>
-public static class CFHelper
+public static class PHHelper
 {
     #region Texture Save in Code
     //base64 Textures
@@ -43,7 +43,7 @@ public static class CFHelper
     public static GUISkin GetGUISkin()
     {
         if(_guiSkin == null)
-            _guiSkin = Resources.Load<GUISkin>("CFGUISkin");
+            _guiSkin = Resources.Load<GUISkin>("PHGUISkin");
         return _guiSkin;
     }
     

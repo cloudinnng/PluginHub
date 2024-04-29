@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-namespace Cloudinnng.CFramework
+namespace PluginHub.Runtime
 {
     /// <summary>
     /// 2024年2月2日

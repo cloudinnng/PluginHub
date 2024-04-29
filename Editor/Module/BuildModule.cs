@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using CFramework.Tools;
 using PluginHub;
 using PluginHub.Data;
 using UnityEditor;

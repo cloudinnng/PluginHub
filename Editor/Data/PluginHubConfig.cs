@@ -1,5 +1,4 @@
-﻿using CFramework.Tools;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace PluginHub.Data
 {

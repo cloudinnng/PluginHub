@@ -3,7 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Scripting;
 
 
-#if CF_SKIPLOGO
+#if PH_SKIPLOGO
 //跳过Unity的Splash Logo  在项目中定义CF_SKIPLOGO脚本符号以使用该功能
 namespace Cloudinnng.CFramework
 {

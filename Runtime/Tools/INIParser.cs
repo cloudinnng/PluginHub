@@ -10,9 +10,8 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace CFramework.Tools
+namespace PluginHub
 {
-
 
     //不需要调用save，直接Close即可保存
     public class INIParser

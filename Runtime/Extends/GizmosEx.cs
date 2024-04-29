@@ -60,7 +60,7 @@ namespace PluginHub.Runtime.Extends
 						Vector2 size = _style.CalcSize(new GUIContent(text));
 						Rect bgRect = new Rect(screenPos.x - (size.x / 2) - 10, +view.position.height - screenPos.y - 5,
 							size.x + 20, size.y + 10);
-						GUI.Box(bgRect, "", CFHelper.GetGUISkin().box);
+						GUI.Box(bgRect, "", PHHelper.GetGUISkin().box);
 						Rect textRect = new Rect(screenPos.x - (size.x / 2), +view.position.height - screenPos.y,
 							size.x, size.y);
 						GUI.Label(textRect, text, _style);
@@ -88,7 +88,7 @@ namespace PluginHub.Runtime.Extends
 			//绘制
 			Vector2 size = style.CalcSize(new GUIContent(text));
 			Rect bgRect = drawRect;
-			GUI.Box(bgRect, "", CFHelper.GetGUISkin().box);
+			GUI.Box(bgRect, "", PHHelper.GetGUISkin().box);
 			Rect textRect = drawRect;
 			GUI.Label(textRect, text, style);
 			UnityEditor.Handles.EndGUI();

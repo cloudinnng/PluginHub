@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 
-namespace Cloudinnng.CFramework
+namespace PluginHub.Runtime
 {
     public partial class Debugger
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Cloudinnng.CFramework
+namespace PluginHub.Runtime
 {
     //使用的时候传入声音文件相对与Resources目录的相对路径,不需要后缀名
     //AudioManager2D.Instance.PlaySound("Sounds/Atk");

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Cloudinnng.CFramework
+namespace PluginHub.Runtime
 {
     public partial class Debugger
     {

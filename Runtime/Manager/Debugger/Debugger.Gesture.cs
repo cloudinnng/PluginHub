@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Cloudinnng.CFramework
+namespace PluginHub.Runtime
 {
     public partial class Debugger
     {
