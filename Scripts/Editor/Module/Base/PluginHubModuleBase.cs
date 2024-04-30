@@ -59,15 +59,22 @@ namespace PluginHub.Editor
         //指示该模块是否正在绘制SceneGUI
         public bool isDrawingSceneGUI { private get; set; }
 
-
-        private Object scriptObj
+        private MonoScript _scriptObj;
+        private MonoScript scriptObj
         {
             get
             {
+                if (_scriptObj != null)
+                    return _scriptObj;
                 //获取脚本对象，便于快速进入模块的脚本文件
                 string[] guids = AssetDatabase.FindAssets(GetType().Name); //找出这个脚本文件对象
-                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                return AssetDatabase.LoadAssetAtPath<Object>(path);
+                foreach (var guid in guids)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    if (path.EndsWith($"{GetType().Name}.cs"))
+                        return _scriptObj = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+                }
+                return null;
             }
         }
 

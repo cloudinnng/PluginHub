@@ -1,37 +1,38 @@
 ﻿# 项目介绍
-`PluginHub`是一款用`IMGUI`编写、基于`EditorWindow`的`Unity3D`编辑器插件开发框架，并包含一些开箱即用的插件模块。您可以使用这些开发完成的插件模块提高您的工作效率。或者您也可以自己开发插件模块，以适应您自己的开发工作流。  
+目前，新`PluginHub`现在是一份加速项目开发的代码模板。包含`Runtime`和`Editor`功能。
 
-每个模块实现一方面的功能。旨在为您提供各式各样的功能，以加速开发效率。感谢您点击页面右上角的`Star`以支持我的工作。  
+Runtime主要由以下功能组成：
 
-`PluginHub`在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
+1. 一个名为Debugger的运行时GUI覆盖层。拥有运行时查看控制台日志的功能，并能够查看基本信息和一些杂项功能。也允许您为其添加特定于应用的GUI。
+这在制作程序后台管理页面时特别有用。该覆盖层还拥有快捷键和手势呼出隐藏功能。
+2. Unity中实现的单例类
+3. 位于Extends目录下的系统类扩展
+4. 相机移动工具，提供运行时编辑器风格的相机移动控制、地图风格的相机控制、和第三视角的相机控制。
+5. 其余小工具类，部分搜集与网络，部分自己开发。都是觉得特别有用的。
+
+Editor主要就是PluginHub编辑器窗口：
+
+它提供了编辑器内的辅助工具，用于加速开发。同时也是一款用`IMGUI`编写、基于`EditorWindow`的`Unity3D`编辑器插件开发框架。您可以使用这些开发完成的插件模块提高您的工作效率。或者您也可以自己开发插件模块，以适应您自己的开发工作流。  
+`PluginHub`编辑器功能在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
+
+
+感谢您点击页面右上角的`Star`以支持我的工作。若您发现`PluginHub`中的任何问题，欢迎提交`Issue`或`Pull Request`。  
 
 中文视频说明：https://www.bilibili.com/video/BV1H94y1a79d/
 
-若您发现`PluginHub`中的任何问题，欢迎提交`Issue`或`Pull Request`。
+
+目录规划：  
+- `项目介绍`：`PluginHub`项目介绍
+- `Editor`：`PluginHub`编辑器功能（旧`PluginHub`）
+- `Runtime`：`PluginHub`运行时功能
+
+
 
 ## 动态
+2024年4月30日：大更新，添加了运行时代码库，丰富了`PluginHub`的功能。文档正在完善，或者也可以直接阅读源码。  
 2024年4月26日：现在尽量将类似功能的模块合并，以减少模块数量。
 
-## PluginHub主窗口、模块配置页面
-<img src="ReadmeImg/Demo0.png" width="400" >
-<img src="ReadmeImg/Demo1.png" width="400">
-
-# 名词
-
-- `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Alt+R`
-- 插件模块：对应`PluginHubWindow`中的每个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
-- `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块，启用的模块会在`PluginHubWindow`中显示。见`ModuleConfigSO`类
-- `PH`:有时候您可能会在源码中看到`PH`这个缩写，它是`PluginHub`的缩写
-
-# 特点
-
-- 模块之间分类清晰，简单易用。可以通过每个模块的卷展栏按钮折叠和展开模块。
-- 提供多种方便的模块功能，您也可以开发自己的模块，只需继承`PluginHubModuleBase`类即可。
-- 可以通过`ScriptableObject`配置文件启用或禁用模块，以定制您干净整洁的`PluginHubWindow`。
-- 包含完整源代码，您可以自由扩展和修改功能模块。
-
-
-# 安装与使用
+## 安装与使用
 
 已经过测试的`Unity3D`版本：`2021.3.x` 以上。更老的版本可能也可以使用，但是未经测试，可能会有API不兼容的情况。
 
@@ -46,6 +47,27 @@
 7. 在`PluginHubWindow`窗口中展开模块的下拉卷展栏
 8. 开始使用
 9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
+
+
+# PluginHub 编辑器功能
+
+#### PluginHub主窗口、模块配置页面
+<img src="ReadmeImg/Demo0.png" width="400" >
+<img src="ReadmeImg/Demo1.png" width="400">
+
+#### 名词
+
+- `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Alt+R`
+- 插件模块：对应`PluginHubWindow`中的每个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
+- `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块，启用的模块会在`PluginHubWindow`中显示。见`ModuleConfigSO`类
+- `PH`:有时候您可能会在源码中看到`PH`这个缩写，它是`PluginHub`的缩写
+
+#### 特点
+
+- 模块之间分类清晰，简单易用。可以通过每个模块的卷展栏按钮折叠和展开模块。
+- 提供多种方便的模块功能，您也可以开发自己的模块，只需继承`PluginHubModuleBase`类即可。
+- 可以通过`ScriptableObject`配置文件启用或禁用模块，以定制您干净整洁的`PluginHubWindow`。
+- 包含完整源代码，您可以自由扩展和修改功能模块。
 
 # 目录
 `Editor/Extends` 下是一些内置类扩展  
@@ -161,3 +183,7 @@
 <img src="ReadmeImg\GoToMousePos.gif">
 <img src="ReadmeImg\MoveSelectionToHere.gif">
 <img src="ReadmeImg\TheMaterialHere.gif">
+
+
+# PluginHub 运行时功能
+TODO
