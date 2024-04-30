@@ -23,7 +23,7 @@ using Object = UnityEngine.Object;
 using MenuItem = UnityEditor.MenuItem;
 using Screen = UnityEngine.Screen;
 
-namespace Cloudinnng.CFramework.Editor
+namespace PluginHub.Editor
 {
     // 顶部菜单
     //

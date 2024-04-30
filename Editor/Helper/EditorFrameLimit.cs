@@ -1,19 +1,17 @@
 using UnityEngine;
 using System.Collections;
 using System;
-using Cloudinnng.CFramework.Editor;
 using UnityEditor;
 
-namespace PluginHub.Editor.Helper
+namespace PluginHub.Editor
 {
+    //仅用于限制编辑器模式下的帧率，不干涉运行时的帧率
+    //避免还没运行呢显卡就风扇狂转，也有省电的作用
+    //再次进去编辑模式可能需要重新打开
 
-//仅用于限制编辑器模式下的帧率，不干涉运行时的帧率
-//避免还没运行呢显卡就风扇狂转，也有省电的作用
-//再次进去编辑模式可能需要重新打开
-
-// 目前不清楚是否需要下面两行代码
-// Application.targetFrameRate = -1;
-// QualitySettings.vSyncCount = 0;
+    // 目前不清楚是否需要下面两行代码
+    // Application.targetFrameRate = -1;
+    // QualitySettings.vSyncCount = 0;
     public class EditorFrameLimit
     {
 

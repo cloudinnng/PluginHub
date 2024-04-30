@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 
-namespace PluginHub.Data
+namespace PluginHub.Editor
 {
 #if UNITY_EDITOR
     [CustomEditor(typeof(ModuleConfigSO))]

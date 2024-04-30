@@ -1,5 +1,5 @@
 {
-    "name": "hellottw.pluginhub.editor",
+    "name": "Hellottw.PluginHub.Editor",
     "rootNamespace": "PluginHub.Editor",
     "references": [
         "GUID:e84112d53cb63974aa5a4c767fc338c3"

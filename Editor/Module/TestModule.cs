@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using PluginHub.Editor.Helper;
-using PluginHub.MenuExtend;
+using PluginHub.Editor;
 using PluginHub.Runtime.Extends;
 using UnityEditor;
 using UnityEngine;

@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace PluginHub.MenuExtend
+namespace PluginHub.Editor
 {
     public static class InspectorComponentContextMenu
     {

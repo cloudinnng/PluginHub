@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace PluginHub.Editor.Helper
+namespace PluginHub.Editor
 {
     // 定义一个场景相机的补间动画,让场景相机以动画形式移动到指定的位置
     // SceneView.pivot是Alt+左键拖拽的旋转中心

@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PluginHub.Editor.Helper;
+using PluginHub.Editor;
 using PluginHub.Module;
 using PluginHub.Runtime.Extends;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.MenuExtend
+namespace PluginHub.Editor
 {
     // 场景视图上下文菜单
     // 添加场景视图任意空白位置的右键菜单

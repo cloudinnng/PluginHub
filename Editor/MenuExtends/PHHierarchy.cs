@@ -7,7 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace PluginHub.MenuExtend
+namespace PluginHub.Editor
 {
     [InitializeOnLoad]
     public static class PHHierarchy

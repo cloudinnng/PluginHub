@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace PluginHub.Editor.Helper
+namespace PluginHub.Editor
 {
     public class StartUpFromScene0Always
     {

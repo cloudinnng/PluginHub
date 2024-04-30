@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using PluginHub.Editor.Helper;
+using PluginHub.Editor;
 using PluginHub.Runtime.Extends;
 using UnityEditor;
 using UnityEditor.SceneManagement;

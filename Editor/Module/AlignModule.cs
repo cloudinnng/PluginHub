@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using PluginHub.Editor.Helper;
+using PluginHub.Editor;
 using PluginHub.Module;
 using UnityEditor;
 using UnityEngine;

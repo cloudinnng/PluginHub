@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace PluginHub.MenuExtend
+namespace PluginHub.Editor
 {
     public static class InspectorAssetContextMenu
     {

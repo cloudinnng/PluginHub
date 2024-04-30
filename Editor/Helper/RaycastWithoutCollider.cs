@@ -3,7 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace PluginHub.Editor.Helper
+namespace PluginHub.Editor
 {
     //无碰撞器的射线检测
     public static class RaycastWithoutCollider

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using PluginHub;
-using PluginHub.Data;
+using PluginHub.Editor;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;

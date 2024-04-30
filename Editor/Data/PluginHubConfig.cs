@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PluginHub.Data
+namespace PluginHub.Editor
 {
     //项目独立的ini配置文件
     //与EditorPrefs不同，保存在ProjectSettings目录下，因此它可以被版本控制系统跟踪
@@ -8,7 +8,7 @@ namespace PluginHub.Data
     {
         public static string configPath { get; private set; }
         private static bool initialized = false;
-        private static INIParser iniParser;
+        private static PluginHub.INIParser iniParser;
 
         static PluginHubConfig()
         {
@@ -17,7 +17,7 @@ namespace PluginHub.Data
                 //eg: E:\unityproject\TopwellCustomPattern\ProjectSettings\PHConfig.ini
                 configPath = Application.dataPath + "/../ProjectSettings/PHConfig.ini";
                 // Debug.Log(configPath);
-                iniParser = new INIParser();
+                iniParser = new PluginHub.INIParser();
                 initialized = true;
             }
         }

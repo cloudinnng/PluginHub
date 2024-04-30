@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
-using PluginHub.Editor.Helper;
+using PluginHub.Editor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
