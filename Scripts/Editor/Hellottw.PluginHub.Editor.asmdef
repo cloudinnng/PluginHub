@@ -2,7 +2,8 @@
     "name": "Hellottw.PluginHub.Editor",
     "rootNamespace": "PluginHub.Editor",
     "references": [
-        "GUID:e84112d53cb63974aa5a4c767fc338c3"
+        "GUID:e84112d53cb63974aa5a4c767fc338c3",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
     ],
     "includePlatforms": [
         "Editor"

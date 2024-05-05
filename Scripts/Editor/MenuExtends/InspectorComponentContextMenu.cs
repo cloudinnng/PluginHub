@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using PluginHub.Runtime;
+using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -140,10 +142,7 @@ namespace PluginHub.Editor
         }
         #endregion
 
-// TextMeshPro插件通常会定义一个名为TMP_PRESENT的预处理器符号。你可以在你的代码中使用这个符号来条件编译特定于TextMeshPro的代码块。
-
         #region TextMeshPro
-#if TMP_PRESENT
         [MenuItem("CONTEXT/Button/PH_使用按钮文本命名游戏对象")]
         public static void CustomContextMenuRenameBtn(MenuCommand command)
         {
@@ -293,7 +292,6 @@ namespace PluginHub.Editor
             uguiText.text = oldText.text;
             uguiText.fontSize = (int)oldText.fontSize;
         }
-#endif
         #endregion
 
         #region TerrainCollider
