@@ -11,11 +11,11 @@ namespace PluginHub.Editor
 {
     public enum ModuleType
     {
-        None,
-        Shortcut,
-        Tool,
-        Construction,
-        Analyse,
+        None, //未分类
+        Shortcut, //快捷方式
+        Tool, //工具
+        Construction, //构建场景
+        Analyse, //分析
     }
 
     /// <summary>
@@ -248,10 +248,10 @@ namespace PluginHub.Editor
             if (moduleDebug) Debug.Log($"{moduleName} mudule : OnDisable");
         }
 
-        //OnUpdate会一直调用，不论PluginHubWindow是否获得焦点，但在模块折叠时不调用
+        // 当PluginHubWindow打开状态 OnUpdate 会一直调用，不论PluginHubWindow是否获得焦点，但在模块折叠时不调用
         public virtual void OnUpdate()
         {
-            //if(muduleDebug)Debug.Log($"{muduleName} mudule : OnUpdate");
+            // if(moduleDebug)Debug.Log($"{moduleName} mudule : OnUpdate");
         }
 
         public virtual void OnFocus()

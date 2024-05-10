@@ -50,7 +50,11 @@ namespace PluginHub.Editor
 
             menu.AddItem(new GUIContent("Go To Mouse Pos"), false, GoToMousePos);
             menu.AddItem(new GUIContent("Move Selection To Here"), false, Selection.gameObjects.Length > 0 ? MoveSelectionToHere : null);
-            menu.AddItem(new GUIContent("The Material Here"), false, TheMaterialHere);
+            menu.AddItem(new GUIContent("Selection To Ground"), false, Selection.gameObjects.Length > 0 ? () => SelectionObjToGround(false) : null);
+            menu.AddItem(new GUIContent("The Material Here"), false, ()=>TheMaterialHere(out _,out _,out _));
+            menu.AddItem(new GUIContent("The Material Here (Auto Extract)"), false, TheMaterialHereAutoExtract);
+            menu.AddItem(new GUIContent("Copy Material Ref Here"), false, CopyMaterialReferenceHere);
+            menu.AddItem(new GUIContent("Paste Material Ref Here"), false, GUIUtility.systemCopyBuffer.EndsWith(".mat") ? PasteMaterialReferenceHere : null);
             menu.AddSeparator("");
 
             // 移动命令
@@ -58,11 +62,12 @@ namespace PluginHub.Editor
             // menu.AddItem(new GUIContent("Move Selection To Ground"), false, () => MoveSelectionToGround());
             // menu.AddSeparator("");
 
-            // 烘焙命令
+            // 场景搭建相关命令
             menu.AddItem(new GUIContent("Bake Lighting"), false, () => Lightmapping.BakeAsync());
-            menu.AddItem(new GUIContent("Force Stop Bake"), false, () => Lightmapping.ForceStop());
-            menu.AddItem(new GUIContent("Clear Baked Data"), false, () => Lightmapping.Clear());
-            menu.AddItem(new GUIContent("More/Cancel Bake"), false, () => Lightmapping.Cancel());
+            menu.AddItem(new GUIContent("Cancel Bake"), false, () => Lightmapping.Cancel());
+            menu.AddItem(new GUIContent("Create Light Here"), false, () => CreateNewGameObject<Light>());
+            menu.AddItem(new GUIContent("More/Force Stop Bake"), false, () => Lightmapping.ForceStop());
+            menu.AddItem(new GUIContent("More/Clear Baked Data"), false, () => Lightmapping.Clear());
             menu.AddItem(new GUIContent("More/Clear Disk Cache"), false, () => Lightmapping.ClearDiskCache());
             menu.AddSeparator("");
 
@@ -71,30 +76,31 @@ namespace PluginHub.Editor
             for(int i = recentOpenItems.Count - 1; i >= 0; i--)
             {
                 var item = recentOpenItems[i];
-                menu.AddItem(new GUIContent($"_{item.name} (Recent)"), false, () => ExecuteRecentOpenItem(item));
+                menu.AddItem(new GUIContent($"_{item.menuName} (Recent)"), false, () => ExecuteRecentOpenItem(item));
             }
             // 打开窗口
-            menu.AddItem(new GUIContent("Open Window/Project Settings..."), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Project Settings","Edit/Project Settings...")));
-            menu.AddItem(new GUIContent("Open Window/Package Manager"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Package Manager","Window/Package Manager")));
-            menu.AddItem(new GUIContent("Open Window/Preferences..."), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Preferences","Edit/Preferences...")));
+            menu.AddItem(new GUIContent("Open Window/Project Settings..."), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Project Settings","Edit/Project Settings...")));
+            menu.AddItem(new GUIContent("Open Window/Package Manager"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Package Manager","Window/Package Manager")));
+            menu.AddItem(new GUIContent("Open Window/Preferences..."), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Preferences","Edit/Preferences...")));
             menu.AddSeparator("Open Window/");
-            menu.AddItem(new GUIContent("Open Window/Animation"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Animation","Window/Animation/Animation")));
-            menu.AddItem(new GUIContent("Open Window/Timeline"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Timeline","Window/Sequencing/Timeline")));
+            menu.AddItem(new GUIContent("Open Window/Animation"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Animation","Window/Animation/Animation")));
+            menu.AddItem(new GUIContent("Open Window/Timeline"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Timeline","Window/Sequencing/Timeline")));
             menu.AddSeparator("Open Window/");
-            menu.AddItem(new GUIContent("Open Window/Lighting"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Lighting","Window/Rendering/Lighting")));
-            menu.AddItem(new GUIContent("Open Window/Light Explorer"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Light Explorer","Window/Rendering/Light Explorer")));
-            menu.AddItem(new GUIContent("Open Window/UV Inspector"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"UV Inspector","Window/nTools/UV Inspector")));
+            menu.AddItem(new GUIContent("Open Window/Lighting"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Lighting","Window/Rendering/Lighting")));
+            menu.AddItem(new GUIContent("Open Window/Light Explorer"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Light Explorer","Window/Rendering/Light Explorer")));
+            menu.AddItem(new GUIContent("Open Window/UV Inspector"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"UV Inspector","Window/nTools/UV Inspector")));
             menu.AddSeparator("Open Window/");
-            menu.AddItem(new GUIContent("Open Window/Test Runner"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Window,"Test Runner","Window/General/Test Runner")));
+            menu.AddItem(new GUIContent("Open Window/Test Runner"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Test Runner","Window/General/Test Runner")));
             //打开文件夹
-            menu.AddItem(new GUIContent("Open Folder/StreamingAssets"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Folder,"StreamingAssets",Application.streamingAssetsPath + "/")));
-            menu.AddItem(new GUIContent("Open Folder/PersistentDataPath"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Folder,"PersistentDataPath",Application.persistentDataPath + "/")));
-            menu.AddItem(new GUIContent("Open Folder/DataPath"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Folder,"DataPath",Application.dataPath + "/")));
+            menu.AddItem(new GUIContent("Open Folder/StreamingAssets"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"StreamingAssets",Application.streamingAssetsPath + "/")));
+            menu.AddItem(new GUIContent("Open Folder/PersistentDataPath"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"PersistentDataPath",Application.persistentDataPath + "/")));
+            menu.AddItem(new GUIContent("Open Folder/DataPath"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"DataPath",Application.dataPath + "/")));
             menu.AddSeparator("Open Folder/");
-            menu.AddItem(new GUIContent("Open Folder/Build"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Folder,"Build",ProjectRootPath() +"Build/")));
-            menu.AddItem(new GUIContent("Open Folder/Recordings"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Folder,"Recordings",ProjectRootPath() + "Recordings/")));
-            menu.AddItem(new GUIContent("Open Folder/ExternalAssets"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentOpenType.Folder, "ExternalAssets", ProjectRootPath() + "ExternalAssets/")));
+            menu.AddItem(new GUIContent("Open Folder/Build"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"Build",ProjectRootPath() +"Build/")));
+            menu.AddItem(new GUIContent("Open Folder/Recordings"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"Recordings",ProjectRootPath() + "Recordings/")));
+            menu.AddItem(new GUIContent("Open Folder/ExternalAssets"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder, "ExternalAssets", ProjectRootPath() + "ExternalAssets/")));
             menu.AddSeparator("");
+
 
             // 相机
             menu.AddItem(new GUIContent("Camera Orientation/Top Z+"), false, () => GoToCameraOrientation(CameraOrientation.TopZPositive));
@@ -124,19 +130,20 @@ namespace PluginHub.Editor
         }
 
         #region Open Folder/Window 的最近使用功能
-        private enum RecentOpenType
+        private enum RecentCommandType
         {
-            Folder,
-            Window,
+            Folder,// 打开文件夹
+            Window,// 打开窗口
+            // Create,// 创建对象
         }
         private class RecentOpenItem
         {
-            public RecentOpenType type;
-            public string name;
+            public RecentCommandType type;
+            public string menuName;
             public string path;
-            public RecentOpenItem(RecentOpenType type, string name, string path)
+            public RecentOpenItem(RecentCommandType type, string menuName, string path)
             {
-                this.name = name;
+                this.menuName = menuName;
                 this.type = type;
                 this.path = path;
             }
@@ -149,7 +156,7 @@ namespace PluginHub.Editor
             // 执行
             switch (item.type)
             {
-                case RecentOpenType.Folder:
+                case RecentCommandType.Folder:
                     if (!Directory.Exists(item.path))
                     {
                         Debug.Log($"{item.path} not exist, create it.");
@@ -157,7 +164,7 @@ namespace PluginHub.Editor
                     }
                     EditorUtility.RevealInFinder(item.path);
                     break;
-                case RecentOpenType.Window:
+                case RecentCommandType.Window:
                     EditorApplication.ExecuteMenuItem(item.path);
                     break;
             }
@@ -205,23 +212,101 @@ namespace PluginHub.Editor
         }
 
         //选中鼠标指针处的材质
-        private static void TheMaterialHere()
+        private static void TheMaterialHere(out MeshRenderer meshRenderer,out Material material,out int indexOfMaterialInMesh)
         {
+            meshRenderer = null; material = null; indexOfMaterialInMesh = -1;
             Ray ray = SceneViewMouseRay();
             if (RaycastWithoutCollider.RaycastMeshRenderer(ray.origin, ray.direction,out RaycastWithoutCollider.RaycastResult result))
             {
+                meshRenderer = result.meshRenderer;
+
                 Mesh mesh = result.meshRenderer.GetComponent<MeshFilter>().sharedMesh;
-                int index = GetSubMeshIndex(mesh, result.triangleIndex);
-                if (index == -1)
+                indexOfMaterialInMesh = GetSubMeshIndex(mesh, result.triangleIndex);
+                if (indexOfMaterialInMesh == -1)
                     return;
 
-                Selection.objects = new Object[] { result.meshRenderer.sharedMaterials[index] };
+                Material targetMaterial = result.meshRenderer.sharedMaterials[indexOfMaterialInMesh];
+
+                Selection.objects = new Object[] { targetMaterial };
                 DebugEx.DebugPointArrow(result.hitPoint, result.hitNormal, Color.red, 0.2f, 3f);
-                Debug.Log($"选择了{result.meshRenderer.name},第{index}个材质。", result.meshRenderer.gameObject);
+                Debug.Log($"选择了 {result.meshRenderer.name} 第 {indexOfMaterialInMesh} 个材质。", result.meshRenderer.gameObject);
+                material = targetMaterial;
             }
             else
                 Debug.Log("No mesh renderer hit");
         }
+
+        // 选中鼠标指针处的材质，如果是无法修改的嵌入式材质，则自动提取后将Meshrenderer中的该材质替换为新的自由材质，并选中新的自由材质以便修改参数。
+        // 该函数在搭建场景时非常有用
+        private static void TheMaterialHereAutoExtract()
+        {
+            TheMaterialHere(out MeshRenderer meshRenderer, out Material material,out _);
+            if (material == null)
+                return;
+
+            if (MaterialToolsModule.IsEmbeddedMaterial(material))
+            {
+                // 提取出来的自由材质
+                Material newFreeMaterial = MaterialToolsModule.ExtractMaterial(material);
+                // 替换MeshRenderer的材质
+                for(int i = 0; i < meshRenderer.sharedMaterials.Length; i++)
+                {
+                    if (meshRenderer.sharedMaterials[i] == material)
+                    {
+                        Material[] materials = meshRenderer.sharedMaterials;
+                        materials[i] = newFreeMaterial;
+                        meshRenderer.sharedMaterials = materials;
+                    }
+                }
+                //选中它
+                Selection.objects = new Object[] { newFreeMaterial };
+            }
+            else
+            {
+                // 本身就是自由材质，直接选中即可，无需处理
+                Selection.objects = new Object[] { material };
+                Debug.Log("是自由材质，无需提取，直接选中", material);
+            }
+
+        }
+
+        // 在鼠标位置提取材质路径并保存到剪贴板
+        private static void CopyMaterialReferenceHere()
+        {
+            TheMaterialHere(out MeshRenderer meshRenderer, out Material material,out _);
+            if (material == null)
+                return;
+
+            // 复制材质引用
+            GUIUtility.systemCopyBuffer = AssetDatabase.GetAssetPath(material);
+            Debug.Log($"已复制 {GUIUtility.systemCopyBuffer} 到剪贴板", material);
+        }
+
+        // 使用剪切板中的材质路径获取材质引用后，赋值到到鼠标当前位置的MeshRenderer中的对应位置材质栏
+        // (需要用 CopyMaterialReferenceHere 复制自由材质后才能粘贴)
+        // 此函数用例：场景中有多个相同的对象，调整好一个对象的材质后可以简单的将材质粘贴到其他相同对象上，
+        // 可以确保使用最少的材质资产
+        private static void PasteMaterialReferenceHere()
+        {
+            TheMaterialHere(out MeshRenderer meshRenderer, out Material material,out int indexOfMaterialInMesh);
+            if (material == null)
+                return;
+
+            // 粘贴材质引用
+            string path = GUIUtility.systemCopyBuffer;
+            Material newMaterial = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (newMaterial == null)
+            {
+                Debug.LogError($"无法加载材质：{path}");
+                return;
+            }
+            Undo.RecordObject(meshRenderer, "Paste Material Reference Here");
+            // 将材质 放到MeshRenderer中
+            Material[] materials = meshRenderer.sharedMaterials;
+            materials[indexOfMaterialInMesh] = newMaterial;
+            meshRenderer.sharedMaterials = materials;
+        }
+
 
         private enum CameraOrientation
         {
@@ -279,6 +364,30 @@ namespace PluginHub.Editor
             }
         }
 
+        // 在鼠标位置创建新的GameObject
+        private static void CreateNewGameObject<T>() where T : Behaviour
+        {
+            bool succee = MousePosToWorldPos(out Vector3 worldPos, out _);
+            if (succee)
+            {
+                // 获取选中对象的父对象和同级索引
+                Transform parent = (Selection.gameObjects!=null && Selection.gameObjects.Length>0) ? Selection.gameObjects[0].transform.parent : null;
+                int siblingIndex = (Selection.gameObjects!=null && Selection.gameObjects.Length>0) ? Selection.gameObjects[0].transform.GetSiblingIndex() : 9999;
+
+                GameObject newGameObject = new GameObject($"{typeof(T)}");
+                Undo.RegisterCreatedObjectUndo(newGameObject, $"Create {typeof(T)}");
+                newGameObject.AddComponent<T>();
+                newGameObject.transform.position = worldPos;
+                if (parent != null)
+                    newGameObject.transform.SetParent(parent);
+                newGameObject.transform.SetSiblingIndex(siblingIndex + 1);
+
+                // 选中新创建的对象
+                Selection.activeGameObject = newGameObject;
+            }
+
+        }
+
         #endregion
 
 
@@ -327,6 +436,89 @@ namespace PluginHub.Editor
             Debug.LogError($"Failed to find triangle with index {triangleIndex} in mesh '{mesh.name}'. Total triangle count: {triangleCounter}", mesh);
             return -1;
         }
+
+        private static void SelectionObjToGround(bool detectFromTop)
+        {
+            GameObject[] gameObjects = Selection.gameObjects;
+            Undo.RecordObjects(gameObjects.Select((o) => o.transform).ToArray(), "SelectionObjToGroundObj");
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                MoveGameObjectToGround(gameObjects[i], detectFromTop);
+            }
+        }
+
+        private static void MoveGameObjectToGround(GameObject obj, bool detectFromTop)
+        {
+            //MeshFilter meshFilter = obj.GetComponentInChildren<MeshFilter>();
+
+            //选择轴心处于最低位置的collier
+            Collider collider = FindLowestComponent<Collider>(obj);
+            bool colliderIsAdd = false; //标记碰撞器是否是后来加上去的
+            if (collider == null)
+            {
+                //如果没有碰撞器,添加碰撞器
+                MeshRenderer meshRenderer = FindLowestComponent<MeshRenderer>(obj);
+                if (meshRenderer != null)
+                {
+                    collider = meshRenderer.gameObject.AddComponent<BoxCollider>();
+                }
+                else //如果连网格都没有
+                {
+                    collider = obj.AddComponent<BoxCollider>();
+                    ((BoxCollider)collider).size = Vector3.zero;
+                }
+
+                colliderIsAdd = true;
+            }
+
+            // collider.bounds位置会根据物体位置移动，但是不会旋转，三轴始终平行于世界坐标轴
+            Bounds colliderBounds = collider.bounds;
+
+            //原心点距离边框最下沿的距离
+            float pivotToMinY = obj.transform.position.y - colliderBounds.min.y;
+
+            Vector3 rayOrigin = collider.transform.position;
+            if (detectFromTop)
+                rayOrigin.y = 999999;
+
+            obj.SetActive(false); //暂时隐藏物体,防止射线打到自己
+            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hitInfo))
+            {
+                obj.transform.position = new Vector3(obj.transform.position.x, hitInfo.point.y + pivotToMinY,
+                    obj.transform.position.z);
+                Debug.Log($"地面名称：{hitInfo.collider.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"对象{obj.name}下方没检测到地面");
+            }
+
+            obj.SetActive(true);
+
+            if (colliderIsAdd)
+                GameObject.DestroyImmediate(collider);
+        }
+
+        /// <summary>
+        /// 找出一个对象身上的所有组件，并在其中找世界坐标Y最矮的一个返回
+        /// </summary>
+        private static T FindLowestComponent<T>(GameObject gameObject) where T : Component
+        {
+            T[] components = gameObject.GetComponentsInChildren<T>();
+            int minIndex = 0;
+            float minY = 999999;
+            for (int i = 0; i < components.Length; i++)
+            {
+                if (minY > components[i].transform.position.y)
+                {
+                    minY = components[i].transform.position.y;
+                    minIndex = i;
+                }
+            }
+
+            return (components == null || components.Length == 0) ? null : components[minIndex];
+        }
+
         #endregion
 
     }

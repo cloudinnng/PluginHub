@@ -246,28 +246,19 @@ namespace PluginHub.Runtime
             GUILayout.BeginHorizontal();
             {
                 //绘制顶层Tab标签按钮
-                _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(30f),
+                _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(25f),
                     GUILayout.MaxWidth(Screen.width));
 
                 //最小化按钮
-                if (GUILayout.Button("_", GUILayout.Height(30f), GUILayout.Width(30f)))
-                {
+                if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))
                     isShowFullWindow = false;
-                }
 
                 //关闭调试器按钮
-                if (GUILayout.Button("X", GUILayout.Height(30f), GUILayout.Width(30f)))
-                {
+                if (GUILayout.Button("X", GUILayout.Height(25f), GUILayout.Width(30f)))
                     isShowDebugger = false;
-                }
             }
             GUILayout.EndHorizontal();
 
-            //绘制子Tab标签
-            GUILayout.BeginHorizontal();
-            {
-            }
-            GUILayout.EndHorizontal();
 
             //画出选择的窗口
             registeredWindowDic.Values.ToArray()[_selectIndex].OnDraw();

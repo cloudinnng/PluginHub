@@ -108,7 +108,7 @@ namespace PluginHub.Editor
                     }
                 }
             }
-            PerformanceTest.End("RaycastMeshRenderer");
+            PerformanceTest.End("RaycastMeshRenderer",200);
             if(hitResults.Count == 0)
                 return false;
             //寻找距离origin最近的碰撞结果

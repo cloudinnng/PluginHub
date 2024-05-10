@@ -196,34 +196,6 @@ namespace PluginHub.Editor
             return guiContent;
         }
 
-        //返回一个材质是否是一个嵌入式材质
-        public static bool IsEmbeddedMaterial(Material material)
-        {
-            return IsEmbeddedMaterial(AssetDatabase.GetAssetPath(material));
-        }
-
-        public static bool IsEmbeddedMaterial(string materialPath)
-        {
-            //不是.mat结尾，即为嵌入式材质
-            return !materialPath.EndsWith(".mat");
-        }
-
-
-        //是否选中了新的材质
-        public static bool IsSelectNewMaterial(Material oldMaterial)
-        {
-            if (Selection.objects == null)
-                return false;
-            if (Selection.objects.Length <= 0)
-                return false;
-            Material select = Selection.objects[0] as Material;
-            if (select == null)
-                return false;
-            if (select == oldMaterial)
-                return false;
-            return true;
-        }
-
         public static bool IsSelectMaterial()
         {
             if (Selection.objects != null && Selection.objects.Length > 0)

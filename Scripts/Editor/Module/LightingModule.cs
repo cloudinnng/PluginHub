@@ -63,7 +63,7 @@ namespace PluginHub.Editor
             //将选中的灯光移动到最近的天花板
             foreach (var light in Selection.gameObjects)
             {
-                bool recastResult = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position, Vector3.up,out RaycastWithoutCollider.RaycastResult result);
+                bool recastResult = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position + new Vector3(0,-0.05f,0), Vector3.up,out RaycastWithoutCollider.RaycastResult result);
 
                 if (recastResult)
                 {
@@ -99,9 +99,13 @@ namespace PluginHub.Editor
             }
         }
 
-        public override void RefreshData()
+        public override void OnUpdate()
         {
-            base.RefreshData();
+            base.OnUpdate();
+        // }
+        // public override void RefreshData()
+        // {
+        //     base.RefreshData();
 
             //获取所有灯光对象
             allLightObjects.Clear();

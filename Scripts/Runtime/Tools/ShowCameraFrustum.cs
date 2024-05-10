@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -427,5 +426,5 @@ Shader ""Hidden/TransparentBlackWithSlider""
         #endregion
     }
 
-#endif
 }
+#endif

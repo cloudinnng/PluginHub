@@ -73,6 +73,6 @@ namespace PluginHub.Runtime
         }
 #endif
     }
-#endif
 }
+#endif
 

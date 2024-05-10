@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,13 +17,15 @@ namespace PluginHub.Runtime
             private readonly Dictionary<string, ICustomWindowGUI> _guiClientsDic =
                 new Dictionary<string, ICustomWindowGUI>();
 
+
             public interface ICustomWindowGUI
             {
                 ///客户端调试UI在Debugger CustomWindow中的绘制顺序，越小越靠前。可选择性实现
                 ///具体绘制函数，由客户端程序实现
-      
+
 #if UNITY_2021_1_OR_NEWER
                 public int DebuggerDrawOrder => 0;
+
                 public void OnDrawDebuggerGUI();
 #elif UNITY_2020_1_OR_NEWER
                 public int DebuggerDrawOrder { get; set; }
@@ -33,27 +36,45 @@ namespace PluginHub.Runtime
 #endif
             }
 
-            // private bool _showDetail = false;
-
             protected override void OnDrawScrollableWindow()
             {
                 if (_guiClientsDic.Count == 0)
                     return;
 
-                // if (GUILayout.Button("ButtonName"))
-                // {
-                //     RefreshDebuggerClientRoutine();
-                // }
+                #if UNITY_EDITOR
+                InnerDraw();
+                #else
+                //这里进行异常捕获，避免CustomWindowGUI的异常导致整个Debugger无法绘制
+                try
+                {
+                    InnerDraw();
+                }
+                catch (Exception e)
+                {
+                    GUILayout.EndVertical();
+                    Debug.LogError($"{e.Message}\n{e.StackTrace}\n{e.Source}\n{e.TargetSite}\n{e.InnerException}\n{e.Data}");
+                    GUILayout.Label($"Error: {e.Message}");
+                    GUILayout.Label("Debugger CustomWindow 出现异常！ 您可以尝试以下操作");
+                    if (GUILayout.Button("重启场景"))
+                    {
+                        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                    }
+                    if (GUILayout.Button("清除 PlayerPrefs"))
+                    {
+                        PlayerPrefs.DeleteAll();
+                    }
+                }
+                #endif
+            }
 
+            private void InnerDraw()
+            {
                 foreach (KeyValuePair<string, ICustomWindowGUI> item in _guiClientsDic)
                 {
                     GUILayout.BeginVertical("box");
                     {
                         //绘制客户端名字和优先级
-                        if (GUILayout.Button($"{item.Key} ({item.Value.DebuggerDrawOrder})","Box"))
-                        {
-                            // _showDetail = !_showDetail;
-                        }
+                        GUILayout.Button($"{item.Key} ({item.Value.DebuggerDrawOrder})", "Box");
                         item.Value.OnDrawDebuggerGUI();
                     }
                     GUILayout.EndVertical();
