@@ -47,6 +47,7 @@ namespace PluginHub.Runtime
         {
             MEDIUM_640x480,
             LARGE_800x600,
+            LARGE_1067x600,
             XLARGE_1024x768,
         }
         private static Vector2Int GetResolution(DebuggerResolutionType type)
@@ -57,6 +58,8 @@ namespace PluginHub.Runtime
                     return new Vector2Int(640, 480);
                 case DebuggerResolutionType.LARGE_800x600:
                     return new Vector2Int(800, 600);
+                case DebuggerResolutionType.LARGE_1067x600:
+                    return new Vector2Int(1067, 600);
                 case DebuggerResolutionType.XLARGE_1024x768:
                     return new Vector2Int(1024, 768);
                 default:

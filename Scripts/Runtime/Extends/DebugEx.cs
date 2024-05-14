@@ -83,6 +83,12 @@ namespace PluginHub.Runtime
             bool depthTest = true)
         {
             color = (color == default(Color)) ? Color.white : color;
+            float halfScale = scale * 0.5f;
+
+            //3 circles for each axis
+            DebugEx.DebugCircle(position, Vector3.up, color, halfScale, duration, depthTest);
+            DebugEx.DebugCircle(position, Vector3.right, color, halfScale, duration, depthTest);
+            DebugEx.DebugCircle(position, Vector3.forward, color, halfScale, duration, depthTest);
 
             Debug.DrawRay(position + (Vector3.up * (scale * 0.5f)), -Vector3.up * scale, color, duration, depthTest);
             Debug.DrawRay(position + (Vector3.right * (scale * 0.5f)), -Vector3.right * scale, color, duration,

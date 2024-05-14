@@ -36,6 +36,33 @@ namespace PluginHub.Editor
         //场景中所有的灯光对象
         private List<Light> allLightObjects = new List<Light>();
 
+        // 阵列放置的两个点
+        private Vector3 placementFirstPosition {
+            get
+            {
+                string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementFirstPosition", "0,0,0").Split(',');
+                return new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
+            }
+            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementFirstPosition", $"{value.x},{value.y},{value.z}"); }
+        }
+        private Vector3 placementSecondPosition {
+            get
+            {
+                string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementSecondPosition", "0,0,0").Split(',');
+                return new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
+            }
+            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementSecondPosition", $"{value.x},{value.y},{value.z}"); }
+        }
+        private int placementCount {
+            get => EditorPrefs.GetInt($"{moduleIdentifyPrefix}_placementCount", 1);
+            set => EditorPrefs.SetInt($"{moduleIdentifyPrefix}_placementCount", value);
+        }
+
+        private GameObject placementPrefab;
+
+
+
+
         protected override void DrawGuiContent()
         {
             isShowAllLightPosition = EditorGUILayout.Toggle("显示所有灯光位置", isShowAllLightPosition);
@@ -47,10 +74,123 @@ namespace PluginHub.Editor
                 MoveSelectionToCeiling();
             }
 
-            // if (GUILayout.Button("将选中的灯光在XZ平面上均匀分布(室内环境)"))
-            // {
-            //     DistributeSelectionOnXZPlane();
-            // }
+            DrawSplitLine("阵列放置");
+
+
+            GUILayout.BeginHorizontal();
+            {
+                placementFirstPosition = EditorGUILayout.Vector3Field("第一个点", placementFirstPosition);
+                GUILayout.BeginVertical(GUILayout.Width(100));
+                {
+                    if (GUILayout.Button("到场景游标"))
+                        placementFirstPosition = SceneViewContextMenu.sceneViewCursor;
+                    if (GUILayout.Button("向上吸附"))
+                    {
+                        Vector3? pos = CalculateToCeilingPosition(placementFirstPosition);
+                        if (pos != null)
+                            placementFirstPosition = pos.Value;
+                    }
+                }
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical(GUILayout.Width(100));
+                {
+                    if (GUILayout.Button("寻找"))
+                        SceneCameraTween.RotateTo(placementFirstPosition);
+                    if (GUILayout.Button("到这去"))
+                        SceneCameraTween.GoTo(placementFirstPosition);
+                }
+                GUILayout.EndVertical();
+
+            }
+            GUILayout.EndHorizontal();
+
+
+            GUILayout.BeginHorizontal();
+            {
+                placementSecondPosition = EditorGUILayout.Vector3Field("第二个点", placementSecondPosition);
+                GUILayout.BeginVertical(GUILayout.Width(100));
+                {
+                    if (GUILayout.Button("到场景游标"))
+                        placementSecondPosition = SceneViewContextMenu.sceneViewCursor;
+                    if (GUILayout.Button("向上吸附"))
+                    {
+                        Vector3? pos = CalculateToCeilingPosition(placementSecondPosition);
+                        if (pos != null)
+                            placementSecondPosition = pos.Value;
+                    }
+                }
+                GUILayout.EndVertical();
+                GUILayout.BeginVertical(GUILayout.Width(100));
+                {
+                    if (GUILayout.Button("寻找"))
+                        SceneCameraTween.RotateTo(placementSecondPosition);
+                    if (GUILayout.Button("到这去"))
+                        SceneCameraTween.GoTo(placementSecondPosition);
+                }
+                GUILayout.EndVertical();
+            }
+            GUILayout.EndHorizontal();
+
+            placementPrefab = EditorGUILayout.ObjectField("放置的预制体", placementPrefab, typeof(GameObject), true) as GameObject;
+
+            placementCount = EditorGUILayout.IntField("放置数量", placementCount);
+            placementCount = Mathf.Max(placementCount, 1);
+
+
+            GUI.enabled = placementPrefab != null;
+            if (GUILayout.Button("执行放置"))
+            {
+
+                Vector3[] positions = CalculatePlacementPositions();
+                for (int i = 0; i < placementCount; i++)
+                {
+                    GameObject go = GameObject.Instantiate(placementPrefab);
+                    Undo.RegisterCreatedObjectUndo(go, "放置物体");
+                    go.transform.position = positions[i];
+                    go.transform.parent = placementPrefab.transform.parent;
+                    go.name = $"{placementPrefab.name}_{i}";
+                }
+            }
+            GUI.enabled = true;
+
+        }
+
+        private Vector3[] CalculatePlacementPositions()
+        {
+            Vector3[] positions = new Vector3[placementCount];
+            Vector3 direction = (placementSecondPosition - placementFirstPosition).normalized;
+            float distance = Vector3.Distance(placementFirstPosition,placementSecondPosition);
+            for (int i = 0; i < placementCount; i++)
+                positions[i] = placementFirstPosition + direction * (distance / (placementCount - 1) * i);
+
+            return positions;
+        }
+
+        private bool DrawHandlePlacement()
+        {
+            placementFirstPosition = Handles.PositionHandle(placementFirstPosition,Quaternion.identity);
+            placementSecondPosition = Handles.PositionHandle(placementSecondPosition,Quaternion.identity);
+
+            // 预览放置位置
+            Vector3[] positions = CalculatePlacementPositions();
+            foreach (var position in positions)
+            {
+                float size = HandleUtility.GetHandleSize(position) * 0.1f;
+                Handles.SphereHandleCap(0,position,Quaternion.identity,size,EventType.Repaint);
+            }
+
+            return true;
+        }
+
+        //将位置向上移动到最近的天花板
+        private Vector3? CalculateToCeilingPosition(Vector3 worldPos)
+        {
+            bool recastResult = RaycastWithoutCollider.RaycastMeshRenderer(worldPos + new Vector3(0,-0.05f,0), Vector3.up,out RaycastWithoutCollider.RaycastResult result);
+            if (recastResult)
+                return result.hitPoint + Vector3.up * lightPlaceOffsetY;
+            else
+                return null;
         }
 
         private void MoveSelectionToCeiling()
@@ -63,12 +203,9 @@ namespace PluginHub.Editor
             //将选中的灯光移动到最近的天花板
             foreach (var light in Selection.gameObjects)
             {
-                bool recastResult = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position + new Vector3(0,-0.05f,0), Vector3.up,out RaycastWithoutCollider.RaycastResult result);
-
-                if (recastResult)
-                {
-                    light.transform.position = result.hitPoint + Vector3.up * lightPlaceOffsetY;
-                }
+                Vector3? pos = CalculateToCeilingPosition(light.transform.position);
+                if (pos != null)
+                    light.transform.position = pos.Value;
             }
         }
 
@@ -152,7 +289,7 @@ namespace PluginHub.Editor
             return "";
         }
 
-        protected override bool OnSceneGUI(SceneView sceneView)
+        private bool DrawLightingPosition()
         {
             if (!isShowAllLightPosition)
                 return false;
@@ -179,6 +316,12 @@ namespace PluginHub.Editor
                 }
             }
             return isShowAllLightPosition;
+        }
+
+
+        protected override bool OnSceneGUI(SceneView sceneView)
+        {
+            return DrawLightingPosition() || DrawHandlePlacement();
         }
     }
 }

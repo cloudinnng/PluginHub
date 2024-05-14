@@ -18,7 +18,7 @@ namespace PluginHub.Editor
     {
         private ModuleConfigSO targetScript => (ModuleConfigSO)target;
         //模块前缀
-        private string moduleFolder = "Packages/com.hellottw.pluginhub/Editor/Module/";
+        private string moduleFolder = "Packages/com.hellottw.pluginhub/Scripts/Editor/Module/";
         private string moduleFillterStr = "";
 
         public override void OnInspectorGUI()
@@ -194,6 +194,7 @@ namespace PluginHub.Editor
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}ReferenceFinderModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}AlignModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}TextureModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialToolsModule.cs"),
                 }
             });
         }
@@ -213,7 +214,7 @@ namespace PluginHub.Editor
                 string moduleName = System.IO.Path.GetFileNameWithoutExtension(modulePath);
                 // Debug.Log(moduleName);
                 //使用反射获取ModuleType
-                Type moduleCSharpType = Type.GetType($"PluginHub.Module.{moduleName}");
+                Type moduleCSharpType = Type.GetType($"PluginHub.Editor.{moduleName}");
                 object obj = Activator.CreateInstance(moduleCSharpType);
                 //获取ModuleType
                 ModuleType moduleType = (ModuleType)moduleCSharpType.GetProperty("moduleType").GetValue(obj);

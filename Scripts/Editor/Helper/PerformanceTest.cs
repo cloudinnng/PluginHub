@@ -26,7 +26,7 @@ namespace PluginHub.Editor
             if (elapsedMilliseconds > msThreshold)
             {
                 //打印代码执行时间
-                Debug.Log($"{testTitle} takes {elapsedMilliseconds} ms");
+                Debug.Log($"{testTitle} takes {elapsedMilliseconds} ms (> Threshold:{msThreshold} ms)");
             }
         }
     }

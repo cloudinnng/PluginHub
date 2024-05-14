@@ -12,6 +12,8 @@ namespace PluginHub.Editor
     // 添加场景视图任意空白位置的右键菜单
     public static class SceneViewContextMenu
     {
+        //场景视图游标（跟blender学习），用于辅助其他功能
+        public static Vector3 sceneViewCursor { get; private set; }
         public static Vector2 mouseDownPosition { get; private set; }
         public static Vector2 mouseCurrPosition { get; private set; }
         private static double mouseDownTime;
@@ -55,7 +57,13 @@ namespace PluginHub.Editor
             menu.AddItem(new GUIContent("The Material Here (Auto Extract)"), false, TheMaterialHereAutoExtract);
             menu.AddItem(new GUIContent("Copy Material Ref Here"), false, CopyMaterialReferenceHere);
             menu.AddItem(new GUIContent("Paste Material Ref Here"), false, GUIUtility.systemCopyBuffer.EndsWith(".mat") ? PasteMaterialReferenceHere : null);
+            menu.AddItem(new GUIContent("Move Scene Cursor To Here"), false, () =>
+            {
+                if (MousePosToWorldPos(out Vector3 worldPos, out _))
+                    sceneViewCursor = worldPos;
+            });
             menu.AddSeparator("");
+
 
             // 移动命令
             // menu.AddItem(new GUIContent("Move Selection To Ceiling"), false, () => MoveSelectionToCeiling());
@@ -415,7 +423,8 @@ namespace PluginHub.Editor
                 return false;
             worldPos = result.hitPoint;
             distanceOut = result.distance;
-            DebugEx.DebugPointArrow(result.hitPoint,result.hitNormal,Color.red,0.2f,3f);
+            // DebugEx.DebugPointArrow(result.hitPoint,result.hitNormal,Color.red,0.2f,3f);
+            DebugEx.DebugPoint(result.hitPoint,Color.white,0.2f,3f);
             return true;
         }
 
