@@ -14,6 +14,7 @@ namespace PluginHub.Editor
     {
         //场景视图游标（跟blender学习），用于辅助其他功能
         public static Vector3 sceneViewCursor { get; private set; }
+        public static Vector3 lastSceneViewCursor { get; private set; }
         public static Vector2 mouseDownPosition { get; private set; }
         public static Vector2 mouseCurrPosition { get; private set; }
         private static double mouseDownTime;
@@ -36,6 +37,10 @@ namespace PluginHub.Editor
                 mouseDownTime = EditorApplication.timeSinceStartup;
             }else if (e.type == EventType.MouseUp && e.button == 1)
             {
+                // 无修饰键
+                if(e.control || e.alt || e.shift || e.command)
+                    return;
+
                 // 被认为是右键单击的条件
                 if ((e.mousePosition - mouseDownPosition).magnitude < 3 &&
                     EditorApplication.timeSinceStartup - mouseDownTime < 0.3f)
@@ -60,7 +65,11 @@ namespace PluginHub.Editor
             menu.AddItem(new GUIContent("Move Scene Cursor To Here"), false, () =>
             {
                 if (MousePosToWorldPos(out Vector3 worldPos, out _))
+                {
+                    lastSceneViewCursor = sceneViewCursor;
                     sceneViewCursor = worldPos;
+                    DebugEx.DebugPoint(sceneViewCursor, Color.green, 0.2f, 3f);
+                }
             });
             menu.AddSeparator("");
 
@@ -79,37 +88,6 @@ namespace PluginHub.Editor
             menu.AddItem(new GUIContent("More/Clear Disk Cache"), false, () => Lightmapping.ClearDiskCache());
             menu.AddSeparator("");
 
-            // 打开窗口和打开文件夹
-            // 最近使用菜单。。。
-            for(int i = recentOpenItems.Count - 1; i >= 0; i--)
-            {
-                var item = recentOpenItems[i];
-                menu.AddItem(new GUIContent($"_{item.menuName} (Recent)"), false, () => ExecuteRecentOpenItem(item));
-            }
-            // 打开窗口
-            menu.AddItem(new GUIContent("Open Window/Project Settings..."), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Project Settings","Edit/Project Settings...")));
-            menu.AddItem(new GUIContent("Open Window/Package Manager"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Package Manager","Window/Package Manager")));
-            menu.AddItem(new GUIContent("Open Window/Preferences..."), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Preferences","Edit/Preferences...")));
-            menu.AddSeparator("Open Window/");
-            menu.AddItem(new GUIContent("Open Window/Animation"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Animation","Window/Animation/Animation")));
-            menu.AddItem(new GUIContent("Open Window/Timeline"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Timeline","Window/Sequencing/Timeline")));
-            menu.AddSeparator("Open Window/");
-            menu.AddItem(new GUIContent("Open Window/Lighting"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Lighting","Window/Rendering/Lighting")));
-            menu.AddItem(new GUIContent("Open Window/Light Explorer"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Light Explorer","Window/Rendering/Light Explorer")));
-            menu.AddItem(new GUIContent("Open Window/UV Inspector"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"UV Inspector","Window/nTools/UV Inspector")));
-            menu.AddSeparator("Open Window/");
-            menu.AddItem(new GUIContent("Open Window/Test Runner"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Window,"Test Runner","Window/General/Test Runner")));
-            //打开文件夹
-            menu.AddItem(new GUIContent("Open Folder/StreamingAssets"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"StreamingAssets",Application.streamingAssetsPath + "/")));
-            menu.AddItem(new GUIContent("Open Folder/PersistentDataPath"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"PersistentDataPath",Application.persistentDataPath + "/")));
-            menu.AddItem(new GUIContent("Open Folder/DataPath"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"DataPath",Application.dataPath + "/")));
-            menu.AddSeparator("Open Folder/");
-            menu.AddItem(new GUIContent("Open Folder/Build"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"Build",ProjectRootPath() +"Build/")));
-            menu.AddItem(new GUIContent("Open Folder/Recordings"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder,"Recordings",ProjectRootPath() + "Recordings/")));
-            menu.AddItem(new GUIContent("Open Folder/ExternalAssets"), false, () => ExecuteRecentOpenItem(new RecentOpenItem(RecentCommandType.Folder, "ExternalAssets", ProjectRootPath() + "ExternalAssets/")));
-            menu.AddSeparator("");
-
-
             // 相机
             menu.AddItem(new GUIContent("Camera Orientation/Top Z+"), false, () => GoToCameraOrientation(CameraOrientation.TopZPositive));
             menu.AddItem(new GUIContent("Camera Orientation/Top Z-"), false, () => GoToCameraOrientation(CameraOrientation.TopZNegative));
@@ -121,9 +99,6 @@ namespace PluginHub.Editor
             menu.AddItem(new GUIContent("Camera Draw Mode/Lightmap"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.BakedLightmap), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.BakedLightmap));
             menu.AddItem(new GUIContent("Camera Draw Mode/BakedUVOverlap"), CameraShowModeModule.CurrDrawCameraModeIs(DrawCameraMode.BakedUVOverlap), () => CameraShowModeModule.ChangeDrawCameraMode(DrawCameraMode.BakedUVOverlap));
             menu.AddSeparator("");
-            // 截图
-            menu.AddItem(new GUIContent("Scene View Screenshot"), false, () => SceneGameScreenShot.ScreenShotSceneView());
-            menu.AddItem(new GUIContent("Game View ScreenShot"), false, () => SceneGameScreenShot.ScreenShotGameView());
 
 
             if (Selection.gameObjects.Length > 0)
@@ -132,67 +107,12 @@ namespace PluginHub.Editor
                 Bounds b = SelectionModule.GetSelectionBounds();
                 menu.AddItem(new GUIContent($"Selection Bounds: {b.size}"), false, null);
             }
+            menu.AddItem(new GUIContent($"SceneView Cursor: {sceneViewCursor}"), false, null);
+            menu.AddItem(new GUIContent($"Distance To Last Cursor: {Vector3.Distance(sceneViewCursor, lastSceneViewCursor)}"), false, null);
 
 
             menu.ShowAsContext();//显示菜单
         }
-
-        #region Open Folder/Window 的最近使用功能
-        private enum RecentCommandType
-        {
-            Folder,// 打开文件夹
-            Window,// 打开窗口
-            // Create,// 创建对象
-        }
-        private class RecentOpenItem
-        {
-            public RecentCommandType type;
-            public string menuName;
-            public string path;
-            public RecentOpenItem(RecentCommandType type, string menuName, string path)
-            {
-                this.menuName = menuName;
-                this.type = type;
-                this.path = path;
-            }
-        }
-
-        private static List<RecentOpenItem> recentOpenItems = new List<RecentOpenItem>();
-
-        private static void ExecuteRecentOpenItem(RecentOpenItem item)
-        {
-            // 执行
-            switch (item.type)
-            {
-                case RecentCommandType.Folder:
-                    if (!Directory.Exists(item.path))
-                    {
-                        Debug.Log($"{item.path} not exist, create it.");
-                        Directory.CreateDirectory(item.path);
-                    }
-                    EditorUtility.RevealInFinder(item.path);
-                    break;
-                case RecentCommandType.Window:
-                    EditorApplication.ExecuteMenuItem(item.path);
-                    break;
-            }
-            // 记录最近使用
-            if (recentOpenItems.Contains(item))
-                recentOpenItems.Remove(item);
-            recentOpenItems.Add(item);
-            if (recentOpenItems.Count > 5)
-                recentOpenItems.Remove(recentOpenItems.First());
-        }
-
-        // /Users/ttw/ProjectUnity/TestProject/
-        private static string ProjectRootPath()
-        {
-            string path = Application.dataPath;
-            path = path.Substring(0, path.Length - 6);
-            return path;
-        }
-
-        #endregion
 
 
         #region Menu Command
@@ -236,7 +156,7 @@ namespace PluginHub.Editor
                 Material targetMaterial = result.meshRenderer.sharedMaterials[indexOfMaterialInMesh];
 
                 Selection.objects = new Object[] { targetMaterial };
-                DebugEx.DebugPointArrow(result.hitPoint, result.hitNormal, Color.red, 0.2f, 3f);
+                DebugEx.DebugPoint(result.hitPoint, Color.red, 0.2f, 3f);
                 Debug.Log($"选择了 {result.meshRenderer.name} 第 {indexOfMaterialInMesh} 个材质。", result.meshRenderer.gameObject);
                 material = targetMaterial;
             }

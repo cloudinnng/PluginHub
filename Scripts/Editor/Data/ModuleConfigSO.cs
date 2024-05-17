@@ -122,6 +122,12 @@ namespace PluginHub.Editor
                     MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
+                if (GUILayout.Button("载入场景搭建配置"))
+                {
+                    MakeConstructSceneConfig();
+                    MakeConfigDirtyAndSave();
+                    PluginHubWindow.RestartWindow();
+                }
                 if (GUILayout.Button("载入精简模块配置"))
                 {
                     MakeMinimalModuleConfig();
@@ -167,7 +173,31 @@ namespace PluginHub.Editor
         }
         #endregion
 
-        #region 两个预设配置
+        #region 几个预设配置
+
+
+        // 场景搭建的模块
+        private void MakeConstructSceneConfig()
+        {
+            targetScript.tabConfigs.Clear();
+
+            targetScript.tabConfigs.Add(new ModuleTabConfig()
+            {
+                tabName = "场景搭建",
+                moduleList = new List<MonoScript>()
+                {
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectionModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}LightingModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}LightProbePlacementModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}AlignModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}MaterialToolsModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
+                }
+            });
+        }
+
         //最小模块配置
         private void MakeMinimalModuleConfig()
         {
@@ -178,10 +208,10 @@ namespace PluginHub.Editor
                 tabName = "快捷方式",
                 moduleList = new List<MonoScript>()
                 {
+                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SelectionModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}SceneModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CameraShowModeModule.cs"),
-                    AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}CommonComponentModule.cs"),
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
                 }
             });

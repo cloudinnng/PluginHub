@@ -44,6 +44,13 @@ namespace PluginHub.Editor
         private List<MRMatIndexInfos> mrRefList = new List<MRMatIndexInfos>(); //用于存储结果
         private bool showAllMaterial = false;
 
+        private string userInputForAllMaterialSearch = "";
+
+        protected override void DrawModuleDebug()
+        {
+            base.DrawModuleDebug();
+            GUILayout.TextField(RecordableSavedString);
+        }
 
         protected override void DrawGuiContent()
         {
@@ -264,7 +271,7 @@ namespace PluginHub.Editor
             //     matDic.Clear();
             //     matDic = EditorWindowHelper.ScanningSceneMaterials(EditorWindowHelper.ScanByType.SimilarName);
             // }
-            if (GUILayout.Button("清空结果"))
+            if (GUILayout.Button("清空结果", GUILayout.ExpandWidth(false)))
             {
                 searchMat = null;
                 matDic.Clear();
@@ -400,23 +407,50 @@ namespace PluginHub.Editor
 
             GUILayout.EndVertical();
 
+            DrawSplitLine("材质收藏");
+
+            //绘制收藏的材质
+            GUILayout.Label("Favorites : ");
+
+            for (int i = RecordableAssets.Count - 1; i >= 0; i--)
+            {
+                var obj = RecordableAssets[i];
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.ObjectField(obj, typeof(Object), true);
+                if (GUILayout.Button("X", GUILayout.Width(28)))
+                    RemoveRecordableObject(obj);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUI.enabled = IsSelectMaterial();
+            if (GUILayout.Button("添加选中的材质到收藏夹"))
+            {
+                AddRecordableObject(Selection.objects[0]);
+            }
+            GUI.enabled = true;
+
             DrawSplitLine("场景材质列表");
 
-            GUILayout.BeginVertical("Box");
+            showAllMaterial = EditorGUILayout.Foldout(showAllMaterial, "All Materials In Scene");
+            if (showAllMaterial)
             {
-                showAllMaterial = EditorGUILayout.Foldout(showAllMaterial, "All Materials In Scene");
-                if (showAllMaterial)
+                GUILayout.BeginHorizontal();
                 {
-                    List<Material> matList = AllMaterialsInScene();
-                    for (int i = 0; i < matList.Count; i++)
-                    {
-                        Material material = matList[i];
+                    userInputForAllMaterialSearch = GUILayout.TextField(userInputForAllMaterialSearch);
+                    if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                        userInputForAllMaterialSearch = "";
+                }
+                GUILayout.EndHorizontal();
 
-                        DrawMaterialRow(i.ToString(), material);
-                    }
+                List<Material> matList = AllMaterialsInScene(userInputForAllMaterialSearch);
+                for (int i = 0; i < matList.Count; i++)
+                {
+                    Material material = matList[i];
+
+                    DrawMaterialRow(i.ToString(), material);
                 }
             }
-            GUILayout.EndVertical();
         }
 
         #region Query Functions
@@ -456,7 +490,7 @@ namespace PluginHub.Editor
         }
 
         //获取场景中用到的所有的材质
-        public static List<Material> AllMaterialsInScene()
+        public static List<Material> AllMaterialsInScene(string searchText)
         {
             //思路：收集场景中所有Meshrenderer上的材质，然后再去重
             List<Material> materialList = new List<Material>();
@@ -466,6 +500,10 @@ namespace PluginHub.Editor
                 materialList.AddRange(sharedMaterials);
             });
             materialList = materialList.Distinct().ToList(); //去重
+            //搜索
+            materialList = materialList.Where((m) => m.name.ToLower().Contains(searchText.ToLower())).ToList();
+            //自由材质放前面
+            materialList = materialList.OrderBy((m) => IsEmbeddedMaterial(m)).ToList();
             return materialList;
         }
 
@@ -554,7 +592,7 @@ namespace PluginHub.Editor
         {
             Dictionary<string, List<Material>> matDic = new Dictionary<string, List<Material>>();
             //场景中所有材质
-            List<Material> materialList = AllMaterialsInScene();
+            List<Material> materialList = AllMaterialsInScene("");
 
             for (int i = 0; i < materialList.Count; i++)
             {
@@ -614,14 +652,17 @@ namespace PluginHub.Editor
 
         #region Draw
 
-        public static Material DrawMaterialRow(string text, Material material)
+        public static Material DrawMaterialRow(string text, Material material,float labelWidth = 50)
         {
             Material returnMat;
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label(text);
+                GUILayout.Label(text, GUILayout.Width(labelWidth));
 
                 returnMat = (Material)EditorGUILayout.ObjectField(material, typeof(Material), true);
+
+                if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
+                    Selection.objects = new Object[] { material };
 
                 DrawMaterialTypeLabel(material);
             }
@@ -708,6 +749,22 @@ namespace PluginHub.Editor
 
 
         #region Simple Helper Function
+
+        //是否选中了材质
+        public static bool IsSelectMaterial()
+        {
+            bool isSelectMaterial = true;
+            if (Selection.objects != null && Selection.objects.Length > 0)
+            {
+                for (int i = 0; i < Selection.objects.Length; i++)
+                {
+                    if (Selection.objects[i] is Material == false)
+                        return false;
+                }
+            }
+            return isSelectMaterial;
+        }
+
         //返回一个材质是否是一个嵌入式材质
         public static bool IsEmbeddedMaterial(Material material)
         {

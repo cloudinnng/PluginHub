@@ -268,9 +268,37 @@ namespace PluginHub.Editor
 
         #endregion
 
-        #region 为子模块提供记录 Asset 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。
+        #region 为子模块提供记录 Asset 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。材质模块用于保存喜爱的材质
 
-        public List<Object> RecordableAssets => _recordableAssets;
+        //存储到EditorPrefs的字符串,调试用
+        public string RecordableSavedString => EditorPrefs.GetString(RecordableAssetsKey, "");
+        public List<Object> RecordableAssets
+        {
+            get
+            {
+                if (_recordableAssets.Count == 0)
+                {
+                    _recordableAssets.Clear();
+                    //初始化所有的记录对象
+                    string savedDataStr = EditorPrefs.GetString(RecordableAssetsKey, "");
+                    //存储格式 guid;guid;...
+                    string[] guids = savedDataStr.Split(';');
+                    //load
+                    for (int i = 0; i < guids.Length; i++)
+                    {
+                        string guid = guids[i];
+                        if (!string.IsNullOrWhiteSpace(guid))
+                        {
+                            // 原理是存储的是资产文件guid
+                            string path = AssetDatabase.GUIDToAssetPath(guid);
+                            Object objAsset = AssetDatabase.LoadAssetAtPath<Object>(path);
+                            _recordableAssets.Add(objAsset);
+                        }
+                    }
+                }
+                return _recordableAssets;
+            }
+        }
 
         //可记录对象,用于为模块保存每个模块可能用到的默认值。例如场景模块中，喜爱的场景作为可记录对象存储到了EditorPrefs中永久保存。
         private List<Object> _recordableAssets = new List<Object>();
@@ -281,28 +309,8 @@ namespace PluginHub.Editor
         private string RecordableAssetsKey {
             get
             {
-                //初始化所有的记录对象
                 if (string.IsNullOrWhiteSpace(_recordableAssetsKey))
-                {
                     _recordableAssetsKey = $"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_RecordableObjectsKey";
-
-                    _recordableAssets.Clear();
-                    string savedDataStr = EditorPrefs.GetString(RecordableAssetsKey, "");
-                    //存储格式 guid;guid;...
-                    string[] guids = savedDataStr.Split(';');
-                    //load
-                    for (int i = 0; i < guids.Length; i++)
-                    {
-                        string guid = guids[i];
-                        if (!string.IsNullOrWhiteSpace(guid))
-                        {
-                            // 原理是存储的是资产文件
-                            string path = AssetDatabase.GUIDToAssetPath(guid);
-                            Object objAsset = AssetDatabase.LoadAssetAtPath<Object>(path);
-                            _recordableAssets.Add(objAsset);
-                        }
-                    }
-                }
                 return _recordableAssetsKey;
             }
         }
@@ -311,18 +319,15 @@ namespace PluginHub.Editor
         // 例如在排序的时候需要调用这个方法
         public void SyncRecordableObjectsToEditorPrefs()
         {
-            StringBuilder sb = new StringBuilder();
+            List<string> guids = new List<string>();
             for (int j = 0; j < _recordableAssets.Count; j++)
             {
                 string assetPath = AssetDatabase.GetAssetPath(_recordableAssets[j]);
                 string guid = AssetDatabase.AssetPathToGUID(assetPath);
                 if (!string.IsNullOrWhiteSpace(guid))
-                {
-                    sb.Append(guid);
-                    sb.Append(";");
-                }
+                    guids.Add(guid);
             }
-            EditorPrefs.SetString(RecordableAssetsKey, sb.ToString());
+            EditorPrefs.SetString(RecordableAssetsKey, string.Join(";", guids));
         }
 
         protected bool RecordableObjectsContain(Object obj)
@@ -427,5 +432,28 @@ namespace PluginHub.Editor
 
 
         #endregion
+
+        #region Draw SceneView
+        private static GUIContent sceneViewTextGUIContentTemp = new GUIContent();
+        //在场景视图中画出文字
+        // 需要使用下面的代码包围起来
+        // Handles.BeginGUI();
+        // Handles.EndGUI();
+        public static void DrawSceneViewText(Vector3 worldPos, string text, Vector2 screenOffset = default)
+        {
+            Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos) + screenOffset;
+
+            sceneViewTextGUIContentTemp.text = text;
+            //caculate text width
+            Vector2 textSize = EditorStyles.boldLabel.CalcSize(sceneViewTextGUIContentTemp);
+
+            Rect rect = new Rect(screenPos.x - textSize.x / 2, screenPos.y - textSize.y / 2, textSize.x, textSize.y);
+            GUI.color = Color.black;
+            GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
+            GUI.color = Color.white;
+            GUI.Label(rect, text, EditorStyles.boldLabel);
+        }
+        #endregion
+
     }
 }

@@ -196,16 +196,6 @@ namespace PluginHub.Editor
             return guiContent;
         }
 
-        public static bool IsSelectMaterial()
-        {
-            if (Selection.objects != null && Selection.objects.Length > 0)
-            {
-                return Selection.objects[0] is Material;
-            }
-
-            return false;
-        }
-
         #endregion
 
         #region Alpha Function 测试函数，可能不稳定

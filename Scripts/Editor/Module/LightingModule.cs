@@ -12,7 +12,7 @@ namespace PluginHub.Editor
     public class LightingModule : PluginHubModuleBase
     {
         public override ModuleType moduleType => ModuleType.Construction;
-        public override string moduleDescription => "辅助灯光的摆放与制作";
+        public override string moduleDescription => "为场景搭建提供灯光的摆放与制作辅助";
 
         //是否显示所有灯光的位置
         public bool isShowAllLightPosition {
@@ -43,7 +43,7 @@ namespace PluginHub.Editor
                 string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementFirstPosition", "0,0,0").Split(',');
                 return new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
             }
-            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementFirstPosition", $"{value.x},{value.y},{value.z}"); }
+            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementFirstPosition", $"{value.x:F3},{value.y:F3},{value.z:F3}"); }
         }
         private Vector3 placementSecondPosition {
             get
@@ -51,16 +51,23 @@ namespace PluginHub.Editor
                 string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementSecondPosition", "0,0,0").Split(',');
                 return new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
             }
-            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementSecondPosition", $"{value.x},{value.y},{value.z}"); }
+            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementSecondPosition", $"{value.x:F3},{value.y:F3},{value.z:F3}"); }
         }
         private int placementCount {
             get => EditorPrefs.GetInt($"{moduleIdentifyPrefix}_placementCount", 1);
             set => EditorPrefs.SetInt($"{moduleIdentifyPrefix}_placementCount", value);
         }
 
-        private GameObject placementPrefab;
+        // 放置的灯光的参数
+        private LightType placementLightType = LightType.Point;
+        private float placementIntensity = 1;
+        private float placementRange = 10;
 
-
+        // 是否在场景中显示放置的gizmo （handle和放置位置预览）
+        private bool showPlacementGizmoInScene {
+            get => EditorPrefs.GetBool($"{moduleIdentifyPrefix}_showPlacementGizmoInScene", true);
+            set => EditorPrefs.SetBool($"{moduleIdentifyPrefix}_showPlacementGizmoInScene", value);
+        }
 
 
         protected override void DrawGuiContent()
@@ -76,6 +83,7 @@ namespace PluginHub.Editor
 
             DrawSplitLine("阵列放置");
 
+            showPlacementGizmoInScene = EditorGUILayout.Toggle("显示 Gizmo", showPlacementGizmoInScene);
 
             GUILayout.BeginHorizontal();
             {
@@ -132,27 +140,61 @@ namespace PluginHub.Editor
             }
             GUILayout.EndHorizontal();
 
-            placementPrefab = EditorGUILayout.ObjectField("放置的预制体", placementPrefab, typeof(GameObject), true) as GameObject;
+
+            GUILayout.Label("放置的灯光：");
+            placementLightType = (LightType)EditorGUILayout.EnumPopup("灯光类型", placementLightType);
+            placementIntensity = EditorGUILayout.FloatField("强度", placementIntensity);
+            placementRange = EditorGUILayout.FloatField("范围", placementRange);
 
             placementCount = EditorGUILayout.IntField("放置数量", placementCount);
             placementCount = Mathf.Max(placementCount, 1);
 
 
-            GUI.enabled = placementPrefab != null;
+            GUI.enabled = Selection.gameObjects.Length > 0;
             if (GUILayout.Button("执行放置"))
             {
-
                 Vector3[] positions = CalculatePlacementPositions();
                 for (int i = 0; i < placementCount; i++)
                 {
-                    GameObject go = GameObject.Instantiate(placementPrefab);
-                    Undo.RegisterCreatedObjectUndo(go, "放置物体");
-                    go.transform.position = positions[i];
-                    go.transform.parent = placementPrefab.transform.parent;
-                    go.name = $"{placementPrefab.name}_{i}";
+                    Light light = new GameObject("Light").AddComponent<Light>();
+                    Undo.RegisterCreatedObjectUndo(light.gameObject, "放置物体");
+                    light.type = placementLightType;
+                    light.intensity = placementIntensity;
+                    light.range = placementRange;
+                    light.transform.parent = Selection.gameObjects[0].transform;
+                    light.transform.position = positions[i];
+                    light.transform.eulerAngles = new Vector3(90,0,0);
                 }
             }
             GUI.enabled = true;
+
+
+            // DrawSplitLine("设置静态");
+
+            // GameObject[] gameObjects = Selection.gameObjects;
+            // if (gameObjects.Length > 0)
+            // {
+            //     MeshRenderer meshRenderer = gameObjects[0].GetComponent<MeshRenderer>();
+            //     if (meshRenderer != null)
+            //     {
+            //         // meshrenderer 的 bounds 会被 scale 影响
+            //         GUILayout.Label($"{meshRenderer.bounds.size}");
+            //     }
+            // }
+            //
+            // if (GUILayout.Button("设置选中的物体为静态"))
+            // {
+            //     foreach (var light in Selection.gameObjects)
+            //     {
+            //         GameObjectUtility.SetStaticEditorFlags(light,
+            //             StaticEditorFlags.ContributeGI |
+            //             StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic |
+            //             StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic |
+            //             StaticEditorFlags.ReflectionProbeStatic |
+            //             StaticEditorFlags.NavigationStatic | StaticEditorFlags.OffMeshLinkGeneration
+            //             );
+            //     }
+            // }
 
         }
 
@@ -169,8 +211,18 @@ namespace PluginHub.Editor
 
         private bool DrawHandlePlacement()
         {
+            if (!showPlacementGizmoInScene)
+                return false;
+
             placementFirstPosition = Handles.PositionHandle(placementFirstPosition,Quaternion.identity);
             placementSecondPosition = Handles.PositionHandle(placementSecondPosition,Quaternion.identity);
+
+            Handles.BeginGUI();
+            {
+                DrawSceneViewText(placementFirstPosition, "第一个点",new Vector2(0,30));
+                DrawSceneViewText(placementSecondPosition, "第二个点",new Vector2(0,30));
+            }
+            Handles.EndGUI();
 
             // 预览放置位置
             Vector3[] positions = CalculatePlacementPositions();

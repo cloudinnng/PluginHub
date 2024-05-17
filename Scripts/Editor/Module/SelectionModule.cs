@@ -372,13 +372,13 @@ namespace PluginHub.Editor
             {
                 //画长
                 Vector3 worldPos = _gameObjectBounds.center - new Vector3(0, _gameObjectBounds.extents.y, _gameObjectBounds.extents.z);
-                DrawText(worldPos, $"长:{_gameObjectBounds.size.x:F2}m");
+                DrawSceneViewText(worldPos, $"长:{_gameObjectBounds.size.x:F2}m");
                 //画宽
                 worldPos = _gameObjectBounds.center - new Vector3(_gameObjectBounds.extents.x, _gameObjectBounds.extents.y, 0);
-                DrawText(worldPos, $"宽:{_gameObjectBounds.size.z:F2}m");
+                DrawSceneViewText(worldPos, $"宽:{_gameObjectBounds.size.z:F2}m");
                 //画高
                 worldPos = _gameObjectBounds.center - new Vector3(_gameObjectBounds.extents.x, 0, _gameObjectBounds.extents.z);
-                DrawText(worldPos, $"高:{_gameObjectBounds.size.y:F2}m");
+                DrawSceneViewText(worldPos, $"高:{_gameObjectBounds.size.y:F2}m");
             }
             Handles.EndGUI();
 
@@ -386,21 +386,6 @@ namespace PluginHub.Editor
         }
 
         #region Helper Functions
-        //在场景视图中画出文字
-        public static void DrawText(Vector3 worldPos, string text)
-        {
-            Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos);
-
-            GUIContent content = new GUIContent(text);
-            //caculate text width
-            Vector2 textSize = EditorStyles.boldLabel.CalcSize(content);
-
-            Rect rect = new Rect(screenPos.x - textSize.x / 2, screenPos.y - textSize.y / 2, textSize.x, textSize.y);
-            GUI.color = Color.black;
-            GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
-            GUI.color = Color.white;
-            GUI.Label(rect, text, EditorStyles.boldLabel);
-        }
         private void ResetTransformKeepChild(Transform transform,bool resetPosition,bool resetRotation,bool resetScale)
         {
             //记录所有直接子物体的世界Transform

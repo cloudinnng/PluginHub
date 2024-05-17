@@ -25,10 +25,10 @@ using Screen = UnityEngine.Screen;
 
 namespace PluginHub.Editor
 {
-    // 顶部菜单
+    // PluginHub 顶部菜单
     //
     // 优先级规划：
-    // Shotcut  -200
+    // Shotcut  < -200
     // --------------
     // Command  -100
     // --------------
@@ -37,7 +37,129 @@ namespace PluginHub.Editor
     // Tools Helper Toggle  100
     public class PHTopMenu
     {
-        //清理控制台s
+        #region Shortcut
+
+        //Open Folder Window/StreamingAssets
+        //Open Folder Window/PersistentDataPath
+        //Open Folder Window/DataPath
+        //Open Folder Window/-----------
+        //Open Folder Window/Build
+        //Open Folder Window/Recordings
+        //Open Folder Window/ExternalAssets
+
+        //Open Folder Window/Project Settings...
+        //Open Folder Window/Package Manager
+        //Open Folder Window/Preferences...
+        //Open Folder Window/-----------
+        //Open Folder Window/Animation
+        //Open Folder Window/Timeline
+        //Open Folder Window/-----------
+        //Open Folder Window/Lighting
+        //Open Folder Window/Light Explorer
+        //Open Folder Window/UV Inspector
+        //Open Folder Window/-----------
+        //Open Folder Window/Test Runner
+
+
+        #region Open Folder/Window
+        [MenuItem("PluginHub/Open Folder Window/Folder StreamingAssets", false, -300)]
+        public static void OpenFolderStreamingAssets()
+        {
+            EditorUtility.RevealInFinder(Application.streamingAssetsPath);
+        }
+        [MenuItem("PluginHub/Open Folder Window/Folder PersistentDataPath", false, -299)]
+        public static void OpenFolderPersistentDataPath()
+        {
+            EditorUtility.RevealInFinder(Application.persistentDataPath);
+        }
+        [MenuItem("PluginHub/Open Folder Window/Folder DataPath", false, -298)]
+        public static void OpenFolderDataPath()
+        {
+            EditorUtility.RevealInFinder(Application.dataPath);
+        }
+        //--------------------------
+        [MenuItem("PluginHub/Open Folder Window/Folder Build", false, -281)]
+        public static void OpenFolderBuild()
+        {
+            EditorUtility.RevealInFinder(Application.dataPath + "/../Build/");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Folder Recordings", false, -280)]
+        public static void OpenFolderRecordings()
+        {
+            EditorUtility.RevealInFinder(Application.dataPath + "/../Recordings/");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Folder ExternalAssets", false, -279)]
+        public static void OpenFolderExternalAssets()
+        {
+            EditorUtility.RevealInFinder(Application.dataPath + "/../ExternalAssets/");
+        }
+        //--------------------------
+        //--------------------------
+        [MenuItem("PluginHub/Open Folder Window/Window Project Settings...", false, -260)]
+        public static void OpenWindowProjectSettings()
+        {
+            EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Window Package Manager", false, -259)]
+        public static void OpenWindowPackageManager()
+        {
+            EditorApplication.ExecuteMenuItem("Window/Package Manager");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Window Preferences...", false, -258)]
+        public static void OpenWindowPreferences()
+        {
+            EditorApplication.ExecuteMenuItem("Edit/Preferences...");
+        }
+        //--------------------------
+        [MenuItem("PluginHub/Open Folder Window/Window Animation", false, -240)]
+        public static void OpenWindowAnimation()
+        {
+            EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Window Timeline", false, -239)]
+        public static void OpenWindowTimeline()
+        {
+            EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+        }
+        //--------------------------
+        [MenuItem("PluginHub/Open Folder Window/Window Lighting", false, -227)]
+        public static void OpenWindowLighting()
+        {
+            EditorApplication.ExecuteMenuItem("Window/Rendering/Lighting");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Window Light Explorer", false, -226)]
+        public static void OpenWindowLightExplorer()
+        {
+            EditorApplication.ExecuteMenuItem("Window/Rendering/Light Explorer");
+        }
+        [MenuItem("PluginHub/Open Folder Window/Window UV Inspector", false, -225)]
+        public static void OpenWindowUVInspector()
+        {
+            EditorApplication.ExecuteMenuItem("Window/nTools/UV Inspector");
+        }
+        //--------------------------
+        [MenuItem("PluginHub/Open Folder Window/Window Test Runner", false, -213)]
+        public static void OpenWindowTestRunner()
+        {
+            EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
+        }
+        #endregion
+
+        #region 截图
+        [MenuItem("PluginHub/Scene View Screenshot", false, -210)]
+        public static void SceneViewScreenshot()
+        {
+            SceneGameScreenShot.ScreenShotSceneView();
+        }
+        [MenuItem("PluginHub/Game View Screenshot", false, -209)]
+        public static void GameViewScreenshot()
+        {
+            SceneGameScreenShot.ScreenShotGameView();
+        }
+        #endregion
+
+
+
         [MenuItem("PluginHub/Shortcut/Switch Console &#c", false, -200)]
         public static void SwitchConsole()
         {
@@ -68,6 +190,9 @@ namespace PluginHub.Editor
             method.Invoke(window, null);//清空控制台
 #endif
         }
+
+
+        #endregion
 
 
         [MenuItem("PluginHub/创建项目基本目录", false, -100)]

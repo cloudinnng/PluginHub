@@ -12,14 +12,43 @@ namespace PluginHub.Editor
     [InitializeOnLoad]
     public static class PHHierarchy
     {
+
+        private static Event lastKeyBoardEvent;
         static PHHierarchy()
         {
             EditorApplication.hierarchyWindowItemOnGUI -= hierarchyWindowItemOnGUIHandler;
             EditorApplication.hierarchyWindowItemOnGUI += hierarchyWindowItemOnGUIHandler;
         }
 
-        //instanceId: 层级视图中每个行的唯一ID
+        //instanceId: 层级视图中每个行的唯一ID  73372
         static void hierarchyWindowItemOnGUIHandler(int instanceId, Rect selectionRect)
+        {
+            Event currEvent = Event.current;
+
+            hierachySceneItemHandler(instanceId, selectionRect);
+
+            hierachyActiveObjItemHandler(instanceId, currEvent);
+
+            lastKeyBoardEvent = Event.current.isMouse ? lastKeyBoardEvent : Event.current;
+
+        }
+
+        private static void hierachyActiveObjItemHandler(int instanceId, Event currEvent)
+        {
+            if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
+                return;
+
+            GameObject go = Selection.gameObjects[0];
+            // 当前选中的对象的这一行
+            if (go != null && go.GetInstanceID() == instanceId)
+            {
+                // 功能点： 按下鼠标中键可以选中同名的兄弟节点
+                if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
+                    SelectSameNameSilbing(go);
+            }
+        }
+
+        private static void hierachySceneItemHandler(int instanceId, Rect selectionRect)
         {
             // 在层级视图场景GUI"条"上绘制几个快捷按钮
             int count = SceneManager.sceneCount;//目前拖入到层级视图的场景个数
@@ -36,7 +65,7 @@ namespace PluginHub.Editor
             {
                 Scene scene = SceneManager.GetSceneAt(i);
 
-                if (instanceId == scene.handle) //对于场景根节点来说，instanceId就是scene.handle
+                if (instanceId == scene.handle) // 对于场景根节点来说，instanceId 就是 scene.handle
                 {
                     Event currentEvent = Event.current;
 
@@ -90,7 +119,7 @@ namespace PluginHub.Editor
                                 if (scene.isDirty)
                                 {
                                     if (EditorUtility.DisplayDialog("场景未保存",
-                                        $"场景 {scene.name} 未保存，是否保存？", "保存", "不保存"))
+                                            $"场景 {scene.name} 未保存，是否保存？", "保存", "不保存"))
                                     {
                                         EditorSceneManager.SaveScene(scene);
                                     }
@@ -127,22 +156,22 @@ namespace PluginHub.Editor
             }
         }
 
+        // 选中同层级中名称相同的游戏对象
         [MenuItem("GameObject/PH SelectSameNameSilbing", false, -50)]
-        private static void SelectSameNameSilbing()
+        private static void SelectSameNameSilbingMenuItem()
         {
-            if (Selection.activeGameObject == null)
-            {
-                Debug.LogWarning("No GameObject Selected");
-                return;
-            }
-            //
-            Transform parent = Selection.activeGameObject.transform.parent;
-            string name = Selection.activeGameObject.name;
+            SelectSameNameSilbing(Selection.activeGameObject);
+        }
+
+        private static void SelectSameNameSilbing(GameObject gameObject)
+        {
+            Transform parent = gameObject.transform.parent;
             if (parent == null)
             {
                 Debug.LogWarning("No Parent");
                 return;
             }
+            string name = gameObject.name;
             List<GameObject> gameObjects = new List<GameObject>();
             foreach (Transform child in parent)
             {
