@@ -56,7 +56,7 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_deleteOldBuildBeforeBuild", value); }
         }
 
-        //构建前清空StreamingAssets
+        //是否构建前清空编辑器中的StreamingAssets文件夹
         private static bool clearStreamingAssetsBeforeBuild
         {
             get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_clearStreamingAssetsBeforeBuild", false); }
@@ -164,7 +164,8 @@ namespace PluginHub.Editor
 
         protected override void DrawGuiContent()
         {
-            GUILayout.Label("构建信息", PluginHubFunc.GetCustomStyle("TitleLabel"));
+            DrawSplitLine("构建信息");
+
             DrawItem("公司名称:", PlayerSettings.companyName);
             DrawItem("产品名称:", PlayerSettings.productName);
             DrawItem("版本:", PlayerSettings.bundleVersion);
@@ -187,10 +188,12 @@ namespace PluginHub.Editor
             GUILayout.EndHorizontal();
 
 
-            GUILayout.Label("快捷构建", PluginHubFunc.GetCustomStyle("TitleLabel"));
+            DrawSplitLine("快捷构建");
+
             DrawPCBuildButtons();
             DrawIOSBuildButtons();
             DrawAndroidBuildButtons();
+            DrawWebGLBuildButtons();
             DrawBuildLibary();
         }
 
@@ -317,7 +320,7 @@ namespace PluginHub.Editor
                     if (iosUseShortBuildPath)
                         path = $@"D:\Build_IOS\{Application.productName}\";
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建IOS项目", $"将构建到{path}")))
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 IOS 项目", $"将构建到{path}")))
                     {
                         //执行构建
                         BuildIOS(path);
@@ -350,10 +353,42 @@ namespace PluginHub.Editor
                     fullPath = Path.Combine(fullPath, $"Build/Android/");
                     fullPath = fullPath.Replace('/', '\\');
                     string path = fullPath;
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建Android项目", $"将构建到{path}")))
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 Android 项目", $"将构建到{path}")))
                     {
                         //执行构建
                         BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
+                        GUIUtility.ExitGUI();
+                    }
+
+                    DrawIconBtnOpenFolder(path, true);
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+        }
+
+        public void DrawWebGLBuildButtons()
+        {
+            GUILayout.BeginVertical("Box");
+            {
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.WebGL On"));
+                    GUILayout.Label($"平台 : {BuildTarget.WebGL}");
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                {
+                    string fullPath = Application.dataPath;
+                    fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
+                    fullPath = Path.Combine(fullPath, $"Build/WebGL/");
+                    fullPath = fullPath.Replace('/', '\\');
+                    string path = fullPath;
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 WebGL 项目", $"将构建到{path}")))
+                    {
+                        //执行构建
+                        BuildWebGL($@"Build/WebGL/");
                         GUIUtility.ExitGUI();
                     }
 
@@ -521,11 +556,11 @@ namespace PluginHub.Editor
         {
             bool continueBuild = true;
             if (!deleteOldBuildBeforeBuild)
-                return continueBuild;
+                return true;
 
             if (Directory.Exists(folder))
             {
-                if (EditorUtility.DisplayDialog("删除旧构建", $"是否在构建前删除旧构建目录{folder}？", "是,继续构建", "否,取消构建"))
+                if (EditorUtility.DisplayDialog("删除旧构建", $"是否在构建前删除旧构建目录{folder} ?", "是,继续构建", "否,取消构建"))
                 {
                     Directory.Delete(folder, true);
                     continueBuild = true;
@@ -540,6 +575,11 @@ namespace PluginHub.Editor
 
         #region final build
 
+
+        // private static void PreBuild(BuildTarget buildTarget)
+        // {
+        //
+        // }
 
         private static void BuildStandalone(string folderName, string exeName)
         {
@@ -601,10 +641,39 @@ namespace PluginHub.Editor
         //$"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
         private static void BuildAndroid(string locationPathName)
         {
+            if (!DeleteOldBuildConfirm(locationPathName))
+                return;
+
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.Android;
+            buildPlayerOptions.options = GetBuildOptions();
+            //开始构建
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"Build succeeded");
+                    // Debug.Log($"{summary.outputPath}");
+                    break;
+                case BuildResult.Failed:
+                    Debug.LogError("Build failed");
+                    break;
+            }
+        }
+
+        //$"Build/WebGL/"
+        private static void BuildWebGL(string locationPathName)
+        {
+            if (!DeleteOldBuildConfirm(locationPathName))
+                return;
+
+            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
+            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
+            buildPlayerOptions.locationPathName = locationPathName;
+            buildPlayerOptions.target = BuildTarget.WebGL;
             buildPlayerOptions.options = GetBuildOptions();
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);

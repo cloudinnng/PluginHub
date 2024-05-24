@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using PluginHub.Runtime;
+using UnityEditor;
 using UnityEngine;
 
 namespace PluginHub.Editor
@@ -8,37 +10,70 @@ namespace PluginHub.Editor
     public static class RaycastWithoutCollider
     {
         // 保存成功击中的信息
-        public class RaycastResult
+        public class HitResult
         {
             public Vector3 hitPoint;
             public Vector3 hitNormal;
-            public MeshRenderer meshRenderer;
-            public int triangleIndex;//击中的是第几个三角形，从0开始。
+            public Renderer renderer;// MeshRenderer 或者 SkinnedMeshRenderer
+            public int triangleIndex;//击中的是Mesh中第几个三角形，从0开始。
             public float distance;//射线起点到击中点的距离
         }
 
-        // 通用射线检测，先检测MeshRenderer，再检测Terrain
-        public static bool Raycast(Vector3 origin, Vector3 direction, out RaycastResult result)
+        // 通用射线检测
+        public static bool Raycast(Vector3 origin, Vector3 direction, out HitResult result)
         {
-            bool raycastResult = RaycastMeshRenderer(origin,direction,out result);
-            if (raycastResult)
-                return true;
-            raycastResult = RaycastTerrain(origin,direction,out result);
-            return raycastResult;
+            bool returnValue = false;
+            result = null;
+            PerformanceTest.Start();
+            {
+                if (!returnValue && RaycastMeshRenderer(origin,direction,out result)) returnValue = true;
+                if (!returnValue && RaycastSkinnedMeshRenderer(origin,direction,out result)) returnValue = true;
+                if (!returnValue && RaycastTerrain(origin, direction, out result)) returnValue = true;
+
+                //画出这个位置
+                if (result != null)
+                {
+                    // caculate the size of the hit point
+                    float size = HandleUtility.GetHandleSize(result.hitPoint) * 0.2f;
+                    DebugEx.DebugPoint(result.hitPoint, Color.white, size, 3f);
+                }
+            }
+            PerformanceTest.End("Raycast",200);
+            return returnValue;
         }
 
+        public static bool RaycastSkinnedMeshRenderer(Vector3 origin, Vector3 direction, out HitResult result)
+        {
+            result = null;
+            List<HitResult> hitResults = new List<HitResult>();
+            SkinnedMeshRenderer[] skinnedMeshRenderers = Object.FindObjectsOfType<SkinnedMeshRenderer>();
+            Mesh tempMesh = new Mesh();
+            for (int i = 0; i < skinnedMeshRenderers.Length; i++)
+            {
+                SkinnedMeshRenderer skinnedMeshRenderer = skinnedMeshRenderers[i];
+                skinnedMeshRenderer.BakeMesh(tempMesh);
+                if (RaycastMesh(origin, direction, tempMesh, skinnedMeshRenderer.transform, out List<HitResult> meshHitResults))
+                    hitResults.AddRange(meshHitResults);
+            }
+            if(hitResults.Count == 0)
+                return false;
+            result = hitResults.OrderBy(r => r.distance).First();
+            return true;
+        }
+
+
         // 检查射线是否与场景中的Terrain相交,由于Terrain自带碰撞器，所以使用Unity自带的射线检测方法
-        public static bool RaycastTerrain(Vector3 origin, Vector3 direction, out RaycastResult result)
+        public static bool RaycastTerrain(Vector3 origin, Vector3 direction, out HitResult result)
         {
             result = null;
             RaycastHit hit;
             if (Physics.Raycast(origin, direction, out hit))
             {
-                result = new RaycastResult()
+                result = new HitResult()
                 {
                     hitPoint = hit.point,
                     hitNormal = hit.normal,
-                    meshRenderer = null,
+                    renderer = null,
                     triangleIndex = -1,
                     distance = hit.distance
                 };
@@ -49,13 +84,12 @@ namespace PluginHub.Editor
 
         // 检查射线是否与场景中的MeshRenderer相交
         // 并返回: 是否发生相交,交点坐标、交点法线、MeshRenderer、碰撞点到射线起点的距离
-        public static bool RaycastMeshRenderer(Vector3 origin,Vector3 direction,out RaycastResult result)
+        public static bool RaycastMeshRenderer(Vector3 origin,Vector3 direction,out HitResult result)
         {
-            PerformanceTest.Start();
             //默认值
             result = null;
 
-            List<RaycastResult> hitResults = new List<RaycastResult>();
+            List<HitResult> hitResults = new List<HitResult>();
             Ray ray = new Ray(origin,direction);
             // DebugEx.DebugRay(ray,9999,Color.green,3f);
 
@@ -76,39 +110,10 @@ namespace PluginHub.Editor
                 if (meshFilter == null)
                     continue;
                 Mesh mesh = meshFilter.sharedMesh;
-                // Debug.Log($"mesh.triangles.Length: {mesh.triangles.Length}");
+                if (RaycastMesh(origin, direction, mesh, meshRenderer.transform, out List<HitResult> meshHitResults))
+                    hitResults.AddRange(meshHitResults);
 
-                // 先缓存起来对性能非常重要
-                Vector3[] vertices = mesh.vertices;
-                int[] triangles = mesh.triangles;
-                for (int j = 0; j < triangles.Length; j+=3)
-                {
-                    Vector3 v0 = vertices[triangles[j]];
-                    Vector3 v1 = vertices[triangles[j+1]];
-                    Vector3 v2 = vertices[triangles[j+2]];
-                    // 将顶点从模型空间转换到世界空间
-                    v0 = meshRenderer.transform.TransformPoint(v0);
-                    v1 = meshRenderer.transform.TransformPoint(v1);
-                    v2 = meshRenderer.transform.TransformPoint(v2);
-
-                    if (RayIntersectsTriangle(ray.origin,ray.direction,v0,v1,v2,
-                            out Vector3 hitPoint,out Vector3 normal,true))
-                    {
-                        // DebugEx.DebugPointArrow(hitPoint,normal,Color.red,0.2f,3f);
-                        // 收集这个碰撞结果
-                        hitResults.Add(new RaycastResult()
-                        {
-                            hitPoint = hitPoint,
-                            hitNormal = normal,
-                            meshRenderer = meshRenderer,
-                            triangleIndex = j / 3,//第0个三角形，第1个三角形 。。。
-                            distance = Vector3.Distance(origin,hitPoint)
-                        });
-                        // break;//下一个MeshRenderer
-                    }
-                }
             }
-            PerformanceTest.End("RaycastMeshRenderer",200);
             if(hitResults.Count == 0)
                 return false;
             //寻找距离origin最近的碰撞结果
@@ -119,9 +124,45 @@ namespace PluginHub.Editor
             return true;
         }
 
+        // 检查射线是否与Mesh相交,返回所有相交结果
+        public static bool RaycastMesh(Vector3 origin, Vector3 direction, Mesh mesh, Transform meshHolder,
+            out List<HitResult> result, bool ignoreBackFace = true)
+        {
+            result = new List<HitResult>();
+
+            // 先缓存起来对性能非常重要
+            Vector3[] vertices = mesh.vertices;
+            int[] triangles = mesh.triangles;
+            for (int j = 0; j < triangles.Length; j+=3)
+            {
+                Vector3 v0 = vertices[triangles[j]];
+                Vector3 v1 = vertices[triangles[j+1]];
+                Vector3 v2 = vertices[triangles[j+2]];
+                // 将顶点从模型空间转换到世界空间
+                v0 = meshHolder.TransformPoint(v0);
+                v1 = meshHolder.TransformPoint(v1);
+                v2 = meshHolder.TransformPoint(v2);
+
+                if (RaycastTriangle(origin,direction,v0,v1,v2,
+                        out Vector3 hitPoint,out Vector3 normal,ignoreBackFace))
+                {
+                    // 收集这个碰撞结果
+                    result.Add(new HitResult()
+                    {
+                        hitPoint = hitPoint,
+                        hitNormal = normal,
+                        renderer = meshHolder.GetComponent<Renderer>(),
+                        triangleIndex = j / 3,//第0个三角形，第1个三角形 。。。
+                        distance = Vector3.Distance(origin,hitPoint)
+                    });
+                }
+            }
+            return result.Count > 0;
+        }
+
         // 核心算法
         // 检查[射线]与[三角形]是否相交
-        public static bool RayIntersectsTriangle(Vector3 origin, Vector3 direction, Vector3 v0, Vector3 v1, Vector3 v2,
+        public static bool RaycastTriangle(Vector3 origin, Vector3 direction, Vector3 v0, Vector3 v1, Vector3 v2,
             out Vector3 hitPoint, out Vector3 normal, bool ignoreBackFace = true)
         {
             hitPoint = new Vector3(0, 0, 0);

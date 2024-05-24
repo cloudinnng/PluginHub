@@ -140,24 +140,23 @@ namespace PluginHub.Editor
         }
 
         //选中鼠标指针处的材质
-        private static void TheMaterialHere(out MeshRenderer meshRenderer,out Material material,out int indexOfMaterialInMesh)
+        private static void TheMaterialHere(out Renderer renderer,out Material material,out int indexOfMaterialInMesh)
         {
-            meshRenderer = null; material = null; indexOfMaterialInMesh = -1;
+            renderer = null; material = null; indexOfMaterialInMesh = -1;
             Ray ray = SceneViewMouseRay();
-            if (RaycastWithoutCollider.RaycastMeshRenderer(ray.origin, ray.direction,out RaycastWithoutCollider.RaycastResult result))
+            if (RaycastWithoutCollider.Raycast(ray.origin, ray.direction,out RaycastWithoutCollider.HitResult result))
             {
-                meshRenderer = result.meshRenderer;
+                renderer = result.renderer;
 
-                Mesh mesh = result.meshRenderer.GetComponent<MeshFilter>().sharedMesh;
+                Mesh mesh = result.renderer.GetComponent<MeshFilter>().sharedMesh;
                 indexOfMaterialInMesh = GetSubMeshIndex(mesh, result.triangleIndex);
                 if (indexOfMaterialInMesh == -1)
                     return;
 
-                Material targetMaterial = result.meshRenderer.sharedMaterials[indexOfMaterialInMesh];
+                Material targetMaterial = result.renderer.sharedMaterials[indexOfMaterialInMesh];
 
                 Selection.objects = new Object[] { targetMaterial };
-                DebugEx.DebugPoint(result.hitPoint, Color.red, 0.2f, 3f);
-                Debug.Log($"选择了 {result.meshRenderer.name} 第 {indexOfMaterialInMesh} 个材质。", result.meshRenderer.gameObject);
+                Debug.Log($"选择了 {result.renderer.name} 第 {indexOfMaterialInMesh} 个材质。", result.renderer.gameObject);
                 material = targetMaterial;
             }
             else
@@ -168,7 +167,7 @@ namespace PluginHub.Editor
         // 该函数在搭建场景时非常有用
         private static void TheMaterialHereAutoExtract()
         {
-            TheMaterialHere(out MeshRenderer meshRenderer, out Material material,out _);
+            TheMaterialHere(out Renderer renderer, out Material material,out _);
             if (material == null)
                 return;
 
@@ -177,13 +176,13 @@ namespace PluginHub.Editor
                 // 提取出来的自由材质
                 Material newFreeMaterial = MaterialToolsModule.ExtractMaterial(material);
                 // 替换MeshRenderer的材质
-                for(int i = 0; i < meshRenderer.sharedMaterials.Length; i++)
+                for(int i = 0; i < renderer.sharedMaterials.Length; i++)
                 {
-                    if (meshRenderer.sharedMaterials[i] == material)
+                    if (renderer.sharedMaterials[i] == material)
                     {
-                        Material[] materials = meshRenderer.sharedMaterials;
+                        Material[] materials = renderer.sharedMaterials;
                         materials[i] = newFreeMaterial;
-                        meshRenderer.sharedMaterials = materials;
+                        renderer.sharedMaterials = materials;
                     }
                 }
                 //选中它
@@ -201,7 +200,7 @@ namespace PluginHub.Editor
         // 在鼠标位置提取材质路径并保存到剪贴板
         private static void CopyMaterialReferenceHere()
         {
-            TheMaterialHere(out MeshRenderer meshRenderer, out Material material,out _);
+            TheMaterialHere(out Renderer renderer, out Material material,out _);
             if (material == null)
                 return;
 
@@ -216,7 +215,7 @@ namespace PluginHub.Editor
         // 可以确保使用最少的材质资产
         private static void PasteMaterialReferenceHere()
         {
-            TheMaterialHere(out MeshRenderer meshRenderer, out Material material,out int indexOfMaterialInMesh);
+            TheMaterialHere(out Renderer renderer, out Material material,out int indexOfMaterialInMesh);
             if (material == null)
                 return;
 
@@ -228,11 +227,11 @@ namespace PluginHub.Editor
                 Debug.LogError($"无法加载材质：{path}");
                 return;
             }
-            Undo.RecordObject(meshRenderer, "Paste Material Reference Here");
+            Undo.RecordObject(renderer, "Paste Material Reference Here");
             // 将材质 放到MeshRenderer中
-            Material[] materials = meshRenderer.sharedMaterials;
+            Material[] materials = renderer.sharedMaterials;
             materials[indexOfMaterialInMesh] = newMaterial;
-            meshRenderer.sharedMaterials = materials;
+            renderer.sharedMaterials = materials;
         }
 
 
@@ -270,7 +269,7 @@ namespace PluginHub.Editor
         {
             foreach (var obj in Selection.gameObjects)
             {
-                bool raycastResult = RaycastWithoutCollider.Raycast(obj.transform.position, Vector3.down, out RaycastWithoutCollider.RaycastResult result);
+                bool raycastResult = RaycastWithoutCollider.Raycast(obj.transform.position, Vector3.down, out RaycastWithoutCollider.HitResult result);
                 if (raycastResult)
                 {
                     Undo.RecordObject(obj.transform, "Move Selection To Ground");
@@ -283,7 +282,7 @@ namespace PluginHub.Editor
         {
             foreach (var obj in Selection.gameObjects)
             {
-                bool raycastResult = RaycastWithoutCollider.Raycast(obj.transform.position, Vector3.up, out RaycastWithoutCollider.RaycastResult result);
+                bool raycastResult = RaycastWithoutCollider.Raycast(obj.transform.position, Vector3.up, out RaycastWithoutCollider.HitResult result);
                 if (raycastResult)
                 {
                     Undo.RecordObject(obj.transform, "Move Selection To Ceiling");
@@ -338,13 +337,11 @@ namespace PluginHub.Editor
             worldPos = Vector3.zero;
             distanceOut = 0;
             Ray ray = SceneViewMouseRay();
-            bool succeed = RaycastWithoutCollider.Raycast(ray.origin, ray.direction, out RaycastWithoutCollider.RaycastResult result);
+            bool succeed = RaycastWithoutCollider.Raycast(ray.origin, ray.direction, out RaycastWithoutCollider.HitResult result);
             if (!succeed)
                 return false;
             worldPos = result.hitPoint;
             distanceOut = result.distance;
-            // DebugEx.DebugPointArrow(result.hitPoint,result.hitNormal,Color.red,0.2f,3f);
-            DebugEx.DebugPoint(result.hitPoint,Color.white,0.2f,3f);
             return true;
         }
 
@@ -411,11 +408,12 @@ namespace PluginHub.Editor
                 rayOrigin.y = 999999;
 
             obj.SetActive(false); //暂时隐藏物体,防止射线打到自己
-            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hitInfo))
+
+            if(RaycastWithoutCollider.Raycast(rayOrigin, Vector3.down, out RaycastWithoutCollider.HitResult result))
             {
-                obj.transform.position = new Vector3(obj.transform.position.x, hitInfo.point.y + pivotToMinY,
+
+                obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y + pivotToMinY,
                     obj.transform.position.z);
-                Debug.Log($"地面名称：{hitInfo.collider.name}");
             }
             else
             {

@@ -34,10 +34,10 @@ namespace PluginHub.Editor
                     Ray ray = new Ray(new Vector3(0,0,-5),Vector3.forward);
                     DebugEx.DebugRay(ray,9999,Color.red,30f);
                     PerformanceTest.Start();
-                    bool r = RaycastWithoutCollider.RayIntersectsTriangle(ray.origin, ray.direction, v0, v1, v2,
-                        out Vector3 hitPoint, out Vector3 normal, true);
+                    // bool r = RaycastWithoutCollider.RaycastTriangle(ray.origin, ray.direction, v0, v1, v2,
+                    //     out Vector3 hitPoint, out Vector3 normal, true);
                     PerformanceTest.End("Ray Intersects Triangle");
-                    Debug.Log(r);
+                    // Debug.Log(r);
                 }
             }
 

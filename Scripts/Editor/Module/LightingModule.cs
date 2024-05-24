@@ -238,7 +238,7 @@ namespace PluginHub.Editor
         //将位置向上移动到最近的天花板
         private Vector3? CalculateToCeilingPosition(Vector3 worldPos)
         {
-            bool recastResult = RaycastWithoutCollider.RaycastMeshRenderer(worldPos + new Vector3(0,-0.05f,0), Vector3.up,out RaycastWithoutCollider.RaycastResult result);
+            bool recastResult = RaycastWithoutCollider.Raycast(worldPos + new Vector3(0,-0.05f,0), Vector3.up,out RaycastWithoutCollider.HitResult result);
             if (recastResult)
                 return result.hitPoint + Vector3.up * lightPlaceOffsetY;
             else
@@ -265,14 +265,14 @@ namespace PluginHub.Editor
         {
             foreach (var light in Selection.gameObjects)
             {
-                bool recastResultXPositive = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position, Vector3.right,
-                    out RaycastWithoutCollider.RaycastResult resultXPositive);
-                bool recastResultXNegative = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position, Vector3.left,
-                    out RaycastWithoutCollider.RaycastResult resultXNegative);
-                bool recastResultZPositive = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position, Vector3.forward,
-                    out RaycastWithoutCollider.RaycastResult resultZPositive);
-                bool recastResultZNegative = RaycastWithoutCollider.RaycastMeshRenderer(light.transform.position, Vector3.back,
-                    out RaycastWithoutCollider.RaycastResult resultZNegative);
+                bool recastResultXPositive = RaycastWithoutCollider.Raycast(light.transform.position, Vector3.right,
+                    out RaycastWithoutCollider.HitResult resultXPositive);
+                bool recastResultXNegative = RaycastWithoutCollider.Raycast(light.transform.position, Vector3.left,
+                    out RaycastWithoutCollider.HitResult resultXNegative);
+                bool recastResultZPositive = RaycastWithoutCollider.Raycast(light.transform.position, Vector3.forward,
+                    out RaycastWithoutCollider.HitResult resultZPositive);
+                bool recastResultZNegative = RaycastWithoutCollider.Raycast(light.transform.position, Vector3.back,
+                    out RaycastWithoutCollider.HitResult resultZNegative);
 
                 int resultCount = 0;
                 if (recastResultXPositive)

@@ -62,36 +62,45 @@ namespace PluginHub.Editor
 
 
         #region Open Folder/Window
+
+        private static void OpenFolder(string path)
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            EditorUtility.RevealInFinder(path);
+        }
+
         [MenuItem("PluginHub/Open Folder Window/Folder StreamingAssets", false, -300)]
         public static void OpenFolderStreamingAssets()
         {
-            EditorUtility.RevealInFinder(Application.streamingAssetsPath);
+            OpenFolder(Application.streamingAssetsPath);
         }
         [MenuItem("PluginHub/Open Folder Window/Folder PersistentDataPath", false, -299)]
         public static void OpenFolderPersistentDataPath()
         {
-            EditorUtility.RevealInFinder(Application.persistentDataPath);
+            OpenFolder(Application.persistentDataPath);
         }
         [MenuItem("PluginHub/Open Folder Window/Folder DataPath", false, -298)]
         public static void OpenFolderDataPath()
         {
-            EditorUtility.RevealInFinder(Application.dataPath);
+            OpenFolder(Application.dataPath);
         }
         //--------------------------
         [MenuItem("PluginHub/Open Folder Window/Folder Build", false, -281)]
         public static void OpenFolderBuild()
         {
-            EditorUtility.RevealInFinder(Application.dataPath + "/../Build/");
+            OpenFolder(Application.dataPath + "/../Build/");
         }
         [MenuItem("PluginHub/Open Folder Window/Folder Recordings", false, -280)]
         public static void OpenFolderRecordings()
         {
-            EditorUtility.RevealInFinder(Application.dataPath + "/../Recordings/");
+            OpenFolder(Application.dataPath + "/../Recordings/");
         }
         [MenuItem("PluginHub/Open Folder Window/Folder ExternalAssets", false, -279)]
         public static void OpenFolderExternalAssets()
         {
-            EditorUtility.RevealInFinder(Application.dataPath + "/../ExternalAssets/");
+            // 这个文件夹非标准Unity文件夹，是个人习惯用于放置项目相关的外部资源，例如参考图，策划文档等。
+            OpenFolder(Application.dataPath + "/../ExternalAssets/");
         }
         //--------------------------
         //--------------------------

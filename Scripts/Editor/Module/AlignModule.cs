@@ -202,11 +202,11 @@ namespace PluginHub.Editor
         private void MoveGameObjectTo(GameObject obj, Vector3 rayDir)
         {
             Ray ray = new Ray(obj.transform.position + rayOffset, rayDir);
-            bool rcresult = RaycastWithoutCollider.RaycastMeshRenderer(ray.origin, ray.direction, out RaycastWithoutCollider.RaycastResult result);
+            bool rcresult = RaycastWithoutCollider.Raycast(ray.origin, ray.direction, out RaycastWithoutCollider.HitResult result);
             if (rcresult)
             {
                 obj.transform.position = result.hitPoint + placeOffset;
-                Debug.Log($"天花板名称：{result.meshRenderer.name}");
+                Debug.Log($"天花板名称：{result.renderer.name}");
             }
             else
             {

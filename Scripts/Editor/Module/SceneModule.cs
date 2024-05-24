@@ -118,9 +118,12 @@ namespace PluginHub.Editor
                     }
 
                     GUILayout.BeginHorizontal("Box");
-                    GUILayout.Label("Input fillter : ", GUILayout.Width(100));
-                    filiterText = EditorGUILayout.TextArea(filiterText);
-                    if (GUILayout.Button("X", GUILayout.Width(28))) filiterText = "";
+                    {
+
+                        GUILayout.Label("Input fillter : ", GUILayout.Width(100));
+                        filiterText = EditorGUILayout.TextArea(filiterText);
+                        if (GUILayout.Button("X", GUILayout.Width(28))) filiterText = "";
+                    }
                     GUILayout.EndHorizontal();
                     //显示过滤后的数量
                     GUILayout.Label($"Result: {(scenePathsFilitered == null ? 0 : scenePathsFilitered.Length)}");
@@ -143,19 +146,20 @@ namespace PluginHub.Editor
         public override void RefreshData()
         {
             base.RefreshData();
-            if (showAllScene)
-            {
-                //寻找项目中所有场景文件的guid
-                IEnumerable<string> iEnumerable = AssetDatabase.FindAssets("t:Scene", new string[] { "Assets" });
-                //获取到场景文件路径
-                iEnumerable = iEnumerable.Select((s) => AssetDatabase.GUIDToAssetPath(s)).ToArray();
-                //按场景名称字母顺序排序
-                //iEnumerable = iEnumerable.OrderBy(s => Path.GetFileName(s)).ToArray();
-                //按路径字母顺序排序
-                iEnumerable = iEnumerable.OrderBy(s => (s)).ToArray();
-                allScenePaths = iEnumerable.ToArray();
-            }
+
+            //寻找项目中所有场景文件的guid
+            IEnumerable<string> iEnumerable = AssetDatabase.FindAssets("t:Scene", new string[] { "Assets" });
+            //获取到场景文件路径
+            iEnumerable = iEnumerable.Select((s) => AssetDatabase.GUIDToAssetPath(s)).ToArray();
+            //按场景名称字母顺序排序
+            //iEnumerable = iEnumerable.OrderBy(s => Path.GetFileName(s)).ToArray();
+            //按路径字母顺序排序
+            iEnumerable = iEnumerable.OrderBy(s => (s)).ToArray();
+            // 获取到所有场景文件的路径
+            allScenePaths = iEnumerable.ToArray();
+
         }
+
         private void AddSceneToRecent(Scene scene)
         {
             LoadRecentScenes();//先载入一下
@@ -195,6 +199,10 @@ namespace PluginHub.Editor
                 //open button
                 if (GUILayout.Button(PluginHubFunc.GuiContent("Open", sceneAssetPath), GUILayout.Width(80)))
                 {
+                    //如果处于Playmode，退出Playmode
+                    if (EditorApplication.isPlaying)
+                        EditorApplication.isPlaying = false;
+
                     //这段代码在切换场景前调用，若场景有未保存的更改，会弹出提示
                     if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                     {

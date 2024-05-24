@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace PluginHub.Runtime
 {
@@ -26,6 +27,17 @@ namespace PluginHub.Runtime
             Instance = this;
             DontDestroyOnLoad(gameObject);
             _hasInstance = true;
+        }
+
+        [ContextMenu("命名GameObject")]
+        public void RenameGameObject()
+        {
+            gameObject.name = "[PersistentObject]";
+        }
+
+        private void OnValidate()
+        {
+            RenameGameObject();
         }
     }
 }

@@ -50,7 +50,7 @@ namespace PluginHub.Runtime
         public static GUISkin GetGUISkin()
         {
             if (_guiSkin == null)
-                _guiSkin = Resources.Load<GUISkin>("PHGUISkin");
+                _guiSkin = Resources.Load<GUISkin>("PluginHubGUISkin");
             return _guiSkin;
         }
 
