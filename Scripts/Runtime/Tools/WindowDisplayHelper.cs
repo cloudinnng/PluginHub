@@ -6,9 +6,9 @@ using UnityEngine;
 namespace PluginHub.Runtime
 {
     /// <summary>
-    /// 可以直接设置应用窗口和是否显示标题 可让应用窗口运行 没有标题栏
+    /// 可以直接设置应用窗口分辨率和是否显示标题 （可让应用窗口运行没有标题栏）
     ///
-    /// 适用于windows
+    /// 仅适用于windows非编辑器下
     ///
     /// 2021年7月19日 是否可以直接用Screen.SetResolution方法代替该类
     /// 2023年3月27日 若需要带标题栏的窗口，可以用Screen.SetResolution方法代替该类

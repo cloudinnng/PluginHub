@@ -20,21 +20,25 @@ namespace PluginHub.Editor
         }
 
         // 通用射线检测
+        // 大多使用 HandleUtility.GUIPointToWorldRay(Event.current.mousePosition) 获取到的射线作为参数
+        // Event.current需要是场景视图中的事件，不然坐标会有误差
         public static bool Raycast(Vector3 origin, Vector3 direction, out HitResult result)
         {
             bool returnValue = false;
             result = null;
             PerformanceTest.Start();
             {
-                if (!returnValue && RaycastMeshRenderer(origin,direction,out result)) returnValue = true;
                 if (!returnValue && RaycastSkinnedMeshRenderer(origin,direction,out result)) returnValue = true;
+                if (!returnValue && RaycastMeshRenderer(origin,direction,out result)) returnValue = true;
                 if (!returnValue && RaycastTerrain(origin, direction, out result)) returnValue = true;
 
                 //画出这个位置
                 if (result != null)
                 {
-                    // caculate the size of the hit point
-                    float size = HandleUtility.GetHandleSize(result.hitPoint) * 0.2f;
+                    // 这个方法在焦点不在SceneView的时候会返回4
+                    // float size = HandleUtility.GetHandleSize(result.hitPoint) * 0.2f;
+                    // 所以干脆自己用距离来计算一个合适的size
+                    float size = Vector3.Distance(SceneView.lastActiveSceneView.camera.transform.position, result.hitPoint) * 0.03f;
                     DebugEx.DebugPoint(result.hitPoint, Color.white, size, 3f);
                 }
             }
@@ -119,8 +123,6 @@ namespace PluginHub.Editor
             //寻找距离origin最近的碰撞结果
             result = hitResults.OrderBy(r => r.distance).First();
 
-            //绘制一个箭头指示击中点
-            // DebugEx.DebugPointArrow(result.hitPoint,result.hitNormal,Color.red,0.2f,3f);
             return true;
         }
 

@@ -18,7 +18,7 @@ namespace PluginHub.Tests
             Vector3 v2 = new Vector3(-1, 0, 0);
 
             Ray ray = new Ray(new Vector3(0, 0, -5), Vector3.forward);
-            bool result = RaycastWithoutCollider.RayIntersectsTriangle(ray.origin, ray.direction, v0, v1, v2,
+            bool result = RaycastWithoutCollider.RaycastTriangle(ray.origin, ray.direction, v0, v1, v2,
                 out Vector3 hitPoint, out Vector3 normal, true);
             Assert.IsTrue(result);
 
@@ -32,7 +32,7 @@ namespace PluginHub.Tests
             Vector3 v1 = new Vector3(1, -1, 0);
 
             Ray ray = new Ray(new Vector3(0, 0, -5), Vector3.forward);
-            bool result = RaycastWithoutCollider.RayIntersectsTriangle(ray.origin, ray.direction, v0, v2, v1,
+            bool result = RaycastWithoutCollider.RaycastTriangle(ray.origin, ray.direction, v0, v2, v1,
                 out Vector3 hitPoint, out Vector3 normal, true);
             Assert.IsFalse(result);
         }

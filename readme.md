@@ -1,16 +1,16 @@
-﻿# 项目介绍
-目前，新`PluginHub`现在是一份加速项目开发的代码模板。包含`Runtime`和`Editor`功能。
+﻿# 项目概述
+目前，新`PluginHub`现在是一份加速项目开发的代码模板。包含`Runtime`(运行时)和`Editor`(编辑器)功能。
 
-Runtime主要由以下功能组成：
+`Runtime`主要由以下功能组成：
 
-1. 一个名为Debugger的运行时GUI覆盖层。拥有运行时查看控制台日志的功能，并能够查看基本信息和一些杂项功能。也允许您为其添加特定于应用的GUI。
+1. 一个名为[Debugger](#Debugger)的运行时GUI覆盖层。拥有运行时查看控制台日志的功能，并能够查看基本信息和一些杂项功能。也允许您为其添加特定于应用的GUI。
 这在制作程序后台管理页面时特别有用。该覆盖层还拥有快捷键和手势呼出隐藏功能。
 2. Unity中实现的单例类
-3. 位于Extends目录下的系统类扩展
-4. 相机移动工具，提供运行时编辑器风格的相机移动控制、地图风格的相机控制、和第三视角的相机控制。
-5. 其余小工具类，部分搜集与网络，部分自己开发。都是觉得特别有用的。
+3. 位于Extends目录下的系统类扩展，添加很多实用的功能
+4. 相机移动组件，提供运行时编辑器风格的相机移动控制、地图风格的相机控制、和第三视角的相机控制。
+5. 其余小工具类，部分搜集于网络，部分自己开发。都是觉得特别有用的。
 
-Editor主要就是PluginHub编辑器窗口：
+`Editor`部分就是PluginHub编辑器窗口：
 
 它提供了编辑器内的辅助工具，用于加速开发。同时也是一款用`IMGUI`编写、基于`EditorWindow`的`Unity3D`编辑器插件开发框架。您可以使用这些开发完成的插件模块提高您的工作效率。或者您也可以自己开发插件模块，以适应您自己的开发工作流。  
 `PluginHub`编辑器功能在`Unity3D`中以`PluginHub`窗口的形式呈现，您可以在窗口中查看和使用所有模块的功能，也可以在`PluginHub`配置文件中启用或禁用模块。
@@ -18,13 +18,9 @@ Editor主要就是PluginHub编辑器窗口：
 
 感谢您点击页面右上角的`Star`以支持我的工作。若您发现`PluginHub`中的任何问题，欢迎提交`Issue`或`Pull Request`。  
 
+`PluginHub` 目前处于非常前期的阶段，很多实用的功能正在开发也需要时间验证。如果您发现报错，不用怀疑，那就是bug。请提交Issue，我会尽快修复。
+
 中文视频说明：https://www.bilibili.com/video/BV1H94y1a79d/
-
-
-目录规划：  
-- `项目介绍`：`PluginHub`项目介绍
-- `Editor`：`PluginHub`编辑器功能（旧`PluginHub`）
-- `Runtime`：`PluginHub`运行时功能
 
 
 
@@ -49,34 +45,38 @@ Editor主要就是PluginHub编辑器窗口：
 9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
 
 
-# PluginHub 编辑器功能
 
-#### PluginHub主窗口、模块配置页面
+## PluginHub主窗口、模块配置页面
 <img src="ReadmeImg/Demo0.png" width="400" >
 <img src="ReadmeImg/Demo1.png" width="400">
 
-#### 名词
+## 名词
 
 - `PluginHubWindow`：一个Unity3D编辑器窗口，所有插件模块`UI`都在这个窗口中呈现（见`PluginHubWindow`类）。打开`PluginHubWindow`的快捷键是`Ctrl+Alt+R`
 - 插件模块：对应`PluginHubWindow`中的每个下拉卷展栏，实现一个方面的功能。也称作`Module`，基类为`PluginHubModuleBase`
 - `ModuleConfigSO`:一个`ScriptableObject`配置文件，用于配置您需要启用的模块，启用的模块会在`PluginHubWindow`中显示。见`ModuleConfigSO`类
 - `PH`:有时候您可能会在源码中看到`PH`这个缩写，它是`PluginHub`的缩写
 
-#### 特点
+## 特点
 
 - 模块之间分类清晰，简单易用。可以通过每个模块的卷展栏按钮折叠和展开模块。
 - 提供多种方便的模块功能，您也可以开发自己的模块，只需继承`PluginHubModuleBase`类即可。
 - 可以通过`ScriptableObject`配置文件启用或禁用模块，以定制您干净整洁的`PluginHubWindow`。
 - 包含完整源代码，您可以自由扩展和修改功能模块。
 
-# 目录
-`Editor/Extends` 下是一些内置类扩展  
-`Editor/Helper` 下是一些辅助类,常用的助手函数
-`Editor/Module` 下是所有继承自`PluginHubModuleBase`的模块入口类,在`PluginHubWindow`中展示一套GUI  
-`Editor/Module/ModuleScripts` 如果模块过于复杂(无法在一个文件中写完)，可以将模块的脚本放在这个目录下  
-`Editor/MenuExtends` 下是一些菜单扩展  
+## 代码目录结构
+`Scripts\Runtime\Debugger` 一个名为`Debugger`的`GUI`覆盖层，详细见见下文。
+`Scripts\Runtime\Extends` 运行时系统类扩展
+`Scripts\Runtime\Manager` 各种单例类，实现各方面功能
+`Scripts\Runtime\Tools` 小功能工具类
+`Scripts\Runtime\Tools\CameraMovement` 相机移动组件，挂到相机上即可使用
+`Scripts\Editor\Extends` 编辑器系统类扩展
+`Scripts\Editor\Helper` 些辅助类,常用的助手函数
+`Scripts\Editor\Module` 所有继承自`PluginHubModuleBase`的模块入口类,在`PluginHubWindow`中展示一套GUI  
+`Scripts\Editor\Module\ModuleScripts` 如果模块过于复杂(无法在一个文件中写完)，可以将模块的脚本放在这个目录下  
+`Scripts\Editor\MenuExtends` 菜单扩展  
 
-# 已完成开发的模块
+# 已完成开发的编辑器窗口模块
 这里只介绍一些常用和功能强大，且成熟稳定的模块，更多模块请自行查看源码。
 
 ### NavigationBarModule
@@ -185,5 +185,30 @@ Editor主要就是PluginHub编辑器窗口：
 <img src="ReadmeImg\TheMaterialHere.gif">
 
 
-# PluginHub 运行时功能
-TODO
+# Debugger
+
+`Debugger`属于运行时功能
+
+一个名为`Debugger`的运行时`GUI`覆盖层。拥有运行时查看控制台日志的功能，并提供修改和查看`Unity`常用信息和设置的`GUI`。
+`Custom Window`允许您为其添加特定于应用的`GUI`。只需让您的`MonoBehaviour`继承`Debugger.CustomWindow.ICustomWindowGUI`接口即可。
+这在制作程序后台管理页面时特别有用。该覆盖层还拥有快捷键和手势呼出隐藏功能，使用 \` 按钮呼出和隐藏`Debugger`，
+无键盘的移动设备可以使用手指触摸屏幕画圈的方式进行呼出和隐藏。
+`Debugger`GUI的优势在于它使用与代码紧密结合的`IMGUI`来编写，因此它可以很容易地与您的代码集成。编写效率极高。
+
+下面的图片展示了在多种互动软件中`Debugger`的`Custom`页面展示效果
+
+其中包含了：
+
+- 一款串口通信软件
+- 一款联机赛车互动游戏
+
+<img src="ReadmeImg/DebuggerDemo000.png" width="300">
+<img src="ReadmeImg/DebuggerDemo001.png" width="300">
+<img src="ReadmeImg/DebuggerDemo100.png" width="300">
+<img src="ReadmeImg/DebuggerDemo101.png" width="300">
+
+下面的图片展示了`Debugger`其他页面基础功能
+
+<img src="ReadmeImg/DebuggerDemo200.png" width="400">
+<img src="ReadmeImg/DebuggerDemo201.png" width="400">
+<img src="ReadmeImg/DebuggerDemo202.png" width="400">

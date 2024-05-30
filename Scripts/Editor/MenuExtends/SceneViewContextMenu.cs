@@ -143,7 +143,7 @@ namespace PluginHub.Editor
         private static void TheMaterialHere(out Renderer renderer,out Material material,out int indexOfMaterialInMesh)
         {
             renderer = null; material = null; indexOfMaterialInMesh = -1;
-            Ray ray = SceneViewMouseRay();
+            Ray ray = HandleUtility.GUIPointToWorldRay(mouseDownPosition);
             if (RaycastWithoutCollider.Raycast(ray.origin, ray.direction,out RaycastWithoutCollider.HitResult result))
             {
                 renderer = result.renderer;
@@ -321,22 +321,23 @@ namespace PluginHub.Editor
         #region Helper Functions
 
         //获取一个由[场景视图相机]到[鼠标位置]的射线
-        private static Ray SceneViewMouseRay()
-        {
-            Vector2 mousePos = mouseDownPosition;
-            Rect sceneViewRect = SceneView.lastActiveSceneView.position;
-            // 0,0在左下角，1,1在右上角
-            Vector2 viewPos = new Vector2(mousePos.x / sceneViewRect.width, 1 - mousePos.y / sceneViewRect.height);
-            Ray ray = SceneView.lastActiveSceneView.camera.ViewportPointToRay(viewPos);
-            return ray;
-        }
+        // 使用 HandleUtility.GUIPointToWorldRay(mouseDownPosition); API代替
+        // private static Ray SceneViewMouseRay()
+        // {
+        //     Vector2 mousePos = mouseDownPosition;
+        //     Rect sceneViewRect = SceneView.lastActiveSceneView.position;
+        //     // 0,0在左下角，1,1在右上角
+        //     Vector2 viewPos = new Vector2(mousePos.x / sceneViewRect.width, 1 - mousePos.y / sceneViewRect.height);
+        //     Ray ray = SceneView.lastActiveSceneView.camera.ViewportPointToRay(viewPos);
+        //     return ray;
+        // }
 
         // 获取场景视图鼠标击中的Mesh的世界坐标
         private static bool MousePosToWorldPos(out Vector3 worldPos, out float distanceOut)
         {
             worldPos = Vector3.zero;
             distanceOut = 0;
-            Ray ray = SceneViewMouseRay();
+            Ray ray = HandleUtility.GUIPointToWorldRay(mouseDownPosition);
             bool succeed = RaycastWithoutCollider.Raycast(ray.origin, ray.direction, out RaycastWithoutCollider.HitResult result);
             if (!succeed)
                 return false;

@@ -318,5 +318,40 @@ namespace PluginHub.Editor
             }
             EditorGUIUtility.systemCopyBuffer = sb.ToString();
         }
+
+        [MenuItem("GameObject/PH 拷贝选中对象层级的字符串表达形式", true, -50)]
+        public static bool CopyHierarchyStringRepresentationValidate()
+        {
+            return Selection.gameObjects.Length > 1;
+        }
+
+        [MenuItem("GameObject/PH 拷贝 GameObject 查找路径", false, -49)]
+        public static void CopyGameObjectFindPath()
+        {
+            GameObject gameObject = Selection.activeGameObject;
+            if (gameObject != null)
+            {
+                string path = GetGameObjectFindPath(gameObject.transform);
+                EditorGUIUtility.systemCopyBuffer = path;
+                Debug.Log($"{path} 已拷贝");
+            }
+        }
+
+        #region Helper Functions
+
+        private static string GetGameObjectFindPath(Transform transform)
+        {
+            StringBuilder sb = new StringBuilder();
+            while (transform != null)
+            {
+                sb.Insert(0, transform.name);
+                if (transform.parent != null)
+                    sb.Insert(0, "/");
+                transform = transform.parent;
+            }
+            return sb.ToString();
+        }
+
+        #endregion
     }
 }
