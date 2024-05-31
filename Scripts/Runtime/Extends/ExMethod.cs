@@ -53,6 +53,14 @@ namespace PluginHub.Runtime
             return text.IsFloat() || text.IsInt();
         }
 
+        //是不是两位16进制字符串,例如"FF"
+        public static bool Is2CharHex(this string text)
+        {
+            if (text.Length != 2)
+                return false;
+            return Regex.IsMatch(text, "^[0-9a-fA-F]{2}$");
+        }
+
         //替换字符串第一个匹配
         public static string ReplaceFirst(this string text, string oldValue, string newValue)
         {

@@ -5,13 +5,12 @@ using UnityEditor;
 
 namespace PluginHub.Runtime
 {
-//该特性用来加在属性上，让该属性在检视面板上只读
+    //该特性加在属性上，让该属性在检视面板上只读
     public class ReadOnlyOnInspectorAttribute : PropertyAttribute
     {
 
     }
 
-#if UNITY_EDITOR
     [CustomPropertyDrawer(typeof(ReadOnlyOnInspectorAttribute))]
     public class ReadOnlyDrawer : PropertyDrawer
     {
@@ -28,5 +27,4 @@ namespace PluginHub.Runtime
             GUI.enabled = tmp;
         }
     }
-#endif
 }

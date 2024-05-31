@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using PluginHub.Runtime;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -237,30 +238,5 @@ namespace PluginHub.Editor
             }
         }
 
-    }
-    public static class ExMethods
-    {
-        //是不是浮点数字
-        public static bool IsFloat(this string value)
-        {
-            return Regex.IsMatch(value, "^([0-9]{1,}[.][0-9]*)$");
-        }
-        //是不是整型数字
-        public static bool IsInt(this string text)
-        {
-            return Regex.IsMatch(text, "^([0-9]{1,})$");
-        }
-        //是不是数字
-        public static bool IsNumber(this string text)
-        {
-            return text.IsFloat() || text.IsInt();
-        }
-        //是不是两位16进制字符串,例如"FF"
-        public static bool Is2CharHex(this string text)
-        {
-            if (text.Length != 2)
-                return false;
-            return Regex.IsMatch(text, "^[0-9a-fA-F]{2}$");
-        }
     }
 }

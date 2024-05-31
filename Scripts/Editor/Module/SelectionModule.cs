@@ -225,6 +225,18 @@ namespace PluginHub.Editor
                     for (int i = 0; i < selectedGameObjects.Length; i++)
                         Undo.DestroyObjectImmediate(selectedGameObjects[i]);
                 }
+
+                // if (GUILayout.Button("倒转SiblingIndex"))
+                // {
+                //     // 将选中的物体在父物体下的SiblingIndex倒转
+                //     for (int i = 0; i < selectedGameObjects.Length; i++)
+                //     {
+                //         Undo.RecordObject(selectedGameObjects[i].transform, "Reverse SiblingIndex");
+                //         Transform transform = selectedGameObjects[i].transform;
+                //         transform.SetSiblingIndex(transform.parent.childCount);
+                //     }
+                // }
+
             }
             GUILayout.EndVertical();
 
