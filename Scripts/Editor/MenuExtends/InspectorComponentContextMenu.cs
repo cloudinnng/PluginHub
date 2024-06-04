@@ -306,7 +306,6 @@ namespace PluginHub.Editor
         }
         #endregion
 
-
         #region MeshRenderer
         [MenuItem("CONTEXT/MeshRenderer/PH_使用Mesh名称命名材质资产")]
         public static void RenameMatUseMeshName(MenuCommand command)
@@ -359,5 +358,16 @@ namespace PluginHub.Editor
             }
         }
         #endregion
+
+        #region MeshFilter
+        [MenuItem("CONTEXT/MeshFilter/PH_复制Mesh路径")]
+        public static void CopyMeshPath(MenuCommand command)
+        {
+            MeshFilter meshFilter = (MeshFilter)command.context;
+            string assetPath = AssetDatabase.GetAssetPath(meshFilter.sharedMesh);
+            EditorGUIUtility.systemCopyBuffer = assetPath;
+        }
+        #endregion
+
     }
 }

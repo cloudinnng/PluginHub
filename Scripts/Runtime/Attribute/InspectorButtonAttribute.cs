@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 using Object = System.Object;
 
@@ -24,10 +26,28 @@ namespace PluginHub.Runtime
         // 传入此按钮传入到方法的参数
         public readonly Object[] parameters;
 
-        public InspectorButtonAttribute(string buttonName = "", params Object[] parameters)
+        #region 构造方法
+        public InspectorButtonAttribute(string buttonName, params Object[] parameters)
         {
             this.buttonName = buttonName;
             this.parameters = parameters;
+        }
+        public InspectorButtonAttribute(params Object[] parameters)
+        {
+            this.buttonName = "";
+            this.parameters = parameters;
+        }
+        #endregion
+    }
+
+    // 可以与[InspectorButton]特性混合使用，以在检视面板对应位置添加一个标题，用于分组以便识别
+    [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+    public class InspectorButtonHeaderAttribute : PropertyAttribute
+    {
+        public readonly string headerLabel;
+        public InspectorButtonHeaderAttribute(string headerLabel)
+        {
+            this.headerLabel = headerLabel;
         }
     }
 
@@ -35,6 +55,7 @@ namespace PluginHub.Runtime
     public class InspectorButtonEditor<T> : UnityEditor.Editor where T : MonoBehaviour
     {
 
+        private List<List<PropertyAttribute>> _attributes = new List<List<PropertyAttribute>>();
 
         public override void OnInspectorGUI()
         {
@@ -45,50 +66,86 @@ namespace PluginHub.Runtime
             T myComponent = (T)target;
             // 获取所有方法
             MethodInfo[] methods = myComponent.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            // 遍历所有方法
+            // 遍历每一个方法
             foreach (MethodInfo method in methods)
             {
-                var attributes = method.GetCustomAttributes(typeof(InspectorButtonAttribute), true);
-                // 该方法被添加了[InspectorButton]特性
-                if (attributes.Length > 0)
+
+                Object[] customAttribute = method.GetCustomAttributes(true);
+                // 获取所有[InspectorButton]和[InspectorButtonHeader]特性
+                customAttribute = Array.FindAll(customAttribute, (obj) => obj is InspectorButtonAttribute || obj is InspectorButtonHeaderAttribute);
+                if (customAttribute.Length == 0) // 没有[InspectorButton]或[InspectorButtonHeader]特性
+                    continue;
+
+                // 先整理到一个List<List<PropertyAttribute>>中
+                _attributes.Clear();
+                for (int i = 0; i < customAttribute.Length; i++)
                 {
-                    GUILayout.BeginHorizontal();
+                    PropertyAttribute attribute = (PropertyAttribute)customAttribute[i];
+                    PropertyAttribute lastAttribute=null;
+                    if(i >0)
+                        lastAttribute = (PropertyAttribute)customAttribute[i - 1];
+
+                    if (_attributes.Count == 0)
                     {
-                        ParameterInfo[] parameters = method.GetParameters();
-
-                        foreach (var attribute in attributes)
+                        _attributes.Add(new List<PropertyAttribute>());
+                        _attributes[0].Add(attribute);
+                    }
+                    else
+                    {
+                        if(attribute.GetType() != lastAttribute.GetType()){
+                            _attributes.Add(new List<PropertyAttribute>());
+                            _attributes[_attributes.Count-1].Add(attribute);
+                        }else
                         {
-                            InspectorButtonAttribute buttonAttribute = (InspectorButtonAttribute)attribute;
-
-                            // 检查参数有效性
-                            bool buttonValid = true;
-                            if (parameters.Length != buttonAttribute.parameters.Length)// 参数数量不匹配
-                                buttonValid = false;
-                            if (buttonValid)
-                            {
-                                for (int i = 0; i < parameters.Length; i++)
-                                {
-                                    // 参数类型不匹配
-                                    if (parameters[i].ParameterType != buttonAttribute.parameters[i].GetType())
-                                    {
-                                        buttonValid = false;
-                                        break;
-                                    }
-                                }
-                            }
-
-
-                            // 绘制按钮
-                            string btnName = string.IsNullOrWhiteSpace(buttonAttribute.buttonName) ? $"{method.Name}{GetParametersString(buttonAttribute)}" : buttonAttribute.buttonName;
-                            GUI.enabled = buttonValid;
-                            if (GUILayout.Button(btnName))
-                                method.Invoke(myComponent, buttonAttribute.parameters);
-                            GUI.enabled = true;
+                            _attributes[_attributes.Count-1].Add(attribute);
                         }
                     }
-                    GUILayout.EndHorizontal();
                 }
 
+                //进行绘制
+                for (int i = 0; i < _attributes.Count; i++)
+                {
+                    // 绘制Header标题
+                    if (_attributes[i][0] is InspectorButtonHeaderAttribute headerAttribute)
+                    {
+                        GUILayout.Label(headerAttribute.headerLabel, EditorStyles.boldLabel);
+                    }
+                    else// 绘制按钮
+                    {
+                        GUILayout.BeginHorizontal();
+                        {
+                            for(int j = 0; j < _attributes[i].Count; j++)
+                            {
+                                InspectorButtonAttribute buttonAttribute = (InspectorButtonAttribute)_attributes[i][j];
+                                // 检查参数有效性
+                                bool buttonValid = true;
+                                ParameterInfo[] methodParameters = method.GetParameters();
+                                if (methodParameters.Length != buttonAttribute.parameters.Length)// 参数数量不匹配
+                                    buttonValid = false;
+                                if (buttonValid)
+                                {
+                                    for (int k = 0; k < methodParameters.Length; k++)
+                                    {
+                                        // 参数类型不匹配
+                                        if (methodParameters[k].ParameterType != buttonAttribute.parameters[k].GetType())
+                                        {
+                                            buttonValid = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                // 绘制按钮
+                                string btnName = string.IsNullOrWhiteSpace(buttonAttribute.buttonName) ? $"{method.Name}{GetParametersString(buttonAttribute)}" : buttonAttribute.buttonName;
+                                GUI.enabled = buttonValid;
+                                if (GUILayout.Button(btnName))
+                                    method.Invoke(myComponent, buttonAttribute.parameters);
+                                GUI.enabled = true;
+                            }
+                        }
+                        GUILayout.EndHorizontal();
+                    }
+                }
             }
         }
 

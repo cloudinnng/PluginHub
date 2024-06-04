@@ -10,7 +10,7 @@ namespace PluginHub.Runtime
     {
 
     }
-
+#if UNITY_EDITOR
     [CustomPropertyDrawer(typeof(ReadOnlyOnInspectorAttribute))]
     public class ReadOnlyDrawer : PropertyDrawer
     {
@@ -27,4 +27,5 @@ namespace PluginHub.Runtime
             GUI.enabled = tmp;
         }
     }
+#endif
 }
