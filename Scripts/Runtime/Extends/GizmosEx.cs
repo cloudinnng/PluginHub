@@ -38,24 +38,24 @@ namespace PluginHub.Runtime
 		{
 #if UNITY_EDITOR
 			UnityEditor.Handles.BeginGUI();
-
-			if (!colour.HasValue)
-				colour = Color.white;
-			Color restoreColor = GUI.color;
-			GUI.color = colour.Value;
-			_style.normal.textColor = colour.Value;
-
-			SceneView view = UnityEditor.SceneView.currentDrawingSceneView;
-			if (view != null)
 			{
-				float angle = Vector3.Angle(view.camera.transform.forward, worldPos - view.camera.transform.position);
+				if (!colour.HasValue)
+					colour = Color.white;
+				Color restoreColor = GUI.color;
+				GUI.color = colour.Value;
+				_style.normal.textColor = colour.Value;
 
-				if (angle < 90) //避免相机朝向文字的反方向也显示文字
+				SceneView view = UnityEditor.SceneView.currentDrawingSceneView;
+				if (view != null)
 				{
-					Vector3 screenPos = view.camera.WorldToScreenPoint(worldPos);
-					if (screenPos.y >= 0 || screenPos.y < Screen.height || screenPos.x >= 0 ||
-					    screenPos.x < Screen.width || screenPos.z > 0)
+					float angle = Vector3.Angle(view.camera.transform.forward, worldPos - view.camera.transform.position);
+
+					if (angle < 90) //避免相机朝向文字的反方向也显示文字
 					{
+						Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos);
+						// macOS下的坐标系和Windows下的坐标系不同，macOS下的y轴是反的
+						if(Application.platform == RuntimePlatform.OSXEditor)
+							screenPos.y = view.position.height - screenPos.y;
 						//绘制
 						Vector2 size = _style.CalcSize(new GUIContent(text));
 						Rect bgRect = new Rect(screenPos.x - (size.x / 2) - 10, +view.position.height - screenPos.y - 5,
@@ -66,9 +66,8 @@ namespace PluginHub.Runtime
 						GUI.Label(textRect, text, _style);
 					}
 				}
+				GUI.color = restoreColor;
 			}
-
-			GUI.color = restoreColor;
 			UnityEditor.Handles.EndGUI();
 #endif
 		}
