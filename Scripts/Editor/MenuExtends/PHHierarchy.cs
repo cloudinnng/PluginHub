@@ -42,9 +42,17 @@ namespace PluginHub.Editor
             // 当前选中的对象的这一行
             if (go != null && go.GetInstanceID() == instanceId)
             {
-                // 功能点： 按下鼠标中键可以选中同名的兄弟节点
-                if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
-                    SelectSameNameSilbing(go);
+                if (currEvent.modifiers == EventModifiers.None)
+                {
+                    // 功能点： 按下鼠标中键可以选中所有兄弟节点
+                    if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
+                        SelectAllSilbing(go);
+                }else if (currEvent.modifiers == EventModifiers.Control)
+                {
+                    // 功能点： 按下Ctrl + 鼠标中键可以选中所有兄弟节点
+                    if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
+                        SelectSameNameSilbing(go);
+                }
             }
         }
 
@@ -181,6 +189,24 @@ namespace PluginHub.Editor
             // Select
             Selection.objects = gameObjects.ToArray();
         }
+
+        private static void SelectAllSilbing(GameObject gameObject)
+        {
+            Transform parent = gameObject.transform.parent;
+            if (parent == null)
+            {
+                Debug.LogWarning("No Parent");
+                return;
+            }
+            List<GameObject> gameObjects = new List<GameObject>();
+            foreach (Transform child in parent)
+            {
+                gameObjects.Add(child.gameObject);
+            }
+            // Select
+            Selection.objects = gameObjects.ToArray();
+        }
+
 
         [MenuItem("GameObject/PH 拷贝游戏对象名称", false, -50)]
         public static void CopyGameObjectName()
