@@ -29,6 +29,9 @@ namespace PluginHub.Runtime
 
         [Tooltip("自动切换场景（-1为不切换）,只在发布后生效")] public int changeSceneOnStart = -1;
 
+        [Tooltip("启动程序后，如果目前是窗口模式，则保持窗口宽高比并自动使用合适的较大分辨率显示。这在使用窗口模式以多种平台下测试应用程序时非常方便有用")]
+        public bool autoWindowSize = false;
+
         void Start()
         {
             Screen.sleepTimeout = screenNeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
@@ -55,6 +58,29 @@ namespace PluginHub.Runtime
             {
                 Debug.Log($"启动了自动切换场景，将切换到场景{changeSceneOnStart}");
                 SceneManager.LoadScene(changeSceneOnStart);
+            }
+
+            if (autoWindowSize)
+            {
+                if (Screen.fullScreen == true) // 全屏模式下不进行调整
+                    return;
+                // 刚进入程序时的宽高比
+                float aspect = (float)Screen.width / Screen.height;
+                // 桌面分辨率
+                Vector2Int screenResolution = new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
+                Vector2Int useResolution = new Vector2Int();
+                if (aspect > 1)
+                {
+                    // 是一个横屏游戏
+                    useResolution.x = screenResolution.x * 6 / 10;
+                    useResolution.y = (int)(useResolution.x / aspect);
+                }else
+                {
+                    // 是一个竖屏游戏
+                    useResolution.y = screenResolution.y * 9 / 10;
+                    useResolution.x = (int)(useResolution.y * aspect);
+                }
+                Screen.SetResolution(useResolution.x, useResolution.y, false);
             }
         }
 

@@ -374,6 +374,7 @@ namespace PluginHub.Editor
 
         private GUIStyle titleLabel => PluginHubFunc.GetCustomStyle("TitleLabel");
         //绘制一个含有标题的分隔线，用于分隔模块内的小功能
+
         public void DrawSplitLine(string title)
         {
             GUILayout.BeginHorizontal();
@@ -388,8 +389,15 @@ namespace PluginHub.Editor
 
         public void DrawIconBtnOpenFolder(string path, bool checkExist, string buttonTxt = null)
         {
+            // macOS下的路径是以/分隔的，而Windows下的路径是以\分隔的，因此需要处理一下
+#if UNITY_EDITOR_OSX
+            path = path.Replace("\\", "/");
+            path = path.Replace("Assets/../", ""); //EditorUtility.RevealInFinder(path);不支持（..）因此需要处理
+#else
             path = path.Replace("/", "\\");
             path = path.Replace("Assets\\..\\", ""); //EditorUtility.RevealInFinder(path);不支持（..）因此需要处理
+#endif
+
             string checkPath = Path.GetDirectoryName(path);
             bool exist = checkExist ? Directory.Exists(checkPath) : true;
             GUI.enabled = exist;
@@ -400,7 +408,7 @@ namespace PluginHub.Editor
                         : GUILayout.ExpandWidth(false),
                     PluginHubFunc.IconBtnLayoutOptions[1]))
             {
-                Debug.Log($"打开文件夹:{path}");
+                Debug.Log($"RevealInFinder:{path}");
                 EditorUtility.RevealInFinder(path);
             }
             GUI.enabled = true;

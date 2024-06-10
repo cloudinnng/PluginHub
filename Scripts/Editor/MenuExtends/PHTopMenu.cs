@@ -63,10 +63,15 @@ namespace PluginHub.Editor
 
         #region Open Folder/Window
 
+        private static string _projectRootPath{ get { return Application.dataPath.Replace("/Assets", ""); } }
         private static void OpenFolder(string path)
         {
+            Debug.Log("Open Folder: " + path);
             if (!Directory.Exists(path))
+            {
+                Debug.Log("Folder not exist, create it.");
                 Directory.CreateDirectory(path);
+            }
             EditorUtility.RevealInFinder(path);
         }
 
@@ -89,18 +94,18 @@ namespace PluginHub.Editor
         [MenuItem("PluginHub/Open Folder Window/Folder Build", false, -281)]
         public static void OpenFolderBuild()
         {
-            OpenFolder(Application.dataPath + "/../Build/");
+            OpenFolder(_projectRootPath + "/Build/");
         }
         [MenuItem("PluginHub/Open Folder Window/Folder Recordings", false, -280)]
         public static void OpenFolderRecordings()
         {
-            OpenFolder(Application.dataPath + "/../Recordings/");
+            OpenFolder(_projectRootPath + "/Recordings/");
         }
         [MenuItem("PluginHub/Open Folder Window/Folder ExternalAssets", false, -279)]
         public static void OpenFolderExternalAssets()
         {
             // 这个文件夹非标准Unity文件夹，是个人习惯用于放置项目相关的外部资源，例如参考图，策划文档等。
-            OpenFolder(Application.dataPath + "/../ExternalAssets/");
+            OpenFolder(_projectRootPath + "/ExternalAssets/");
         }
         //--------------------------
         //--------------------------

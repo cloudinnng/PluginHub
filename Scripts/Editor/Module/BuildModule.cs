@@ -194,6 +194,7 @@ namespace PluginHub.Editor
             DrawIOSBuildButtons();
             DrawAndroidBuildButtons();
             DrawWebGLBuildButtons();
+            DrawMacOSBuildButtons();
             DrawBuildLibary();
         }
 
@@ -393,6 +394,38 @@ namespace PluginHub.Editor
                     }
 
                     DrawIconBtnOpenFolder(path, true);
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+        }
+
+        private void DrawMacOSBuildButtons()
+        {
+            GUILayout.BeginVertical("Box");
+            {
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.Standalone On"));
+                    GUILayout.Label($"平台 : {BuildTarget.StandaloneOSX}");
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                {
+                    string fullPath = Application.dataPath;
+                    fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
+                    fullPath = Path.Combine(fullPath, $"Build/MacOS/{PlayerSettings.productName}.app");
+                    string path = fullPath;
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 MacOS 项目", $"将构建到{path}")))
+                    {
+                        //执行构建
+                        BuildMacOS($@"Build/MacOS/{PlayerSettings.productName}.app");
+                        GUIUtility.ExitGUI();
+                    }
+                    DrawIconBtnOpenFolder(path, false);
+                    //
+
                 }
                 GUILayout.EndHorizontal();
             }
@@ -689,6 +722,33 @@ namespace PluginHub.Editor
                     break;
             }
         }
+
+        //$"Build/MacOS/[ProductName].app"
+        private static void BuildMacOS(string locationPathName)
+        {
+            if (!DeleteOldBuildConfirm(locationPathName))
+                return;
+
+            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
+            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
+            buildPlayerOptions.locationPathName = locationPathName;
+            buildPlayerOptions.target = BuildTarget.StandaloneOSX;
+            buildPlayerOptions.options = GetBuildOptions();
+            //开始构建
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"Build succeeded");
+                    // Debug.Log($"{summary.outputPath}");
+                    break;
+                case BuildResult.Failed:
+                    Debug.LogError("Build failed");
+                    break;
+            }
+        }
+
 
         #endregion
 
