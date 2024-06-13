@@ -53,9 +53,10 @@ namespace PluginHub.Runtime
 					if (angle < 90) //避免相机朝向文字的反方向也显示文字
 					{
 						Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos);
-						// macOS下的坐标系和Windows下的坐标系不同，macOS下的y轴是反的
-						if(Application.platform == RuntimePlatform.OSXEditor)
-							screenPos.y = view.position.height - screenPos.y;
+
+						// macOS下的坐标系和Windows下的坐标系不同，macOS下的y轴是反的, 后来发现在windows编辑器下也是反的
+						// if(Application.platform == RuntimePlatform.OSXEditor)
+						screenPos.y = view.position.height - screenPos.y;
 						//绘制
 						Vector2 size = _style.CalcSize(new GUIContent(text));
 						Rect bgRect = new Rect(screenPos.x - (size.x / 2) - 10, +view.position.height - screenPos.y - 5,

@@ -28,40 +28,37 @@ namespace PluginHub.Editor
     // PluginHub 顶部菜单
     //
     // 优先级规划：
-    // Shotcut  < -200
+    // 快捷打开  -300
     // --------------
-    // Command  -100
+    // 不常用的工具和命令  -100
     // --------------
-    // Module Menu  0
+    // 由模块代码添加的菜单  0
     // --------------
-    // Tools Helper Toggle  100
+    // 带开关的功能 100
     public class PHTopMenu
     {
-        #region Shortcut
-
-        //Open Folder Window/StreamingAssets
-        //Open Folder Window/PersistentDataPath
-        //Open Folder Window/DataPath
-        //Open Folder Window/-----------
-        //Open Folder Window/Build
-        //Open Folder Window/Recordings
-        //Open Folder Window/ExternalAssets
-
-        //Open Folder Window/Project Settings...
-        //Open Folder Window/Package Manager
-        //Open Folder Window/Preferences...
-        //Open Folder Window/-----------
-        //Open Folder Window/Animation
-        //Open Folder Window/Timeline
-        //Open Folder Window/-----------
-        //Open Folder Window/Lighting
-        //Open Folder Window/Light Explorer
-        //Open Folder Window/UV Inspector
-        //Open Folder Window/-----------
-        //Open Folder Window/Test Runner
+        #region 用于菜单标题，组织和分类分隔作用
+        [MenuItem("PluginHub/快捷打开", false, -301)]
+        public static void Shortcut() { }
+        [MenuItem("PluginHub/快捷打开", true, -301)]
+        public static bool ShortcutValid() => false;
+        [MenuItem("PluginHub/不常用的工具和命令", false, -101)]
+        public static void Separator() { }
+        [MenuItem("PluginHub/不常用的工具和命令", true, -101)]
+        public static bool SeparatorValid() => false;
+        [MenuItem("PluginHub/由模块代码添加的菜单", false, -1)]
+        public static void ModuleMenu() { }
+        [MenuItem("PluginHub/由模块代码添加的菜单", true, -1)]
+        public static bool ModuleMenuValid() => false;
+        [MenuItem("PluginHub/带开关的功能", false, 99)]
+        public static void SwitchMenu() { }
+        [MenuItem("PluginHub/带开关的功能", true, 99)]
+        public static bool SwitchMenuValid() => false;
+        #endregion
 
 
-        #region Open Folder/Window
+
+        #region 快捷打开 Folder/Window
 
         private static string _projectRootPath{ get { return Application.dataPath.Replace("/Assets", ""); } }
         private static void OpenFolder(string path)
@@ -75,33 +72,33 @@ namespace PluginHub.Editor
             EditorUtility.RevealInFinder(path);
         }
 
-        [MenuItem("PluginHub/Open Folder Window/Folder StreamingAssets", false, -300)]
+        [MenuItem("PluginHub/Open/Folder StreamingAssets", false, -300)]
         public static void OpenFolderStreamingAssets()
         {
             OpenFolder(Application.streamingAssetsPath);
         }
-        [MenuItem("PluginHub/Open Folder Window/Folder PersistentDataPath", false, -299)]
+        [MenuItem("PluginHub/Open/Folder PersistentDataPath", false, -299)]
         public static void OpenFolderPersistentDataPath()
         {
             OpenFolder(Application.persistentDataPath);
         }
-        [MenuItem("PluginHub/Open Folder Window/Folder DataPath", false, -298)]
+        [MenuItem("PluginHub/Open/Folder DataPath", false, -298)]
         public static void OpenFolderDataPath()
         {
             OpenFolder(Application.dataPath);
         }
         //--------------------------
-        [MenuItem("PluginHub/Open Folder Window/Folder Build", false, -281)]
+        [MenuItem("PluginHub/Open/Folder Build", false, -281)]
         public static void OpenFolderBuild()
         {
             OpenFolder(_projectRootPath + "/Build/");
         }
-        [MenuItem("PluginHub/Open Folder Window/Folder Recordings", false, -280)]
+        [MenuItem("PluginHub/Open/Folder Recordings", false, -280)]
         public static void OpenFolderRecordings()
         {
             OpenFolder(_projectRootPath + "/Recordings/");
         }
-        [MenuItem("PluginHub/Open Folder Window/Folder ExternalAssets", false, -279)]
+        [MenuItem("PluginHub/Open/Folder ExternalAssets", false, -279)]
         public static void OpenFolderExternalAssets()
         {
             // 这个文件夹非标准Unity文件夹，是个人习惯用于放置项目相关的外部资源，例如参考图，策划文档等。
@@ -109,73 +106,71 @@ namespace PluginHub.Editor
         }
         //--------------------------
         //--------------------------
-        [MenuItem("PluginHub/Open Folder Window/Window Project Settings...", false, -260)]
+        [MenuItem("PluginHub/Open/Window Project Settings...", false, -260)]
         public static void OpenWindowProjectSettings()
         {
             EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
         }
-        [MenuItem("PluginHub/Open Folder Window/Window Package Manager", false, -259)]
+        [MenuItem("PluginHub/Open/Window Package Manager", false, -259)]
         public static void OpenWindowPackageManager()
         {
             EditorApplication.ExecuteMenuItem("Window/Package Manager");
         }
-        [MenuItem("PluginHub/Open Folder Window/Window Preferences...", false, -258)]
+        [MenuItem("PluginHub/Open/Window Preferences...", false, -258)]
         public static void OpenWindowPreferences()
         {
             EditorApplication.ExecuteMenuItem("Edit/Preferences...");
         }
         //--------------------------
-        [MenuItem("PluginHub/Open Folder Window/Window Animation", false, -240)]
+        [MenuItem("PluginHub/Open/Window Animation", false, -240)]
         public static void OpenWindowAnimation()
         {
             EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
         }
-        [MenuItem("PluginHub/Open Folder Window/Window Timeline", false, -239)]
+        [MenuItem("PluginHub/Open/Window Timeline", false, -239)]
         public static void OpenWindowTimeline()
         {
             EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
         }
         //--------------------------
-        [MenuItem("PluginHub/Open Folder Window/Window Lighting", false, -227)]
+        [MenuItem("PluginHub/Open/Window Lighting", false, -227)]
         public static void OpenWindowLighting()
         {
             EditorApplication.ExecuteMenuItem("Window/Rendering/Lighting");
         }
-        [MenuItem("PluginHub/Open Folder Window/Window Light Explorer", false, -226)]
+        [MenuItem("PluginHub/Open/Window Light Explorer", false, -226)]
         public static void OpenWindowLightExplorer()
         {
             EditorApplication.ExecuteMenuItem("Window/Rendering/Light Explorer");
         }
-        [MenuItem("PluginHub/Open Folder Window/Window UV Inspector", false, -225)]
+        [MenuItem("PluginHub/Open/Window UV Inspector", false, -225)]
         public static void OpenWindowUVInspector()
         {
             EditorApplication.ExecuteMenuItem("Window/nTools/UV Inspector");
         }
         //--------------------------
-        [MenuItem("PluginHub/Open Folder Window/Window Test Runner", false, -213)]
+        [MenuItem("PluginHub/Open/Window Test Runner", false, -213)]
         public static void OpenWindowTestRunner()
         {
             EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
         }
         #endregion
 
-        #region 截图
-        [MenuItem("PluginHub/Scene View Screenshot", false, -210)]
+        #region 不常用的工具和命令
+
+        [MenuItem("PluginHub/Scene View Screenshot", false, -99)]
         public static void SceneViewScreenshot()
         {
             SceneGameScreenShot.ScreenShotSceneView();
         }
-        [MenuItem("PluginHub/Game View Screenshot", false, -209)]
+        [MenuItem("PluginHub/Game View Screenshot", false, -98)]
         public static void GameViewScreenshot()
         {
             SceneGameScreenShot.ScreenShotGameView();
         }
-        #endregion
 
-
-
-        [MenuItem("PluginHub/Shortcut/Switch Console &#c", false, -200)]
-        public static void SwitchConsole()
+        [MenuItem("PluginHub/Switch(Clear) Console &#c", false, -97)]
+        public static void SwitchClearConsole()
         {
 #if UNITY_2021_1_OR_NEWER
             //当console窗口docked时，是清空console，否则是切换显示或隐藏
@@ -206,10 +201,11 @@ namespace PluginHub.Editor
         }
 
 
-        #endregion
 
 
-        [MenuItem("PluginHub/创建项目基本目录", false, -100)]
+
+
+        [MenuItem("PluginHub/创建项目基本目录", false, -96)]
         public static void CreateProjectBaseDir()
         {
             Debug.Log("创建项目基本目录");
@@ -287,7 +283,24 @@ namespace PluginHub.Editor
             }
         }
 
+        [MenuItem("PluginHub/添加MeshCollider到选中物体(递归)", false, -95)]
+        public static void AddMeshColliderToSelected()
+        {
+            foreach (var obj in Selection.gameObjects)
+                AddMeshColliderRecursively(obj.transform);
+        }
 
+        // 递归
+        private static void AddMeshColliderRecursively(Transform transform)
+        {
+            MeshRenderer meshRenderer = transform.GetComponent<MeshRenderer>();
+            if (meshRenderer != null && transform.GetComponent<MeshCollider>() == null)
+                transform.gameObject.AddComponent<MeshCollider>();
+            foreach (Transform child in transform)
+                AddMeshColliderRecursively(child);
+        }
+
+        #endregion
 
     }
 }

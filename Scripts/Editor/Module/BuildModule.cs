@@ -63,8 +63,27 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_clearStreamingAssetsBeforeBuild", value); }
         }
 
+        //PC平台场景构建时,构建项目时用于exe执行文件的名称和构建目录名，如果为空，则使用项目文件夹名称
+        // eg: 溪洛渡水电站机电设备三维可视化平台
+        // eg: XLDHydropowerStation
+        private static string projectBuildName
+        {
+            get
+            {
+                string value = PluginHubConfig.ReadConfig("BuildModule", "projectBuildName", "");
+                if (string.IsNullOrWhiteSpace(value))
+                    return projectFolderName;
+                else
+                    return value;
+            }
+            set
+            {
+                PluginHubConfig.WriteConfig("BuildModule", "projectBuildName", value);
+            }
+        }
 
         //PC平台场景构建时,用于exe执行文件的名称和构建目录名，如果为空，则使用场景名称
+        // eg: 00.MainScene
         private static string sceneBuildName
         {
             get
@@ -214,6 +233,7 @@ namespace PluginHub.Editor
                 GUILayout.BeginVertical("Box");
                 {
                     GUILayout.Label("项目构建:");
+                    projectBuildName = EditorGUILayout.TextField("项目构建名称:", projectBuildName);
                     GUILayout.BeginHorizontal();
                     {
                         string path = CurrProjectBuildFullPath();
@@ -423,7 +443,7 @@ namespace PluginHub.Editor
                         BuildMacOS($@"Build/MacOS/{PlayerSettings.productName}.app");
                         GUIUtility.ExitGUI();
                     }
-                    DrawIconBtnOpenFolder(path, false);
+                    DrawIconBtnOpenFolder(path, true);
                     //
 
                 }
@@ -561,13 +581,13 @@ namespace PluginHub.Editor
 
         private static string CurrProjectBuildFullPath()
         {
-            string currProjectName = projectFolderName;
+            string currProjectName = projectBuildName;
             return GetBuildFullPath(currProjectName, currProjectName);
         }
 
         private static void BuildProject()
         {
-            string buildName = projectFolderName;
+            string buildName = projectBuildName;
             AddCurrSceneToBuildSetting();
             SetBuildSceneEnable(false);
             BuildStandalone(buildName, buildName);
@@ -577,8 +597,6 @@ namespace PluginHub.Editor
         {
             AddCurrSceneToBuildSetting();
             SetBuildSceneEnable(uncheckOtherScene);
-            //set product name
-            PlayerSettings.productName = sceneBuildName;
             BuildStandalone(sceneBuildName, sceneBuildName);
         }
 
@@ -620,6 +638,7 @@ namespace PluginHub.Editor
             if (!DeleteOldBuildConfirm(folder))
                 return;
 
+            PlayerSettings.productName = exeName;// 这样会将打包后程序的窗口标题设置为exeName
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.locationPathName = $"Build/{folderName}/{exeName}.exe";
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();

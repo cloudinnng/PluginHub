@@ -1,5 +1,5 @@
 ﻿# 项目概述
-目前，新`PluginHub`现在是一份加速项目开发的代码模板。包含`Runtime`(运行时)和`Editor`(编辑器)功能。
+目前，新`PluginHub`现在是一份加速`Unity3D`项目开发的代码模板。包含`Runtime`(运行时)和`Editor`(编辑器)功能。
 
 `Runtime`主要由以下功能组成：
 

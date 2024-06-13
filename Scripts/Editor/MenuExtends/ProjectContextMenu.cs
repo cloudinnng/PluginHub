@@ -96,7 +96,7 @@ namespace PluginHub.Editor
 
 
         //图片文件格式
-        public static string[] imageExtensions = new string[] { ".png", ".jpg", ".jpeg", ".bmp", ".psd", ".tga", ".tif", ".tiff", ".gif" };
+        public static string[] imageExtensions = new string[] { ".png", ".jpg", ".jpeg", ".bmp", ".psd", ".tga", ".tif", ".tiff", ".gif", ".exr" };
 
         //判断一个路径是否是一个图片文件
         private static bool IsImageFile(string path)

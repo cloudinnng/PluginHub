@@ -290,6 +290,63 @@ namespace PluginHub.Runtime
             }
         }
 
+        public static IEnumerator DoLocalRotateX(Transform transform, float targetLocalAngleX, float duration)
+        {
+            float startAngleX = transform.localEulerAngles.x;
+            //lerp from nearlest angle
+            if (Mathf.Abs(startAngleX - targetLocalAngleX) > 180)
+                if (startAngleX > targetLocalAngleX) startAngleX -= 360;
+                else startAngleX += 360;
+
+            float time = 0;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float t = AnimCurve.Evaluate(time / duration);
+                float x = Mathf.Lerp(startAngleX, targetLocalAngleX, t);
+                transform.localEulerAngles = new Vector3(x, transform.localEulerAngles.y, transform.localEulerAngles.z);
+                yield return null;
+            }
+        }
+
+        public static IEnumerator DoLocalRotateY(Transform transform, float targetLocalAngleY, float duration)
+        {
+            float startAngleY = transform.localEulerAngles.y;
+            //lerp from nearlest angle
+            if (Mathf.Abs(startAngleY - targetLocalAngleY) > 180)
+                if (startAngleY > targetLocalAngleY) startAngleY -= 360;
+                else startAngleY += 360;
+
+            float time = 0;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float t = AnimCurve.Evaluate(time / duration);
+                float y = Mathf.Lerp(startAngleY, targetLocalAngleY, t);
+                transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, y, transform.localEulerAngles.z);
+                yield return null;
+            }
+        }
+
+        public static IEnumerator DoLocalRotateZ(Transform transform, float targetLocalAngleZ, float duration)
+        {
+            float startAngleZ = transform.localEulerAngles.z;
+            //lerp from nearlest angle
+            if (Mathf.Abs(startAngleZ - targetLocalAngleZ) > 180)
+                if (startAngleZ > targetLocalAngleZ) startAngleZ -= 360;
+                else startAngleZ += 360;
+
+            float time = 0;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float t = AnimCurve.Evaluate(time / duration);
+                float z = Mathf.Lerp(startAngleZ, targetLocalAngleZ, t);
+                transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, z);
+                yield return null;
+            }
+        }
+
         #endregion
 
         #region Scale
