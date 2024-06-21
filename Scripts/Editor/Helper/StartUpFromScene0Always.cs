@@ -46,7 +46,7 @@ namespace PluginHub.Editor
             SceneManager.LoadScene(0);
             
             //切换到编辑器启动之前所在的场景
-            Debug.Log($"跳转到编辑器启动之前所在的场景{editorStartUpSceneIndex}");
+            Debug.Log($"普通载入编辑器启动之前所在的场景{editorStartUpSceneIndex}");
             SceneManager.LoadScene(editorStartUpSceneIndex);
         }
     }

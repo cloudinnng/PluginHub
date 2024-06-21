@@ -129,6 +129,8 @@ namespace PluginHub.Runtime
             return direction;
         }
 
+        // 该变量用于防止刚按下右键时，相机突然移动较大距离。通常在编辑器中鼠标焦点移出Game视图后重新进入时会出现这种情况
+        bool justPressedThisFrame = true;
         void Update()
         {
             #region 鼠标左键
@@ -178,6 +180,7 @@ namespace PluginHub.Runtime
                 m_TargetCameraState.SetFromTransform(transform);
                 m_InterpolatingCameraState.SetFromTransform(transform);
                 Cursor.lockState = CursorLockMode.Locked;
+                justPressedThisFrame = true;
             }
 
             // Unlock and show cursor when right mouse button released
@@ -189,6 +192,11 @@ namespace PluginHub.Runtime
 
             if (Input.GetMouseButton(1))
             {
+                if (justPressedThisFrame)
+                {
+                    justPressedThisFrame = false;
+                    return;
+                }
                 // Rotation
                 var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
                 var mouseSensitivityFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude);

@@ -13,7 +13,7 @@ namespace PluginHub.Runtime
         /// 在场景中查找给定name的对象
         /// 该方法可以找到隐藏的对象
         /// </summary>
-        public static Transform FindAllByName(string name, bool partialMatch = false)
+        public static Transform FindByName(string name, bool partialMatch = false)
         {
             Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>() as Transform[];
             for (int i = 0; i < objs.Length; i++)
@@ -37,7 +37,7 @@ namespace PluginHub.Runtime
         }
 
         //partialMatch:是否对name采用部分匹配
-        public static Transform[] FindAllsByName(string name, bool partialMatch = false)
+        public static Transform[] FindAllByName(string name, bool partialMatch = false)
         {
             Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>() as Transform[];
             List<Transform> returnList = new List<Transform>();
@@ -74,7 +74,7 @@ namespace PluginHub.Runtime
         /// 返回找到的第一个该类型对象
         /// 该方法可以找到隐藏的对象
         /// </summary>
-        public static T FindAllByType<T>() where T : Component
+        public static T FindByType<T>() where T : Component
         {
             T[] objs = Resources.FindObjectsOfTypeAll<T>() as T[];
             for (int i = 0; i < objs.Length; i++)
@@ -88,7 +88,7 @@ namespace PluginHub.Runtime
             return null;
         }
 
-        public static T[] FindAllsByType<T>() where T : Component
+        public static T[] FindAllByType<T>() where T : Component
         {
             T[] objs = Resources.FindObjectsOfTypeAll<T>() as T[];
             List<T> returnList = new List<T>();
@@ -112,7 +112,7 @@ namespace PluginHub.Runtime
         /// 返回找到与给定名字相同的第一个该类型对象
         /// 该方法可以找到隐藏的对象
         /// </summary>
-        public static T FindAllByTypeAndName<T>(string name, bool partialMatch = false) where T : Component
+        public static T FindByTypeAndName<T>(string name, bool partialMatch = false) where T : Component
         {
             T[] objs = Resources.FindObjectsOfTypeAll<T>() as T[];
             for (int i = 0; i < objs.Length; i++)
@@ -136,7 +136,7 @@ namespace PluginHub.Runtime
         }
 
 
-        public static T[] FindAllsByTypeAndName<T>(string name, bool partialMatch = false) where T : Component
+        public static T[] FindAllByTypeAndName<T>(string name, bool partialMatch = false) where T : Component
         {
             T[] objs = Resources.FindObjectsOfTypeAll<T>() as T[];
             List<T> returnList = new List<T>();

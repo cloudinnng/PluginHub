@@ -8,7 +8,7 @@ namespace PluginHub.Editor
     public static class InspectorAssetContextMenu
     {
         #region Material
-        [MenuItem("CONTEXT/Material/PH_使用Shader名称命名Material资产")]
+        [MenuItem("CONTEXT/Material/PH 使用 [Shader名称] 命名Material资产")]
         public static void RenameMatUseShaderName(MenuCommand command)
         {
             Material material = (Material)command.context;
@@ -17,6 +17,7 @@ namespace PluginHub.Editor
                 string assetPath = AssetDatabase.GetAssetPath(material);
                 // Debug.Log(assetPath);
                 string nameUsage = material.shader.name.Replace("/", "_");
+                nameUsage = nameUsage.Replace(" ", "");
                 // string nameUsage = Path.GetFileNameWithoutExtension(material.shader.name);
                 string newName = $"M_{nameUsage}.mat";
                 // Debug.Log(newName);
@@ -28,7 +29,7 @@ namespace PluginHub.Editor
             }
         }
 
-        [MenuItem("CONTEXT/Material/PH_使用MainTex名称命名Material资产")]
+        [MenuItem("CONTEXT/Material/PH 使用 [MainTex名称] 命名Material资产")]
         public static void RenameMatUseMainTexName(MenuCommand command)
         {
             Material material = (Material)command.context;
@@ -80,7 +81,7 @@ namespace PluginHub.Editor
             return -1;
         }
 
-        [MenuItem("CONTEXT/Material/PH_智能纹理赋值")]
+        [MenuItem("CONTEXT/Material/PH 智能纹理赋值")]
         public static void CM_MaterialSmartTexturesAssign(MenuCommand command)
         {
             Material material = (Material)command.context;
@@ -274,7 +275,7 @@ namespace PluginHub.Editor
         #endregion
 
         #region Shader
-        [MenuItem("CONTEXT/Shader/PH_使用Shader名称命名shader文件")]
+        [MenuItem("CONTEXT/Shader/PH 使用 [Shader名称] 命名shader文件")]
         public static void ShaderContextMenuRenameShaderFile(MenuCommand command)
         {
             Shader shader = (Shader)command.context;

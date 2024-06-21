@@ -3,6 +3,9 @@
 namespace PluginHub.Runtime
 {
     /// <summary>
+    /// 2024年6月21日
+    /// 替换成 Object.FindObjectsOfType<T>(true); 支持初始状态隐藏的物体
+    ///
     /// 2024年1月9日
     /// FindSingleton正式更名为SceneSingleton
     /// 更贴切，因为它存在于场景中。
@@ -30,7 +33,7 @@ namespace PluginHub.Runtime
             if (_instance == null)
             {
                 //这里用Resources.FindObjectsOfTypeAll<T>();会找到资产中的对象，而我只需要场景中的对象
-                T[] tObjInScene = Object.FindObjectsOfType<T>();
+                T[] tObjInScene = Object.FindObjectsOfType<T>(true);
                 if (tObjInScene.Length > 0)
                 {
                     _instance = tObjInScene[0];

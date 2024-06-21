@@ -9,20 +9,22 @@ namespace PluginHub.Runtime
     //Transform 扩展方法
     public static class TransformEx
     {
-        //若A是B的父亲，返回真
-        //返回参数transform是否是调用者的直系孩子，或非直系孩子。（只要是孩子就返回真）
-        public static bool IsMyChild(this Transform A, Transform B)
+        #region 判断父子关系
+
+        // 若parent是child的父亲，返回真
+        // 返回child是否是调用者的直系孩子，或非直系孩子。（只要是孩子就返回真）
+        // 此方法与Unity内置方法 Transform.IsChildOf 互为相反功能
+        public static bool IsMyChild(this Transform parent, Transform child)
         {
-            if (B.parent == null)
+            if (child.parent == null)
                 return false;
-            Transform tmpParent = B.parent;
+            Transform tmpParent = child.parent;
             while (tmpParent != null)
             {
-                if (tmpParent == A)
+                if (tmpParent == parent)
                     return true;
                 tmpParent = tmpParent.parent;
             }
-
             return false;
         }
 
@@ -38,9 +40,11 @@ namespace PluginHub.Runtime
                     return true;
                 tmpParent = tmpParent.parent;
             }
-
             return false;
         }
+
+        #endregion
+
 
         #region Find方法均可以找到隐藏的对象
 

@@ -94,6 +94,7 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetString(native_ps_path_key, value); }
         }
 
+        #region PhotoShop Menu
 
         //图片文件格式
         public static string[] imageExtensions = new string[] { ".png", ".jpg", ".jpeg", ".bmp", ".psd", ".tga", ".tif", ".tiff", ".gif", ".exr" };
@@ -172,6 +173,39 @@ namespace PluginHub.Editor
 
             return imagePaths.ToArray();
         }
+
+        #endregion
+
+        #region notepad++ Menu
+
+
+        [MenuItem("Assets/PH 使用notepad++打开文件", true)]
+        public static bool OpenFileUseNotepadValid(MenuCommand menuCommand)
+        {
+            return Application.platform == RuntimePlatform.WindowsEditor;
+        }
+
+        [MenuItem("Assets/PH 使用notepad++打开文件", false)]
+        public static void OpenFileUseNotepad(MenuCommand menuCommand)
+        {
+            foreach (string g in Selection.assetGUIDs)
+            {
+                Debug.Log($"GUID:{g}");
+                //拼接文件路径
+                string filePath = AssetDatabase.GUIDToAssetPath(g);
+                filePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), filePath);
+                filePath = filePath.Replace("/", "\\");
+
+                if (File.Exists(filePath))
+                {
+                    Debug.Log($"open {filePath}");
+                    //使用PS打开图片
+                    System.Diagnostics.Process.Start("notepad++", $"\"{filePath}\"");
+                }
+            }
+        }
+        #endregion
+
 
         [MenuItem("Assets/PH 使用目录名 重命名场景资产", false)]
         public static void RenameSceneAssetUseDirectoryName()
