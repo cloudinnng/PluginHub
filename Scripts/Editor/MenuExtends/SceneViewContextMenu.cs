@@ -101,11 +101,13 @@ namespace PluginHub.Editor
             menu.AddSeparator("");
 
 
+            // 显示一些信息
             if (Selection.gameObjects.Length > 0)
             {
                 menu.AddSeparator("");
                 Bounds b = SelectionModule.GetSelectionBounds();
                 menu.AddItem(new GUIContent($"Selection Bounds: {b.size}"), false, null);
+                menu.AddItem(new GUIContent("Selection Count: " + Selection.gameObjects.Length), false, null);
             }
             menu.AddItem(new GUIContent($"SceneView Cursor: {sceneViewCursor}"), false, null);
             menu.AddItem(new GUIContent($"Distance To Last Cursor: {Vector3.Distance(sceneViewCursor, lastSceneViewCursor)}"), false, null);
