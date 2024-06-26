@@ -12,7 +12,7 @@ namespace PluginHub.Runtime
         private Rigidbody _rigidbody;
         private SphereCollider _collider;
 
-        public float mouseSensitivityFactor = 1;
+        public float mouseSensitivityFactor = 50f;
         private float yaw;
         private float pitch;
 
@@ -24,27 +24,43 @@ namespace PluginHub.Runtime
             _rigidbody.useGravity = false;
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotationZ;// 禁止Z轴旋转
             // 旋转阻力
-            _rigidbody.angularDrag = 999;
+            _rigidbody.angularDrag = 9999;
             // 移动阻力
-            // _rigidbody.drag = 999;
+            _rigidbody.drag = 1;
             // _rigidbody.isKinematic = true;
 
+            // 碰撞器
             _collider = gameObject.GetComponent<SphereCollider>();
             if (_collider == null)
                 _collider = gameObject.AddComponent<SphereCollider>();
             _collider.radius = 0.5f;
+            PhysicMaterial physicMaterial = new PhysicMaterial("NoFriction");
+            physicMaterial.bounciness = 0;
+            physicMaterial.frictionCombine = PhysicMaterialCombine.Minimum;
+            physicMaterial.bounceCombine = PhysicMaterialCombine.Minimum;
+            physicMaterial.dynamicFriction = 0;
+            physicMaterial.staticFriction = 0;
+            _collider.sharedMaterial = physicMaterial;
         }
 
         void Update()
         {
             // WSAD QE 移动
             float inputX = Input.GetKey(KeyCode.D) ? 1 : Input.GetKey(KeyCode.A) ? -1 : 0;
-            float inputZ = Input.GetKey(KeyCode.W) ? 1 : Input.GetKey(KeyCode.S) ? -1 : 0;
+            float inputZ = (Input.GetKey(KeyCode.W) || Input.GetAxis("Mouse ScrollWheel") > 0) ? 1 : (Input.GetKey(KeyCode.S) || Input.GetAxis("Mouse ScrollWheel") < 0) ? -1 : 0;
             float inputY = Input.GetKey(KeyCode.E) ? 1 : Input.GetKey(KeyCode.Q) ? -1 : 0;
-            Vector3 move = transform.right * inputX + transform.forward * inputZ + transform.up * inputY;
-            _rigidbody.velocity = move * moveSpeed;
+            Vector3 moveVector = transform.right * inputX + transform.forward * inputZ + transform.up * inputY;
+            if(Input.GetKey(KeyCode.LeftShift))// 加速
+                moveVector *= 5;
 
-            // 鼠标右键控制视角
+            _rigidbody.velocity = moveVector * moveSpeed;
+            // 速度快会穿墙
+            // _rigidbody.MovePosition(_rigidbody.position + moveVector * moveSpeed * Time.deltaTime);
+            // transform.Translate(moveVector * moveSpeed * Time.deltaTime, Space.World);
+
+
+
+            // 鼠标右键控制视角旋转
             if (Input.GetMouseButtonDown(1))
             {
                 yaw = transform.eulerAngles.y;
@@ -61,9 +77,11 @@ namespace PluginHub.Runtime
             if (Input.GetMouseButton(1))
             {
                 Vector2 mouseMovement = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
-                yaw += mouseMovement.x * mouseSensitivityFactor;
-                pitch += mouseMovement.y * mouseSensitivityFactor;
+                yaw += mouseMovement.x * mouseSensitivityFactor * Time.deltaTime;
+                pitch += mouseMovement.y * mouseSensitivityFactor * Time.deltaTime;
                 transform.eulerAngles = new Vector3(pitch, yaw, 0);
+                // _rigidbody.MoveRotation(Quaternion.Euler(pitch, yaw, 0));
+                // _rigidbody.rotation = Quaternion.Euler(pitch, yaw, 0);
             }
 
 
