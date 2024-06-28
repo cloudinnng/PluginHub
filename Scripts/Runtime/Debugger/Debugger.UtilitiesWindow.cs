@@ -21,7 +21,7 @@ namespace PluginHub.Runtime
 
             private string deviceIdentifier = "DefaultIdentifier";
             private string tempText = "";
-            private float resolutionScale = 1;
+            // private float resolutionScale = 1;
 
             private int inputResolutionWidth
             {
@@ -35,9 +35,21 @@ namespace PluginHub.Runtime
                 set { PlayerPrefs.SetInt("PH_inputResolutionHeight", value); }
             }
 
+            private bool fullScreen
+            {
+                get { return PlayerPrefs.GetInt("PH_fullScreen", 0) == 1; }
+                set { PlayerPrefs.SetInt("PH_fullScreen", value ? 1 : 0); }
+            }
+
+            private bool isPortrait
+            {
+                get { return PlayerPrefs.GetInt("PH_portrait", 1) == 1; }
+                set { PlayerPrefs.SetInt("PH_portrait", value ? 1 : 0); }
+            }
+
 
             private int _selectedTab = 0;
-            private string[] tabNames = new string[] { "Common", "Scene", "PersistentDataPath" };
+            private string[] tabNames = new string[] { "Common", "Scene"};//, "PersistentDataPath" };
 
             public override void OnStart()
             {
@@ -64,9 +76,9 @@ namespace PluginHub.Runtime
                         case 1:
                             DrawSceneModule();
                             break;
-                        case 2:
-                            DrawPersistentDataModule();
-                            break;
+                        // case 2:
+                        //     DrawPersistentDataModule();
+                        //     break;
                     }
                 }
                 GUILayout.EndVertical();
@@ -158,99 +170,92 @@ namespace PluginHub.Runtime
 
             private void DrawResolutionModule()
             {
-                //移动平台总是Native分辨率全屏
-                if (Application.platform != RuntimePlatform.IPhonePlayer &&
-                    Application.platform != RuntimePlatform.Android)
+                //移动平台上不显示
+                if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android)
+                    return;
+
+                GUILayout.Label("Resolution:");
+
+                GUILayout.BeginVertical("Box");
                 {
-                    GUILayout.Label("Resolution:");
-
-                    GUILayout.BeginVertical("Box");
+                    GUILayout.BeginHorizontal();
                     {
-                        GUILayout.BeginHorizontal();
+                        GUILayout.Label("调用：Screen.SetResolution(w ,h ,false)");
+                        inputResolutionWidth = int.Parse(GUILayout.TextField(inputResolutionWidth.ToString(),GUILayout.Width(60)));
+                        GUILayout.Label("x",GUILayout.ExpandWidth(false));
+                        inputResolutionHeight = int.Parse(GUILayout.TextField(inputResolutionHeight.ToString(),GUILayout.Width(60)));
+                        // GUILayout.FlexibleSpace();
+                        if (GUILayout.Button("应用",GUILayout.Width(100)))
                         {
-                            GUILayout.Label("调用：Screen.SetResolution(w ,h ,false)");
-                            inputResolutionWidth = int.Parse(GUILayout.TextField(inputResolutionWidth.ToString(),GUILayout.Width(60)));
-                            GUILayout.Label("x",GUILayout.ExpandWidth(false));
-                            inputResolutionHeight = int.Parse(GUILayout.TextField(inputResolutionHeight.ToString(),GUILayout.Width(60)));
-                            // GUILayout.FlexibleSpace();
-                            if (GUILayout.Button("应用",GUILayout.Width(100)))
-                            {
-                                Screen.SetResolution(inputResolutionWidth, inputResolutionHeight, false);
-                            }
+                            Screen.SetResolution(inputResolutionWidth, inputResolutionHeight, false);
                         }
-                        GUILayout.EndHorizontal();
-
-                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button("全屏/窗口 切换"))
                         {
-                            if (GUILayout.Button("全屏/窗口 切换"))
-                            {
-                                Screen.fullScreen = !Screen.fullScreen;
-                            }
-                            if (GUILayout.Button("Native全屏"))
-                            {
-                                Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height,true);
-                            }
-
-                            if (GUILayout.Button("720P"))
-                                Screen.SetResolution(1280, 720, false);
-                            if (GUILayout.Button("1080P"))
-                                Screen.SetResolution(1920, 1080, true);
-                            if (GUILayout.Button("2K"))
-                                Screen.SetResolution(2560, 1440, true);
-                            if (GUILayout.Button("4K"))
-                                Screen.SetResolution(3840, 2160, true);
+                            Screen.fullScreen = !Screen.fullScreen;
                         }
-                        GUILayout.EndHorizontal();
-
-                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button("Native全屏"))
                         {
-                            GUILayout.Label($"比例：{resolutionScale:F2}");
+                            Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height,true);
                         }
-                        GUILayout.EndHorizontal();
-                        resolutionScale = GUILayout.HorizontalSlider(resolutionScale, 0.3f, 1f);
-
-                        GUILayout.BeginHorizontal();
-                        {
-                            if (GUILayout.Button(
-                                    $"12 Pro max {1242 * resolutionScale:0}x{2688 * resolutionScale:0}"))
-                            {
-                                Screen.SetResolution((int)(1284 * resolutionScale),
-                                    (int)(2778 * resolutionScale),
-                                    false);
-                            }
-
-                            if (GUILayout.Button(
-                                    $"iPad Air 5 {1536 * resolutionScale:0}x{2048 * resolutionScale:0}"))
-                            {
-                                Screen.SetResolution((int)(1536 * resolutionScale),
-                                    (int)(2048 * resolutionScale),
-                                    false);
-                            }
-                        }
-                        GUILayout.EndHorizontal();
-
-
-                        //only windows
-                        // if (Application.platform == RuntimePlatform.WindowsPlayer ||
-                        //     Application.platform == RuntimePlatform.WindowsEditor)
-                        // {
-                        //     GUILayout.Label("在3840x1080分辨率下设置显示在左右侧");
-                        //     GUILayout.BeginHorizontal();
-                        //     {
-                        //         if (GUILayout.Button("左侧"))
-                        //         {
-                        //             WindowDisplayHelper.SetNoTitle(0, 0, 1920, 1080);
-                        //         }
-                        //
-                        //         if (GUILayout.Button("右侧"))
-                        //         {
-                        //             WindowDisplayHelper.SetNoTitle(1920, 0, 1920, 1080);
-                        //         }
-                        //     }
-                        //     GUILayout.EndHorizontal();
-                        // }
                     }
-                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label("分辨率快选:");
+
+                        GUILayout.FlexibleSpace();
+
+                        fullScreen = GUILayout.Toggle(fullScreen, "全屏");
+                        if (GUILayout.Button("720P",GUILayout.Width(100)))
+                            Screen.SetResolution(1280, 720, fullScreen);
+                        if (GUILayout.Button("1080P",GUILayout.Width(100)))
+                            Screen.SetResolution(1920, 1080, fullScreen);
+                        if (GUILayout.Button("2K",GUILayout.Width(100)))
+                            Screen.SetResolution(2560, 1440, fullScreen);
+                        if (GUILayout.Button("4K",GUILayout.Width(100)))
+                            Screen.SetResolution(3840, 2160, fullScreen);
+                    }
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label("移动设备预览快选:");
+                        GUILayout.FlexibleSpace();
+                        isPortrait = GUILayout.Toggle(isPortrait, "竖屏");
+                    }
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    {
+                        if (GUILayout.Button($"12 Pro max"))
+                            TryResolutionWindowed(1284, 2778, isPortrait);
+                        if (GUILayout.Button($"iPad Air 5"))
+                            TryResolutionWindowed(1536, 2048, isPortrait);
+                    }
+                    GUILayout.EndHorizontal();
+
+                }
+                GUILayout.EndVertical();
+            }
+
+            // 窗口模式设置为一个以给定分辨率尽可能大的分辨率，保持宽高比。（给任务栏留出空间）
+            private void TryResolutionWindowed(int width, int height, bool isPortrait = true)
+            {
+                float factorForTaskBar = 0.9f;
+                float ratio = isPortrait ? (float)width / height : (float)height / width;
+                int screenWidth = Screen.currentResolution.width;
+                int screenHeight = Screen.currentResolution.height;
+                if (screenWidth > screenHeight)// 横屏,以屏幕高度来限制窗口高度
+                {
+                    int heightUse = (int) (screenHeight * factorForTaskBar);
+                    int widthUse = (int) (heightUse * ratio);
+                    Screen.SetResolution(widthUse, heightUse, false);
+                }
+                else// 竖屏,以屏幕宽度来限制窗口宽度
+                {
+                    int widthUse = (int) (screenWidth * factorForTaskBar);
+                    int heightUse = (int) (widthUse / ratio);
+                    Screen.SetResolution(widthUse, heightUse, false);
                 }
             }
 
