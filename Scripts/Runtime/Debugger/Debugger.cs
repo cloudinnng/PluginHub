@@ -249,8 +249,7 @@ namespace PluginHub.Runtime
             GUILayout.BeginHorizontal();
             {
                 //绘制顶层Tab标签按钮
-                _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(25f),
-                    GUILayout.MaxWidth(Screen.width));
+                _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(25f));
 
                 //最小化按钮
                 if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))

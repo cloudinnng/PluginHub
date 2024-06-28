@@ -83,13 +83,18 @@ namespace PluginHub.Runtime
 
             public void RefreshDebuggerClientRoutine()
             {
+                if (_refreshContiune)
+                    return;
                 Debugger.Instance.StartCoroutine(RefreshDebuggerClient());
             }
 
+
+            private bool _refreshContiune = false;
             //调试器默认只在加载场景之后重新尝试获取注入到自身的调试UI。
             //若调试UI对象在运行期间动态激活、加载，则需要调用该方法以重新寻找
             private IEnumerator RefreshDebuggerClient()
             {
+                _refreshContiune = true;
                 yield return new WaitForSeconds(0.2f);
                 //重新寻找客户端
                 _guiClientsDic.Clear();
@@ -100,16 +105,19 @@ namespace PluginHub.Runtime
                     MonoBehaviour mono = monos[i];
                     ICustomWindowGUI client = mono as ICustomWindowGUI;
                     if (client != null)
-                    {
                         clients.Add(client);
-                    }
                 }
 
                 clients = clients.OrderBy(x => x.DebuggerDrawOrder).ToList();
                 for (int i = 0; i < clients.Count; i++)
                 {
-                    _guiClientsDic.Add($"{clients[i].GetType()}", clients[i]);
+                    string key = clients[i].GetType().ToString();
+                    ICustomWindowGUI value = clients[i];
+                    if (_guiClientsDic.ContainsKey(key))//如果有重复的key，加上序号
+                        key += i;
+                    _guiClientsDic.Add(key, value);
                 }
+                _refreshContiune = false;
             }
         }
     }
