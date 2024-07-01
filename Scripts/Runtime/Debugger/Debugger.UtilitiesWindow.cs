@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using ICSharpCode.SharpZipLib.Zip;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -19,8 +22,9 @@ namespace PluginHub.Runtime
 
             private string currentPath;
 
-            private string deviceIdentifier = "DefaultIdentifier";
             private string tempText = "";
+            // 存储飞书云文件的<文件token,文件名>
+            private Dictionary<string,string> feiShuCloudFiles = new Dictionary<string, string>();
             // private float resolutionScale = 1;
 
             private int inputResolutionWidth
@@ -49,7 +53,7 @@ namespace PluginHub.Runtime
 
 
             private int _selectedTab = 0;
-            private string[] tabNames = new string[] { "Common", "Scene"};//, "PersistentDataPath" };
+            private string[] tabNames = new string[] { "Common", "Scene", "PersistentDataPath" };
 
             public override void OnStart()
             {
@@ -76,97 +80,13 @@ namespace PluginHub.Runtime
                         case 1:
                             DrawSceneModule();
                             break;
-                        // case 2:
-                        //     DrawPersistentDataModule();
-                        //     break;
+                        case 2:
+                            DrawPersistentDataModule();
+                        break;
                     }
                 }
                 GUILayout.EndVertical();
             }
-
-            #region Nas上storage-system的文件上传助手方法
-
-            private IEnumerator UploadFile(string pathToFile, string serverPath = "./uploads")
-            {
-                Debug.Log($"UploadFile:{pathToFile} to {serverPath}");
-                string fileName = Path.GetFileName(pathToFile); //eg 1.txt
-                string url = "https://hellottw.com:5555/storage-system/upload.php";
-
-                WWWForm form = new WWWForm();
-                form.AddBinaryData("file", File.ReadAllBytes(pathToFile), fileName);
-                form.AddField("dir", serverPath);
-                UnityWebRequest request = UnityWebRequest.Post(url, form);
-                yield return request.SendWebRequest();
-
-#if UNITY_2019
-                if(!string.IsNullOrWhiteSpace(request.error))
-#else
-                if (request.result != UnityWebRequest.Result.Success)
-#endif
-                {
-                    Debug.LogError("上传失败");
-                    Debug.LogError(request.error);
-                    if (ToastManager.Instance != null)
-                        ToastManager.Instance.Show("上传失败");
-                }
-                else
-                {
-                    Debug.Log(request.downloadHandler.text);
-                }
-
-                request.Dispose();
-            }
-
-            private IEnumerator DownloadFile(string serverPathToFile = "./uploads/demo.txt",
-                string localPath = "./uploads/fileName.txt")
-            {
-                string url = $"https://hellottw.com:5555/storage-system/download.php?dir={serverPathToFile}";
-                UnityWebRequest request = UnityWebRequest.Get(url);
-                yield return request.SendWebRequest();
-#if UNITY_2019
-                if(!string.IsNullOrWhiteSpace(request.error))
-#else
-                if (request.result != UnityWebRequest.Result.Success)
-#endif
-                {
-                    Debug.LogError(request.error);
-                }
-                else
-                {
-                    //save to persistentDataPath
-                    string path = Path.Combine(Application.persistentDataPath, localPath);
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    File.WriteAllBytes(path, request.downloadHandler.data);
-                    Debug.Log($"DownloadFile:{path}");
-                }
-
-                request.Dispose();
-            }
-
-            private IEnumerator ListFiles(string serverPath = "./uploads", Action<string> onSucess = null)
-            {
-                string url = $"https://hellottw.com:5555/storage-system/list-recursion.php?dir={serverPath}";
-                UnityWebRequest request = UnityWebRequest.Get(url);
-                yield return request.SendWebRequest();
-#if UNITY_2019
-                if(!string.IsNullOrWhiteSpace(request.error))
-#else
-                if (request.result != UnityWebRequest.Result.Success)
-#endif
-                {
-                    Debug.LogError(request.error);
-                    Debug.Log(request.downloadHandler.text);
-                }
-                else
-                {
-                    Debug.Log(request.downloadHandler.text);
-                    onSucess?.Invoke(request.downloadHandler.text);
-                }
-
-                request.Dispose();
-            }
-
-            #endregion
 
             private void DrawResolutionModule()
             {
@@ -413,81 +333,40 @@ namespace PluginHub.Runtime
                 }
             }
 
+            //绘制PersistentDataPath管理的UI
             private void DrawPersistentDataModule()
             {
+                // if (GUILayout.Button("压缩测试"))
+                // {
+                //     //解决中文乱码
+                //     ICSharpCode.SharpZipLib.Zip.ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
+                //     new FastZip().CreateZip(@"C:\\Users\\TTW\\AppData\\LocalLow\\DefaultCompany\\10.RunProgramTest\\1.zip", @"C:\\Users\\TTW\\AppData\\LocalLow\\DefaultCompany\\10.RunProgramTest\\新建文件夹\", true, null);
+                // }
+                // if (GUILayout.Button("解压测试"))
+                // {
+                //     new FastZip().ExtractZip("C:\\Users\\TTW\\AppData\\LocalLow\\DefaultCompany\\10.RunProgramTest\\1.zip", "C:\\Users\\TTW\\AppData\\LocalLow\\DefaultCompany\\10.RunProgramTest\\解压", null);
+                // }
+                // if (GUILayout.Button("Download test"))
+                // {
+                //     Debugger.Instance.StartCoroutine(FeiShuFileBakcup.DownloadFile("SS4zbPEvvodjDWx7bKEck1r3nYf", "1.txt"));
+                // }
+
                 GUILayout.Label("PersistentDataPath管理:");
+                float buttonWidth = 80;
                 GUILayout.BeginVertical("Box");
                 {
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Label("输入云备份设备标识符:", GUILayout.Width(140));
-                        deviceIdentifier = GUILayout.TextField(deviceIdentifier).Trim();
-
-                        if (GUILayout.Button("上传全部文件"))
-                        {
-                            string path = Application.persistentDataPath;
-                            DirectoryInfo directory = new DirectoryInfo(path);
-                            if (directory.Exists)
-                            {
-                                //递归列出所有文件
-                                FileInfo[] files = directory.GetFiles("*", SearchOption.AllDirectories);
-                                foreach (FileInfo file in files)
-                                {
-                                    string fullPath = file.FullName.Replace("\\", "/");
-                                    // print(path);
-                                    string suffix = fullPath.Replace(path + "/", "");
-                                    // Debug.Log(suffix);
-                                    string serverPath = "./" + Application.identifier + "/" +
-                                                        deviceIdentifier + "/" + suffix;
-                                    serverPath = Path.GetDirectoryName(serverPath);
-                                    serverPath = serverPath.Replace("\\", "/");
-                                    // Debug.Log(serverPath);
-                                    Debugger.Instance.StartCoroutine(UploadFile(file.FullName, serverPath));
-                                }
-                            }
-                        }
-
-                        if (GUILayout.Button("下载全部文件"))
-                        {
-                            string serverPath = "./" + Application.identifier + "/" + deviceIdentifier;
-                            Debugger.Instance.StartCoroutine(ListFiles(serverPath, (result) =>
-                            {
-                                string[] serverFiles = result.Split(',');
-                                foreach (string serverFile in serverFiles)
-                                {
-                                    // print(serverFile);
-                                    if (string.IsNullOrWhiteSpace(serverFile)) continue;
-                                    string localPath = serverFile.Replace(
-                                        "./" + Application.identifier + "/" + deviceIdentifier, "");
-                                    localPath = Application.persistentDataPath + localPath;
-                                    // print(localPath);   
-                                    Debugger.Instance.StartCoroutine(DownloadFile(serverFile, localPath));
-                                }
-                            }));
-                        }
-                    }
-                    GUILayout.EndHorizontal();
-
                     GUILayout.Label("简易文件管理器：");
 
-                    float buttonWidth = 50;
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.FlexibleSpace();
-                        if (GUILayout.Button("Home", GUILayout.Width(buttonWidth)))
-                        {
-                            currentPath = Application.persistentDataPath;
-                        }
 
                         if (GUILayout.Button("上一级", GUILayout.Width(buttonWidth)))
-                        {
                             currentPath = Path.GetDirectoryName(currentPath);
-                        }
-
-                        if (GUILayout.Button("打开目录"))
-                        {
+                        if (GUILayout.Button("Home", GUILayout.Width(buttonWidth)))
+                            currentPath = Application.persistentDataPath;
+                        if (GUILayout.Button("使用Explorer打开目录"))
                             System.Diagnostics.Process.Start(currentPath);
-                        }
 
                         GUILayout.FlexibleSpace();
                     }
@@ -500,18 +379,24 @@ namespace PluginHub.Runtime
                     }
                     GUILayout.EndVertical();
 
-                    //list all directory
+                    // 列出所有目录
                     string[] dirs = Directory.GetDirectories(currentPath);
                     foreach (string dir in dirs)
                     {
                         GUILayout.BeginHorizontal();
                         {
-                            GUILayout.Label("文件夹:", GUILayout.Width(50));
-                            GUILayout.Label(dir.Replace(currentPath, ""));
-                            if (GUILayout.Button("进入", GUILayout.Width(buttonWidth)))
-                            {
+                            if (GUILayout.Button("目录", GUILayout.Width(buttonWidth)))
                                 currentPath = dir;
+
+                            GUILayout.Label(dir.Replace(currentPath, ""));
+
+                            if (GUILayout.Button("压缩", GUILayout.Width(buttonWidth)))
+                            {
+                                //解决中文乱码
+                                ICSharpCode.SharpZipLib.Zip.ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
+                                new FastZip().CreateZip(dir + ".zip", dir, true, null);
                             }
+
 
                             if (GUILayout.Button("删除", GUILayout.Width(buttonWidth)))
                             {
@@ -521,44 +406,106 @@ namespace PluginHub.Runtime
                         GUILayout.EndHorizontal();
                     }
 
+                    //列出所有文件
                     {
-                        //list all files
                         string[] files = Directory.GetFiles(currentPath);
                         foreach (string file in files)
                         {
                             GUILayout.BeginHorizontal();
                             {
-                                GUILayout.Label("文件:", GUILayout.Width(50));
+                                GUILayout.Label("", GUILayout.Width(buttonWidth));
                                 GUILayout.Label(file.Replace(currentPath, ""));
-                                if (GUILayout.Button("Open", GUILayout.Width(buttonWidth)))
-                                {
+                                bool isZipFile = file.ToLower().EndsWith(".zip");
+
+                                if (!isZipFile && GUILayout.Button("OpenAsText", GUILayout.Width(buttonWidth)))
                                     tempText = File.ReadAllText(file);
+
+
+                                if (GUILayout.Button("上传", GUILayout.Width(buttonWidth)))
+                                {
+                                    Debugger.Instance.StartCoroutine(FeiShuFileBackup.UploadFile(file, FeiShuFileBackup.rootFolderToken));
                                 }
 
-                                // if (GUILayout.Button("上传",GUILayout.Width(buttonWidth)))
-                                // {
-                                //     Debugger.Instance.StartCoroutine(UploadFile(file));
-                                // }
-                                if (GUILayout.Button("删除", GUILayout.Width(buttonWidth)))
+                                if (isZipFile)
                                 {
-                                    File.Delete(file);
+                                    if (GUILayout.Button("解压到此处", GUILayout.Width(buttonWidth)))
+                                    {
+                                        //解决中文乱码
+                                        ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
+                                        string zipNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
+                                        new FastZip().ExtractZip(file, currentPath, null);
+                                    }
+                                    if (GUILayout.Button("解压到目录", GUILayout.Width(buttonWidth)))
+                                    {
+                                        //解决中文乱码
+                                        ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
+                                        string zipNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
+                                        string targetPath = Path.Combine(currentPath, zipNameWithoutExtension);
+                                        new FastZip().ExtractZip(file, targetPath, null);
+                                    }
+                                }else
+                                {
+                                    GUILayout.Label("", GUILayout.Width(buttonWidth));
                                 }
+
+                                if (GUILayout.Button("删除", GUILayout.Width(buttonWidth)))
+                                    File.Delete(file);
                             }
                             GUILayout.EndHorizontal();
                         }
 
-                        if (!string.IsNullOrWhiteSpace(tempText))
+                    }
+                }
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical("Box");
+                {
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.FlexibleSpace();
+                        if (GUILayout.Button("显示云端内容"))
                         {
-                            GUILayout.Label(tempText.Trim());
-                            if (GUILayout.Button("Close"))
+                            Debugger.Instance.StartCoroutine(
+                                FeiShuFileBackup.ListFiles(FeiShuFileBackup.rootFolderToken,feiShuCloudFiles));
+                        }
+                        GUILayout.FlexibleSpace();
+                    }
+                    GUILayout.EndHorizontal();
+
+                    //显示云端文件
+                    foreach (var feiShuCloudFile in feiShuCloudFiles)
+                    {
+                        GUILayout.BeginHorizontal();
+                        {
+                            string fileName = feiShuCloudFile.Value;
+                            string fileToken = feiShuCloudFile.Key;
+
+                            GUILayout.Label(fileName);
+
+                            if (GUILayout.Button("删除", GUILayout.Width(buttonWidth)))
+                                Debugger.Instance.StartCoroutine(FeiShuFileBackup.DeleteFile(fileToken));
+
+                            if (GUILayout.Button("下载", GUILayout.Width(buttonWidth)))
                             {
-                                tempText = "";
+                                string savePath =Path.Combine(currentPath,fileName);
+                                Debugger.Instance.StartCoroutine(FeiShuFileBackup.DownloadFile(fileToken, savePath));
                             }
                         }
+                        GUILayout.EndHorizontal();
+                    }
+
+
+                    //显示以文本方式打开的文件内容
+                    if (!string.IsNullOrWhiteSpace(tempText))
+                    {
+                        if (GUILayout.Button("Close"))
+                            tempText = "";
+                        GUILayout.Label(tempText.Trim());
                     }
                 }
                 GUILayout.EndVertical();
             }
+
         }
     }
 }
