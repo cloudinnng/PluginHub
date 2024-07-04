@@ -45,7 +45,7 @@ namespace PluginHub.Runtime
                 set { PlayerPrefs.SetInt("PH_fullScreen", value ? 1 : 0); }
             }
 
-            private bool isPortrait
+            private bool exchangeWidthHeight
             {
                 get { return PlayerPrefs.GetInt("PH_portrait", 1) == 1; }
                 set { PlayerPrefs.SetInt("PH_portrait", value ? 1 : 0); }
@@ -142,15 +142,15 @@ namespace PluginHub.Runtime
                     {
                         GUILayout.Label("移动设备预览快选:");
                         GUILayout.FlexibleSpace();
-                        isPortrait = GUILayout.Toggle(isPortrait, "竖屏");
+                        exchangeWidthHeight = GUILayout.Toggle(exchangeWidthHeight, "交换宽高");
                     }
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
                     {
                         if (GUILayout.Button($"12 Pro max"))
-                            TryResolutionWindowed(1284, 2778, isPortrait);
+                            TryResolutionWindowed(1284, 2778, exchangeWidthHeight);
                         if (GUILayout.Button($"iPad Air 5"))
-                            TryResolutionWindowed(1536, 2048, isPortrait);
+                            TryResolutionWindowed(1536, 2048, exchangeWidthHeight);
                     }
                     GUILayout.EndHorizontal();
 
@@ -158,24 +158,36 @@ namespace PluginHub.Runtime
                 GUILayout.EndVertical();
             }
 
-            // 窗口模式设置为一个以给定分辨率尽可能大的分辨率，保持宽高比。（给任务栏留出空间）
-            private void TryResolutionWindowed(int width, int height, bool isPortrait = true)
+            // 将游戏分辨率设置成以给定分辨率尽可能大的分辨率保持宽高比的窗口模式。（给任务栏留出空间）
+            // 这在PC端快速预览移动设备的屏幕比例时非常有用
+            // 使用 exchangeWidthHeight 可以很容易的切换横屏和竖屏
+            private void TryResolutionWindowed(int tryWidth, int tryHeight,bool exchangeWidthHeight = false)
             {
-                float factorForTaskBar = 0.9f;
-                float ratio = isPortrait ? (float)width / height : (float)height / width;
-                int screenWidth = Screen.currentResolution.width;
-                int screenHeight = Screen.currentResolution.height;
-                if (screenWidth > screenHeight)// 横屏,以屏幕高度来限制窗口高度
+                if (exchangeWidthHeight)
                 {
-                    int heightUse = (int) (screenHeight * factorForTaskBar);
-                    int widthUse = (int) (heightUse * ratio);
-                    Screen.SetResolution(widthUse, heightUse, false);
+                    int temp = tryWidth;
+                    tryWidth = tryHeight;
+                    tryHeight = temp;
                 }
-                else// 竖屏,以屏幕宽度来限制窗口宽度
+
+                float factorForTaskBar = 0.88f;// 一个比例用于给任务栏留出空间
+                float windowedRatio =(float)tryWidth / tryHeight;
+                bool windowIsHorizontal = tryWidth > tryHeight;
+
+                int monitorWidth = Screen.currentResolution.width;
+                int monitorHeight = Screen.currentResolution.height;
+                float screenRatio = (float)monitorWidth / monitorHeight;
+                if (windowedRatio > screenRatio)
                 {
-                    int widthUse = (int) (screenWidth * factorForTaskBar);
-                    int heightUse = (int) (widthUse / ratio);
-                    Screen.SetResolution(widthUse, heightUse, false);
+                    int useWidth = (int) (monitorWidth * factorForTaskBar);
+                    int useHeight = (int) (useWidth / windowedRatio);
+                    Screen.SetResolution(useWidth, useHeight, false);
+                }
+                else
+                {
+                    int useHeight = (int) (monitorHeight * factorForTaskBar);
+                    int useWidth = (int) (useHeight * windowedRatio);
+                    Screen.SetResolution(useWidth, useHeight, false);
                 }
             }
 

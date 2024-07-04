@@ -201,7 +201,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.Label("更多选项:", GUILayout.Width(titleWidth));
                 devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
-                deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建"));
+                deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
                 clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
             }
             GUILayout.EndHorizontal();

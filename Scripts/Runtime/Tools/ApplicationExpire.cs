@@ -97,7 +97,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public int DebuggerDrawOrder => 999;
+        public int DebuggerDrawOrder { get; set; } = 999;
         public void OnDrawDebuggerGUI()
         {
             GUILayout.Label($"您的应用程序将在 {expireDate} 到期");
