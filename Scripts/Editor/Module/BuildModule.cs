@@ -326,8 +326,11 @@ namespace PluginHub.Editor
                 {
                     DrawItem("Package ID:", PlayerSettings.applicationIdentifier);
                     GUILayout.FlexibleSpace();
+
+                    GUI.enabled = Application.platform == RuntimePlatform.WindowsEditor;
                     iosUseShortBuildPath = GUILayout.Toggle(iosUseShortBuildPath,
                         new GUIContent("使用短小的构建路径", "当由于路径过长导致构建失败时，可以尝试勾选此选项。"));
+                    GUI.enabled = true;
                 }
                 GUILayout.EndHorizontal();
 
@@ -340,6 +343,9 @@ namespace PluginHub.Editor
                     string path = fullPath;
                     if (iosUseShortBuildPath)
                         path = $@"D:\Build_IOS\{Application.productName}\";
+                    // if macos
+                    if (Application.platform == RuntimePlatform.OSXEditor)
+                        path = $"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode";
 
                     if (GUILayout.Button(PluginHubFunc.GuiContent("构建 IOS 项目", $"将构建到{path}")))
                     {

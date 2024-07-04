@@ -405,15 +405,12 @@ namespace PluginHub.Runtime
                             if (GUILayout.Button("压缩", GUILayout.Width(buttonWidth)))
                             {
                                 //解决中文乱码
-                                ICSharpCode.SharpZipLib.Zip.ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
+                                // ICSharpCode.SharpZipLib.Zip.ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
                                 new FastZip().CreateZip(dir + ".zip", dir, true, null);
                             }
 
-
                             if (GUILayout.Button("删除", GUILayout.Width(buttonWidth)))
-                            {
                                 Directory.Delete(dir, true);
-                            }
                         }
                         GUILayout.EndHorizontal();
                     }
@@ -443,14 +440,13 @@ namespace PluginHub.Runtime
                                     if (GUILayout.Button("解压到此处", GUILayout.Width(buttonWidth)))
                                     {
                                         //解决中文乱码
-                                        ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
-                                        string zipNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
+                                        // ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
                                         new FastZip().ExtractZip(file, currentPath, null);
                                     }
                                     if (GUILayout.Button("解压到目录", GUILayout.Width(buttonWidth)))
                                     {
                                         //解决中文乱码
-                                        ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
+                                        // ZipStrings.CodePage = Encoding.GetEncoding("gbk").CodePage;
                                         string zipNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
                                         string targetPath = Path.Combine(currentPath, zipNameWithoutExtension);
                                         new FastZip().ExtractZip(file, targetPath, null);

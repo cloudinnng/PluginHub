@@ -92,8 +92,10 @@ namespace PluginHub.Editor
             ScreenCapture.CaptureScreenshot(path); //进行截图
             Debug.Log($"截图已保存到 {path}");
             string dir = Path.GetDirectoryName(path);
+
             //打开截图文件夹
-            EditorUtility.RevealInFinder(dir);
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+                EditorUtility.RevealInFinder(dir);
         }
 
 
