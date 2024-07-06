@@ -43,7 +43,7 @@ namespace PluginHub.Editor
 
                 // 被认为是右键单击的条件
                 if ((e.mousePosition - mouseDownPosition).magnitude < 3 &&
-                    EditorApplication.timeSinceStartup - mouseDownTime < 0.3f)
+                    EditorApplication.timeSinceStartup - mouseDownTime < 0.2f)
                 {
                     ShowContextMenu(e);
                 }
