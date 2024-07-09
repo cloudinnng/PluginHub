@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace PluginHub.Runtime
 {
@@ -6,6 +7,13 @@ namespace PluginHub.Runtime
     [RequireComponent(typeof(Camera))]
     public class EditorStyleCameraMovement : MonoBehaviour
     {
+
+        public abstract class InputProvider : MonoBehaviour
+        {
+            public abstract Vector3 GetMovementInput();
+            public abstract Vector2 GetLookInput();
+        }
+
         class CameraState
         {
             public float yaw;
@@ -84,6 +92,9 @@ namespace PluginHub.Runtime
         public bool enableRotateAround = false;
         public float rotateRroundSpeed = 5;
         private Vector3 rotateAroundOriginPos;
+
+        [Header("Input Providers")]
+        public InputProvider inputProvider;
 
         void OnEnable()
         {
@@ -190,7 +201,7 @@ namespace PluginHub.Runtime
                 Cursor.lockState = CursorLockMode.None;
             }
 
-            if (Input.GetMouseButton(1))
+            if (Input.GetMouseButton(1) || inputProvider != null)
             {
                 if (justPressedThisFrame)
                 {
@@ -199,6 +210,9 @@ namespace PluginHub.Runtime
                 }
                 // Rotation
                 var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
+                if (inputProvider != null)
+                    mouseMovement = inputProvider.GetLookInput();
+
                 var mouseSensitivityFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude);
 
                 m_TargetCameraState.yaw += mouseMovement.x * mouseSensitivityFactor;
@@ -218,10 +232,12 @@ namespace PluginHub.Runtime
             }
 
             //2024年3月12日 新增不按住右键也可以通过左Ctrl键来移动相机
-            if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.LeftControl))
+            if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.LeftControl) || inputProvider != null)
             {
                 // Translation
                 var translation = GetInputTranslationDirection() * Time.deltaTime;
+                if (inputProvider != null)
+                    translation = inputProvider.GetMovementInput() * Time.deltaTime;
 
                 // Speed up movement when shift key held
                 if (Input.GetKey(KeyCode.LeftShift))

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -33,9 +34,15 @@ namespace PluginHub.Editor
         [MenuItem("Assets/PH Copy Asset Name WithoutEx")]
         public static void CopyAssetNameWithoutEx()
         {
-            Object obj = Selection.activeObject;
-            EditorGUIUtility.systemCopyBuffer = obj.name;
-            Debug.Log($"{obj.name}   已复制到剪切板");
+            Object[] objs = Selection.objects;
+            StringBuilder sb = new StringBuilder();
+            foreach (var obj in objs)
+            {
+                string name = obj.name;
+                sb.AppendLine(name);
+            }
+            EditorGUIUtility.systemCopyBuffer = sb.ToString(); //复制到系统剪切板
+            Debug.Log($"{sb}   已复制到剪切板");
         }
 
         [MenuItem("Assets/PH Copy Directory Name", true)]

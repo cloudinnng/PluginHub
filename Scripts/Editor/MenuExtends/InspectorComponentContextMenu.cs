@@ -192,7 +192,7 @@ namespace PluginHub.Editor
             }
         }
 
-        [MenuItem("CONTEXT/Image/PH 使用Sprite名命名游戏对象", false)]
+        [MenuItem("CONTEXT/Image/PH 使用 [Sprite名] 命名游戏对象", false)]
         public static void CustomContextMenuRenameImageUseSpriteName(MenuCommand command)
         {
             Image component = (Image)command.context;

@@ -9,6 +9,7 @@ using PluginHub.Editor;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
+using UnityEditor.Build.Content;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
@@ -209,11 +210,24 @@ namespace PluginHub.Editor
 
             DrawSplitLine("快捷构建");
 
-            DrawPCBuildButtons();
-            DrawIOSBuildButtons();
-            DrawAndroidBuildButtons();
-            DrawWebGLBuildButtons();
-            DrawMacOSBuildButtons();
+            switch (EditorUserBuildSettings.activeBuildTarget)
+            {
+                case BuildTarget.StandaloneWindows64:
+                    DrawPCBuildButtons();
+                    break;
+                case BuildTarget.iOS:
+                    DrawIOSBuildButtons();
+                    break;
+                case BuildTarget.Android:
+                    DrawAndroidBuildButtons();
+                    break;
+                case BuildTarget.WebGL:
+                    DrawWebGLBuildButtons();
+                    break;
+                case BuildTarget.StandaloneOSX:
+                    DrawMacOSBuildButtons();
+                    break;
+            }
             DrawBuildLibary();
         }
 
