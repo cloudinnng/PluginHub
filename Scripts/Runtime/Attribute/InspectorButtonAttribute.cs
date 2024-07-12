@@ -9,6 +9,13 @@ using Object = System.Object;
 // 放在Runtime命名空间以免打包时[InspectorButton]特性报错
 namespace PluginHub.Runtime
 {
+
+    // 指示该按钮是否可以在编辑时和运行时点击
+    public enum InspectorButtonMode
+    {
+        EditOnly, PlayOnly, EditAndPlay,
+    }
+
     // 在MonoBehaviour类中添加一个属性到方法上面，自动在inspector底部生成一个按钮，点击后执行该方法.便于开发调试
     // 在希望在inspector中生成按钮的方法上添加[InspectorButton("按钮名")]特性
     // 添加下面的代码到组件脚本文件的顶端即可使得[InspectorButton]特性生效
@@ -22,22 +29,27 @@ namespace PluginHub.Runtime
     public class InspectorButtonAttribute : PropertyAttribute
     {
         // 如不传,则按钮名字默认为方法名字+参数列表
-        public readonly string buttonName;
+        public readonly string buttonName = "";
         // 传入此按钮传入到方法的参数
-        public readonly Object[] parameters;
+        public readonly Object[] parameters = new Object[0];
+        // 指示该按钮是否可以在编辑时和运行时点击
+        public readonly InspectorButtonMode usage = InspectorButtonMode.EditAndPlay;
+        // 构造方法
+        public InspectorButtonAttribute() { }
 
-        #region 构造方法
-        public InspectorButtonAttribute(string buttonName, params Object[] parameters)
-        {
-            this.buttonName = buttonName;
-            this.parameters = parameters;
-        }
-        public InspectorButtonAttribute(params Object[] parameters)
+        public InspectorButtonAttribute(InspectorButtonMode usage = InspectorButtonMode.EditAndPlay, params Object[] parameters)
         {
             this.buttonName = "";
+            this.usage = usage;
             this.parameters = parameters;
         }
-        #endregion
+        public InspectorButtonAttribute(string buttonName = "", InspectorButtonMode usage = InspectorButtonMode.EditAndPlay,
+            params Object[] parameters)
+        {
+            this.buttonName = buttonName == null ? "" : buttonName;
+            this.usage = usage;
+            this.parameters = parameters;
+        }
     }
 
     // 可以与[InspectorButton]特性混合使用，以在检视面板对应位置添加一个标题，用于分组以便识别
@@ -50,6 +62,8 @@ namespace PluginHub.Runtime
             this.headerLabel = headerLabel;
         }
     }
+
+
 
 #if UNITY_EDITOR
     public class InspectorButtonEditor<T> : UnityEditor.Editor where T : MonoBehaviour
@@ -120,19 +134,30 @@ namespace PluginHub.Runtime
                                 // 检查参数有效性
                                 bool buttonValid = true;
                                 ParameterInfo[] methodParameters = method.GetParameters();
-                                if (methodParameters.Length != buttonAttribute.parameters.Length)// 参数数量不匹配
+
+                                // 参数数量不匹配
+                                if (methodParameters.Length != buttonAttribute.parameters.Length)
                                     buttonValid = false;
+                                // 再检查参数类型不匹配
                                 if (buttonValid)
                                 {
                                     for (int k = 0; k < methodParameters.Length; k++)
                                     {
-                                        // 参数类型不匹配
+
                                         if (methodParameters[k].ParameterType != buttonAttribute.parameters[k].GetType())
                                         {
                                             buttonValid = false;
                                             break;
                                         }
                                     }
+                                }
+                                // 再检查按钮适合当前的使用场景
+                                if (buttonValid)
+                                {
+                                    if (buttonAttribute.usage == InspectorButtonMode.EditOnly && Application.isPlaying)
+                                        buttonValid = false;
+                                    if (buttonAttribute.usage == InspectorButtonMode.PlayOnly && !Application.isPlaying)
+                                        buttonValid = false;
                                 }
 
                                 // 绘制按钮

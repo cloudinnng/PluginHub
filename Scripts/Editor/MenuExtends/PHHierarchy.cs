@@ -49,9 +49,14 @@ namespace PluginHub.Editor
                         SelectAllSilbing(go);
                 }else if (currEvent.modifiers == EventModifiers.Control)
                 {
-                    // 功能点： 按下Ctrl + 鼠标中键可以选中所有兄弟节点
+                    // 功能点： 按下Ctrl + 鼠标中键可以选中所有同名兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
                         SelectSameNameSilbing(go);
+                }else if (currEvent.modifiers == EventModifiers.Alt)
+                {
+                    // 功能点： 按下Alt + 鼠标中键可以选中所有相似名字的兄弟节点
+                    if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
+                        SelectSimilarNamSilbing(go);
                 }
             }
         }
@@ -188,6 +193,28 @@ namespace PluginHub.Editor
             }
             // Select
             Selection.objects = gameObjects.ToArray();
+            Debug.Log($"Selected {gameObjects.Count} Same Name Silbing");
+        }
+
+        private static void SelectSimilarNamSilbing(GameObject gameObject)
+        {
+            Transform parent = gameObject.transform.parent;
+            if (parent == null)
+            {
+                Debug.LogWarning("No Parent");
+                return;
+            }
+            string name = gameObject.name.Substring(0,gameObject.name.LastIndexOf(" "));
+            // Debug.Log(name);
+            List<GameObject> gameObjects = new List<GameObject>();
+            foreach (Transform child in parent)
+            {
+                if (child.name.Contains(name))
+                    gameObjects.Add(child.gameObject);
+            }
+            // Select
+            Selection.objects = gameObjects.ToArray();
+            Debug.Log($"Selected {gameObjects.Count} Similar Name Silbing");
         }
 
         private static void SelectAllSilbing(GameObject gameObject)
@@ -205,6 +232,7 @@ namespace PluginHub.Editor
             }
             // Select
             Selection.objects = gameObjects.ToArray();
+            Debug.Log($"Selected {gameObjects.Count} All Silbing");
         }
 
 
