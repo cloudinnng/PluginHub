@@ -85,8 +85,9 @@ namespace PluginHub.Runtime
 
         public static string GetLicenseCorrect(string machineCode)
         {
-            // return (machineCode + Application.identifier + licensePrivateKey).GetHashCode().ToString();
-            string input = machineCode + licensePrivateKey;
+            // License 与以下信息有关：
+            // 机器码 + 应用标识符 + 私钥
+            string input = machineCode + Application.identifier + licensePrivateKey;
 
             using (SHA256 sha256 = SHA256.Create())
             {

@@ -37,6 +37,10 @@ namespace PluginHub.Runtime
         // 构造方法
         public InspectorButtonAttribute() { }
 
+        public InspectorButtonAttribute(params Object[] parameters)
+        {
+            this.parameters = parameters;
+        }
         public InspectorButtonAttribute(InspectorButtonMode usage = InspectorButtonMode.EditAndPlay, params Object[] parameters)
         {
             this.buttonName = "";

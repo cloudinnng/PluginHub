@@ -57,10 +57,14 @@ namespace PluginHub.Editor
         }
 
         #region 智能纹理赋值
+        //智能纹理赋值将材质文件同目录下的纹理文件赋值到材质属性上，无需手动拖拽
+        //目前不一定所有管线支持，因为shader中的属性名不一样，遇到之后会继续完善
+        //自定义Shader的支持，需要在shader中按以下规则命名属性
+        //（_[纹理类型全程]Tex）,例如：_MainTex,_NormalTex,_MetallicTex,_EmissionTex,_HeightTex,
 
         //这里定义各种纹理的别名，用于匹配，优先级从高到低。
         //如果纹理文件名中包含这些别名，就会被赋值到对应的纹理属性上
-        private static string[] albedoAlias = new string[] { "MainTex", "Albedo", "BaseColorMap", "BaseColor", "Color", "Diffuse","col" };
+        private static string[] albedoAlias = new string[] { "MainTex", "Albedo", "BaseColorMap", "BaseColor", "Color", "Diffuse", "col", "Diff" };
         private static string[] metallicAlias = new string[] { "Metalness", "MetallicMap", "Metallic", "Metal" };
         private static string[] emissionAlias = new string[] { "EmissionMap", "Emission", "emiss" };
         private static string[] normalAlias = new string[] { "NormalMap", "Normal", "BumpMap", "_n" };//有时BumpMap就是法线贴图
@@ -167,6 +171,11 @@ namespace PluginHub.Editor
                     material.SetTexture("_albedo", albedo);
                     albedoOk = true;
                 }
+                if (material.HasProperty("_MainTex"))
+                {
+                    material.SetTexture("_MainTex", albedo);
+                    albedoOk = true;
+                }
                 //URP里叫_BaseMap
                 if (material.HasProperty("_BaseMap"))
                 {
@@ -207,6 +216,12 @@ namespace PluginHub.Editor
                     metallicOk = true;
                 }
 
+                if (material.HasProperty("_MetallicTex"))
+                {
+                    material.SetTexture("_MetallicTex", metallic);
+                    metallicOk = true;
+                }
+
                 if(!metallicOk)
                     Debug.LogError($"Metallic纹理找到，但是没有找到对应的属性，{material.name}");
             }
@@ -232,9 +247,14 @@ namespace PluginHub.Editor
                     normalOk = true;
                 }
                 //compatible custom shader
-                if (material.HasProperty("_Normal"))
+                if (material.HasProperty("_NormalTex"))
                 {
-                    material.SetTexture("_Normal", normal);
+                    material.SetTexture("_NormalTex", normal);
+                    normalOk = true;
+                }
+                if (material.HasProperty("_NormalTex"))
+                {
+                    material.SetTexture("_NormalTex", normal);
                     normalOk = true;
                 }
 
@@ -251,6 +271,11 @@ namespace PluginHub.Editor
                 {
                     material.EnableKeyword("_PARALLAXMAP");
                     material.SetTexture("_ParallaxMap", height);
+                    heightOk = true;
+                }
+                if (material.HasProperty("_HeightMap"))
+                {
+                    material.SetTexture("_HeightMap", height);
                     heightOk = true;
                 }
                 if(!heightOk)
