@@ -11,7 +11,8 @@ namespace PluginHub.Runtime
     [CustomEditor(typeof(ApplicationLicense))]
     public class ApplicationLicenseEditor : Editor
     {
-        private string userInput;
+        private string userInputAppIdentifier;
+        private string userInputMachineCode;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -20,10 +21,10 @@ namespace PluginHub.Runtime
 
             if (GUILayout.Button($"本机机器码: {applicationLicense.machineCode}",GUI.skin.label))
                 GUIUtility.systemCopyBuffer = applicationLicense.machineCode;
-            if (GUILayout.Button($"应用标识符: {Application.identifier}",GUI.skin.label))
-                GUIUtility.systemCopyBuffer = Application.identifier;
-            if (GUILayout.Button($"本机正确License: {ApplicationLicense.GetLicenseCorrect(applicationLicense.machineCode)}",GUI.skin.label))
-                GUIUtility.systemCopyBuffer = ApplicationLicense.GetLicenseCorrect(applicationLicense.machineCode);
+            if (GUILayout.Button($"应用标识符: {applicationLicense.ApplicationIdentifier}",GUI.skin.label))
+                GUIUtility.systemCopyBuffer = applicationLicense.ApplicationIdentifier;
+            if (GUILayout.Button($"本机正确License: {ApplicationLicense.GetLicenseCorrect(applicationLicense.ApplicationIdentifier,applicationLicense.machineCode)}",GUI.skin.label))
+                GUIUtility.systemCopyBuffer = ApplicationLicense.GetLicenseCorrect(applicationLicense.ApplicationIdentifier,applicationLicense.machineCode);
 
             GUILayout.Label($"Licence存储Key: {applicationLicense.saveKey}");
             GUILayout.Label($"License存储值: {applicationLicense.licenseUserSaved}");
@@ -36,24 +37,40 @@ namespace PluginHub.Runtime
             GUILayout.Label("为其它设备生成License,输入机器码");
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("输入机器码", GUILayout.Width(80));
-                userInput = GUILayout.TextField(userInput, GUILayout.Width(150));
-                if (GUILayout.Button("粘贴",GUILayout.ExpandWidth(false)))
-                    userInput = GUIUtility.systemCopyBuffer;
+                GUILayout.Label("输入应用标识符", GUILayout.Width(80));
+                userInputAppIdentifier = GUILayout.TextField(userInputAppIdentifier, GUILayout.Width(150));
+                if (GUILayout.Button("粘贴", GUILayout.ExpandWidth(false)))
+                    userInputAppIdentifier = GUIUtility.systemCopyBuffer;
             }
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("输入机器码", GUILayout.Width(80));
+                userInputMachineCode = GUILayout.TextField(userInputMachineCode, GUILayout.Width(150));
+                if (GUILayout.Button("粘贴", GUILayout.ExpandWidth(false)))
+                    userInputMachineCode = GUIUtility.systemCopyBuffer;
+            }
+            GUILayout.EndHorizontal();
+            if (GUILayout.Button("粘贴应用标识符和机器码", GUILayout.ExpandWidth(false)))
+            {
+                string identifierAndMachineCode = GUIUtility.systemCopyBuffer;
+                string[] split = identifierAndMachineCode.Split('\n');
+                userInputAppIdentifier = split[0];
+                userInputMachineCode = split[1];
+            }
+
 
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label("License", GUILayout.Width(80));
-                GUILayout.TextField(ApplicationLicense.GetLicenseCorrect(userInput), GUILayout.Width(150));
+                GUILayout.TextField(ApplicationLicense.GetLicenseCorrect(userInputAppIdentifier,userInputMachineCode), GUILayout.Width(150));
                 if (GUILayout.Button("复制",GUILayout.ExpandWidth(false)))
-                    GUIUtility.systemCopyBuffer = ApplicationLicense.GetLicenseCorrect(userInput);
+                    GUIUtility.systemCopyBuffer = ApplicationLicense.GetLicenseCorrect(userInputAppIdentifier,userInputMachineCode);
             }
             GUILayout.EndHorizontal();
 
 
-            if (GUILayout.Button("删除本机该应用License"))
+            if (GUILayout.Button("删除本机该应用编辑器 License"))
                 PlayerPrefs.DeleteKey(applicationLicense.saveKey);
         }
     }
@@ -65,12 +82,15 @@ namespace PluginHub.Runtime
     // 在编辑器中，PlayerPrefs 的路径是 HKEY_CURRENT_USER\SOFTWARE\Unity\UnityEditor\CompanyName\ProjectName，
     // 在构建中，路径是 HKEY_CURRENT_USER\SOFTWARE\CompanyName\ProjectName
     // 因此，在Unity编辑器中输入正确的License注册后，构建版本需要重新输入License注册。
+
+    // 注意，不要使用Application.identifier
+    // PC平台编辑器与构建中的Application.identifier不同。PC构建中的Application.identifier是None
+
     public class ApplicationLicense : MonoBehaviour
     {
 
         private static string licensePrivateKey = "hellottw.pluginhub";
         public string machineCode => SystemInfo.deviceUniqueIdentifier;
-
         public string saveKey => $"{Application.companyName}_{Application.productName}_License";
         public string licenseUserSaved
         {
@@ -83,11 +103,11 @@ namespace PluginHub.Runtime
             VerifyLicense();
         }
 
-        public static string GetLicenseCorrect(string machineCode)
+        public static string GetLicenseCorrect(string appIdentifier, string machineCode)
         {
             // License 与以下信息有关：
             // 机器码 + 应用标识符 + 私钥
-            string input = machineCode + Application.identifier + licensePrivateKey;
+            string input = appIdentifier + machineCode + licensePrivateKey;
 
             using (SHA256 sha256 = SHA256.Create())
             {
@@ -108,7 +128,9 @@ namespace PluginHub.Runtime
 
         public bool IsLicenseValid()
         {
-            return licenseUserSaved == GetLicenseCorrect(machineCode);
+            Debug.Log($"{licenseUserSaved}");
+            Debug.Log($"{GetLicenseCorrect(ApplicationIdentifier, machineCode)}");
+            return licenseUserSaved == GetLicenseCorrect(ApplicationIdentifier, machineCode);
         }
 
         public bool VerifyLicense()
@@ -122,7 +144,7 @@ namespace PluginHub.Runtime
             return false;
         }
 
-        public string ApplicationIdentifier => Application.companyName + "." + Application.productName;
+        public string ApplicationIdentifier => $"com.{Application.companyName}.{Application.productName}";
 
         private string systemInfo;// 系统提示信息
         private void OnGUI()
@@ -133,8 +155,8 @@ namespace PluginHub.Runtime
             GUILayout.Label("License无效,请联系开发者获取License");
             GUILayout.Label($"应用程序标识符: {ApplicationIdentifier}");
             GUILayout.Label($"本机机器码: {machineCode}");
-            if (GUILayout.Button("复制机器码", GUILayout.ExpandWidth(false)))
-                GUIUtility.systemCopyBuffer = machineCode;
+            if (GUILayout.Button("复制应用标识符和机器码", GUILayout.ExpandWidth(false)))
+                GUIUtility.systemCopyBuffer = $"{ApplicationIdentifier}\n{machineCode}";
 
             licenseUserSaved = GUILayout.TextField(licenseUserSaved);
             if (GUILayout.Button("粘贴", GUILayout.ExpandWidth(false)))
@@ -147,7 +169,7 @@ namespace PluginHub.Runtime
             }
 
             GUILayout.Label(systemInfo);
-            // GUILayout.Label($"正确License: {GetLicenseCorrect(machineCode)}");
+            // GUILayout.Label($"正确License: {GetLicenseCorrect(ApplicationIdentifier, machineCode)}");
 
         }
     }
