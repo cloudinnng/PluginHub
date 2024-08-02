@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,8 +7,9 @@ using UnityEngine.SceneManagement;
 
 namespace PluginHub.Runtime
 {
-//所有的GUI绘制集中在这里进行,mono实现IGuiClient接口即可
-//Debugger的前身
+    //所有的GUI绘制集中在这里进行,mono实现IGuiClient接口即可
+    //Debugger.CustomWindow的前身
+    [Obsolete("Use IMGUIManager instead")]
     public class GuiManager : SceneSingleton<GuiManager>
     {
         public interface IGUIClient

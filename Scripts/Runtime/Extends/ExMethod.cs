@@ -83,6 +83,21 @@ namespace PluginHub.Runtime
             return float.Parse(value.ToString($"F{x}"));
         }
 
+        public static float ToFloat(this string value, int x = 2)
+        {
+            return float.Parse(float.Parse(value).ToString($"F{x}"));
+        }
+
+        public static float ToFloat(this double value, int x = 2)
+        {
+            return float.Parse(value.ToString($"F{x}"));
+        }
+
+        public static float ToFloat(this int value)
+        {
+            return float.Parse(value.ToString());
+        }
+
         #endregion
 
         #region double 扩展方法
