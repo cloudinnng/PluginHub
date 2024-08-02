@@ -37,6 +37,7 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
     public bool showClientTitle = true;
 
     // 侧边栏
+    public bool fullScreenWidth = false;// 是否占满屏幕宽度
     public float leftSideScrollWidth = 400;
     private Vector2 leftScrollPos;
 
@@ -103,10 +104,16 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
 
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(guiScale,guiScale, 1));
         {
+            if(fullScreenWidth)
+                leftSideScrollWidth = screenSize.x;
+
             // 侧边栏
-            GUILayout.BeginVertical("Box", GUILayout.Height(screenSize.y));
+            GUILayout.BeginVertical("Box", GUILayout.Height(screenSize.y), GUILayout.Width(leftSideScrollWidth));
             {
-                leftScrollPos = GUILayout.BeginScrollView(leftScrollPos, GUILayout.Width(leftSideScrollWidth));
+                // 滚动视图
+                // 8是 Box Style 的 padding left + padding right
+                int boxPadding = 8;
+                leftScrollPos = GUILayout.BeginScrollView(leftScrollPos, GUILayout.Width(leftSideScrollWidth - boxPadding));
                 {
                     // 绘制侧边栏内容GUI
                     for (int i = 0; i < clientList.Count; i++)
@@ -136,13 +143,22 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
 
     public void OnDrawDebuggerGUI()
     {
-        showGUI = GUILayout.Toggle(showGUI, "显示GUI");
+        GUILayout.BeginHorizontal();
+        {
+            showGUI = GUILayout.Toggle(showGUI, "显示GUI");
+            showClientTitle = GUILayout.Toggle(showClientTitle, "显示客户端标题");
+            fullScreenWidth = GUILayout.Toggle(fullScreenWidth, "占满屏幕宽度");
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.Label($"GUIScale: {guiScale:F2}");
         guiScale = GUILayout.HorizontalSlider(guiScale, 0.1f, 2.0f);
 
-        GUILayout.Label("侧边栏宽度:");
-        leftSideScrollWidth = GUILayout.HorizontalSlider(leftSideScrollWidth, 100, 1000);
+
+        GUILayout.Label($"侧边栏宽度: {leftSideScrollWidth:F0}");
+
+        if(!fullScreenWidth)
+            leftSideScrollWidth = GUILayout.HorizontalSlider(leftSideScrollWidth, 100, 2000);
 
         if (GUILayout.Button("刷新客户端列表"))
             RefreshClientList();
