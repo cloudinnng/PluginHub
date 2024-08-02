@@ -143,5 +143,8 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
 
         GUILayout.Label("侧边栏宽度:");
         leftSideScrollWidth = GUILayout.HorizontalSlider(leftSideScrollWidth, 100, 1000);
+
+        if (GUILayout.Button("刷新客户端列表"))
+            RefreshClientList();
     }
 }
