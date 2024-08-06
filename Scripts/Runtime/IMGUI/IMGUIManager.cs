@@ -5,6 +5,7 @@ using PluginHub.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using Object = System.Object;
 
 
 // 提供左侧边栏绘制和普通GUI绘制（全屏区域）
@@ -14,21 +15,14 @@ using UnityEngine.Serialization;
 [ExecuteAlways]
 public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.ICustomWindowGUI
 {
-    public interface IIMGUI
+    public abstract class IIMGUI : MonoBehaviour
     {
-        public bool offerLeftSideDraw => true;// 是否提供左侧边栏绘制
-        public void IMGUILeftSideDraw();// 绘制左侧边栏内容GUI
-        public void IMGUIDraw();// 绘制普通GUI
-        public int IMGUIOrder => 0;
-        public string IMGUITitle => GetType().ToString();
-    }
-
-    // 继承这个就简单一点
-    public abstract class IMGUIBase : MonoBehaviour, IIMGUI
-    {
-        public bool offerLeftSideDraw => false;
-        public virtual void IMGUILeftSideDraw() { }
-        public virtual void IMGUIDraw() { }
+        public float localGUIScale = 1.0f;// 本地GUI缩放因子，让不同的GUI客户端在全局GUI缩放下有可以有不同的本地缩放比例
+        public virtual bool IMGUIOfferLeftSideDraw => true;// 是否提供左侧边栏绘制
+        public virtual void IMGUILeftSideDraw() { }// 绘制左侧边栏内容GUI
+        public virtual void IMGUIDraw() { }// 绘制普通GUI
+        public virtual int IMGUIOrder => 0;
+        public virtual string IMGUITitle => GetType().ToString();
     }
 
     public bool showGUI = true;
@@ -45,11 +39,10 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
     // 真实屏幕尺寸
     private static Vector2 _realScreenSize;
     // GUI程序开发依赖的屏幕尺寸
-    public Vector2 screenSize => new Vector2(_realScreenSize.x / guiScale, _realScreenSize.y / guiScale);
+    public Vector2 ScreenSize(float localGUIScale) => new Vector2(_realScreenSize.x / guiScale / localGUIScale, _realScreenSize.y / guiScale / localGUIScale);
 
     // 客户端列表
     public List<IIMGUI> clientList = new List<IIMGUI>();
-
 
     private void OnValidate()
     {
@@ -80,11 +73,14 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
     public void RefreshClientList()
     {
         clientList.Clear();
-        foreach (var client in FindObjectsOfType<MonoBehaviour>())
+        MonoBehaviour[] monoInScene = FindObjectsOfType<MonoBehaviour>();
+        // Debug.Log(s.Length);
+        foreach (var client in monoInScene)
         {
             if (client is IIMGUI imGUI)
                 clientList.Add(imGUI);
         }
+        // Debug.Log(clientList.Count);
         clientList.Sort((a, b) => a.IMGUIOrder.CompareTo(b.IMGUIOrder));
     }
 
@@ -104,6 +100,7 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
 
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(guiScale,guiScale, 1));
         {
+            Vector2 screenSize = ScreenSize(1.0f);
             if(fullScreenWidth)
                 leftSideScrollWidth = screenSize.x;
 
@@ -119,7 +116,7 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
                     for (int i = 0; i < clientList.Count; i++)
                     {
                         IIMGUI imGUI = clientList[i];
-                        if (!imGUI.offerLeftSideDraw)// 不提供左侧边栏绘制, 跳过
+                        if (!imGUI.IMGUIOfferLeftSideDraw)// 不提供左侧边栏绘制, 跳过
                             continue;
                         // 画title
                         if (showClientTitle)
@@ -132,9 +129,14 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
             }
             GUILayout.EndVertical();
 
+
             // 普通GUI
             for (int i = 0; i < clientList.Count; i++)
+            {
+                float localScale = clientList[i].localGUIScale * guiScale;
+                GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(localScale, localScale, 1));
                 clientList[i].IMGUIDraw();
+            }
 
         }
         GUI.matrix = originalMatrix;
