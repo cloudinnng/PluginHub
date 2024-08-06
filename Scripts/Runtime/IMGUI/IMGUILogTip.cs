@@ -11,6 +11,7 @@ public class IMGUILogTip : IMGUIManager.IIMGUI
 {
     public bool alwaysShow = false;// 测试用
     public string tipText = "Default Tip";
+    public bool ignoreNormalLog = true;
     private Color _tipColor = Color.white;
     private GUIContent tempContent = new GUIContent();
     private float _alpha = 0;
@@ -23,6 +24,9 @@ public class IMGUILogTip : IMGUIManager.IIMGUI
 
     private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
     {
+        // 不提醒普通日志
+        if (ignoreNormalLog && type == LogType.Log)
+            return;
         Color color;
         switch (type)
         {
