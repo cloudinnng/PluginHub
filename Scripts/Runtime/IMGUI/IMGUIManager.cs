@@ -7,6 +7,21 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using Object = System.Object;
 
+#if UNITY_EDITOR
+using UnityEditor;
+[CustomEditor(typeof(IMGUIManager))]
+public class IMGUIManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+        IMGUIManager imGUIManager = target as IMGUIManager;
+        if (GUILayout.Button("刷新客户端列表"))
+            imGUIManager.RefreshClientList();
+    }
+}
+#endif
+
 
 // 提供左侧边栏绘制和普通GUI绘制（全屏区域）
 // 用户脚本可以通过实现IIMGUI接口，将自己的GUI绘制到屏幕上 (脚本需继承自MonoBehaviour)

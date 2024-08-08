@@ -127,6 +127,11 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_updateInfo", value); }
         }
 
+        private static string lastBuildTime
+        {
+            get { return EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_lastBuildTime", ""); }
+            set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_lastBuildTime", value); }
+        }
 
         #region 构建预处理/后处理
 
@@ -178,6 +183,7 @@ namespace PluginHub.Editor
                 PlayerSettings.bundleVersion = $"{majorVersion}.{minorVersion}";
                 Debug.Log($"版本号从{oldVersion}自增到{PlayerSettings.bundleVersion}");
             }
+            lastBuildTime = DateTime.Now.ToString("yyyy - MM - dd  HH: mm: ss");
         }
 
         #endregion
@@ -209,6 +215,13 @@ namespace PluginHub.Editor
 
 
             DrawSplitLine("快捷构建");
+
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("最近构建:", GUILayout.Width(titleWidth));
+                GUILayout.Label(lastBuildTime == "" ? "无" : lastBuildTime);
+            }
+            GUILayout.EndHorizontal();
 
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
