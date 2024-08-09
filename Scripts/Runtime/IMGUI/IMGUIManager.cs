@@ -32,6 +32,7 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
 {
     public abstract class IIMGUI : MonoBehaviour
     {
+        public bool hideGUIContent = false;// 是否隐藏GUI内容,只显示标题,使得可以折叠,让界面更简洁
         public float localGUIScale = 1.0f;// 本地GUI缩放因子，让不同的GUI客户端在全局GUI缩放下有可以有不同的本地缩放比例
         public virtual bool IMGUIOfferLeftSideDraw => true;// 是否提供左侧边栏绘制
         public virtual void IMGUILeftSideDraw() { }// 绘制左侧边栏内容GUI
@@ -87,6 +88,7 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
 
     public void RefreshClientList()
     {
+        Debug.Log("RefreshClientList");
         clientList.Clear();
         MonoBehaviour[] monoInScene = FindObjectsOfType<MonoBehaviour>();
         // Debug.Log(s.Length);
@@ -110,6 +112,17 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
     {
         if (!showGUI)
             return;
+
+        // 检查无效客户端,并自动刷新
+        for (int i = 0; i < clientList.Count; i++)
+        {
+            if (clientList[i] == null)
+            {
+                RefreshClientList();
+                break;
+            }
+        }
+
 
         Matrix4x4 originalMatrix = GUI.matrix;
 
@@ -135,9 +148,15 @@ public class IMGUIManager : SceneSingleton<IMGUIManager>, Debugger.CustomWindow.
                             continue;
                         // 画title
                         if (showClientTitle)
-                            GUILayout.Box($"{imGUI.IMGUITitle} ({imGUI.IMGUIOrder})");
+                        {
+                            // 折叠中的客户端标题颜色变灰
+                            GUI.color = imGUI.hideGUIContent ? Color.gray : Color.white;
+                            imGUI.hideGUIContent = GUILayout.Toggle(imGUI.hideGUIContent,$"{imGUI.IMGUITitle} ({imGUI.IMGUIOrder})", "Box");
+                            GUI.color = Color.white;
+                        }
                         // 画内容
-                        imGUI.IMGUILeftSideDraw();
+                        if (!imGUI.hideGUIContent)
+                            imGUI.IMGUILeftSideDraw();
                     }
                 }
                 GUILayout.EndScrollView();
