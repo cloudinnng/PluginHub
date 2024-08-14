@@ -1,0 +1,27 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+
+class IMGUIManager{
+最顶层基础组件，必须添加到场景中
+支持实现为其客户端的基础组件
+}
+
+class IMGUISideScrollableView{
+实现为IMGUIManager的客户端，
+并支持其他组件实现为自己的客户端
+}
+
+IMGUIManager <--r IMGUISideScrollableView
+
+class IMGUIConsole
+
+
+IMGUISideScrollableView <-- IMGUIConsole
+
+class IMGUILogTip
+
+IMGUIManager <-- IMGUILogTip
+
+
+
+@enduml
