@@ -212,3 +212,10 @@
 <img src="ReadmeImg/DebuggerDemo200.png" width="400">
 <img src="ReadmeImg/DebuggerDemo201.png" width="400">
 <img src="ReadmeImg/DebuggerDemo202.png" width="400">
+
+
+
+# 感谢
+该项目使用`JetBrains`的`Rider`作为开发工具，感谢`JetBrains`提供的开源许可证支持。  
+[<img src="ReadmeImg/jetbrains.png" height="50" >](https://jb.gg/OpenSourceSupport)  
+[<img src="ReadmeImg/Rider.png" height="50">](https://www.jetbrains.com/rider/)
