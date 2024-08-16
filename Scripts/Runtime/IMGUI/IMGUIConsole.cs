@@ -32,7 +32,7 @@ namespace PluginHub.Runtime
 
     // IMGUI 控制台组件
     [ExecuteAlways]
-    public class IMGUIConsole : IMGUIManager.IIMGUI
+    public class IMGUIConsole : MonoBehaviour, IMGUIManager.IIMGUI
     {
         private class LogNode
         {
@@ -103,9 +103,11 @@ namespace PluginHub.Runtime
             _logs.Clear();
         }
 
-        public override void IMGUIDraw()
+        public float IMGUILocalGUIScale { get; }
+
+        public void IMGUIDraw()
         {
-            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(localGUIScale);
+            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(IMGUILocalGUIScale);
 
             GUILayout.BeginArea(new Rect(0, 0, screenSize.x, screenSize.y));
             {
@@ -212,7 +214,6 @@ namespace PluginHub.Runtime
             return color;
         }
 
-        public override int IMGUIOrder => -1000;
     }
 
 }

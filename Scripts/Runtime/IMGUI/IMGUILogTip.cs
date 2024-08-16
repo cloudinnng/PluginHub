@@ -10,7 +10,7 @@ namespace PluginHub.Runtime
     // 显示在最上层的提示语,一段时间后消失
     // 捕获错误日志来显示，以提示用户
     // 想法来自ToastManager
-    public class IMGUILogTip : IMGUIManager.IIMGUI
+    public class IMGUILogTip : SceneSingleton<IMGUILogTip>, IMGUIManager.IIMGUI
     {
         [System.Serializable]
         private class ToastInstance
@@ -82,7 +82,7 @@ namespace PluginHub.Runtime
         }
 
 
-        public override void IMGUIDraw()
+        public void IMGUIDraw()
         {
             for(int i = _toastInstances.Count - 1; i >= 0; i--)
             {
@@ -91,13 +91,16 @@ namespace PluginHub.Runtime
             }
         }
 
+        public int IMGUIOrder => 99999;
+        public float IMGUILocalGUIScale => 1.3f;
+
         private void DrawToast(int positionIndex,ToastInstance toastInstance)
         {
             tempContent.text = toastInstance.text;
             Vector2 textSize = GUI.skin.label.CalcSize(tempContent);
             Vector2 areaSize = textSize + new Vector2(GUI.skin.box.padding.horizontal, GUI.skin.box.padding.vertical);
 
-            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(localGUIScale);
+            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(IMGUILocalGUIScale);
             Rect area = new Rect(screenSize.x / 2 - areaSize.x / 2, screenSize.y / 2 - areaSize.y / 2, areaSize.x, areaSize.y);
             area.y -= positionIndex * (areaSize.y + 3);
 
@@ -128,8 +131,6 @@ namespace PluginHub.Runtime
                 }
             }
         }
-
-        public override int IMGUIOrder => 99999;
     }
 }
 

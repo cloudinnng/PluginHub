@@ -13,6 +13,21 @@ namespace PluginHub.Runtime
     /// 该单例模式（懒汉式单例）是在第一次调用的时候使用FindObjectsOfType<T>()来查找场景中的对象实现的。
     /// 所以该单例模式基于 MonoBehaviour 和 GameObject。
     ///
+    /// 若不想继承。添加下面的代码可使得MonoBehaviour成为单例
+    ///
+    // #region Singleton
+    // private static YourType _instance;
+    // public static YourType Instance
+    // {
+    // get
+    // {
+    //     if (_instance == null)
+    //         _instance = FindObjectOfType<YourType>();
+    //     return _instance;
+    // }
+    // }
+    // #endregion
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class SceneSingleton<T> : MonoBehaviour where T : MonoBehaviour

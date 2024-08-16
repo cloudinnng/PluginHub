@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 namespace PluginHub.Runtime
 {
@@ -11,10 +12,23 @@ namespace PluginHub.Runtime
     [CustomEditor(typeof(IMGUISideScrollableView))]
     public class IMGUISideScrollableViewEditor : Editor
     {
+        private bool foldout = false;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             IMGUISideScrollableView imGUIManager = target as IMGUISideScrollableView;
+
+            foldout = EditorGUILayout.Foldout(foldout, $"客户端数量：{imGUIManager.clientList.Count}");
+            if (foldout)
+            {
+                // 显示出当前的客户端列表
+                for (int i = 0; i < imGUIManager.clientList.Count; i++)
+                {
+                    IMGUISideScrollableView.IIMGUI imGUI = imGUIManager.clientList[i];
+                    GUILayout.Label($"[{i}] {imGUI.GetType().ToString()} ({imGUI.IMGUIOrder})");
+                }
+            }
+
             if (GUILayout.Button("刷新客户端列表"))
                 imGUIManager.RefreshClientList();
         }
@@ -23,17 +37,19 @@ namespace PluginHub.Runtime
 
     [ExecuteAlways]
     // 提供侧边栏滚动视图
-    public class IMGUISideScrollableView : IMGUIManager.IIMGUI, Debugger.CustomWindow.ICustomWindowGUI
+    public class IMGUISideScrollableView : SceneSingleton<IMGUISideScrollableView>, IMGUIManager.IIMGUI, Debugger.CustomWindow.ICustomWindowGUI
     {
-        public abstract class IIMGUI : MonoBehaviour
+        public interface IIMGUI
         {
-            [HideInInspector]
-            public bool hideGUIContent = false; // 是否隐藏GUI内容,只显示标题,使得可以折叠,让界面更简洁
+            public bool enableGUI => true; // 是否绘制GUI
             // 绘制左侧边栏内容GUI
-            public abstract void IMGUILeftSideDraw();
-            public virtual string IMGUITitle => GetType().ToString();
-            public virtual int IMGUIOrder => 0;
+            public void IMGUILeftSideDraw();
+            public string IMGUITitle => GetType().ToString();
+            public int IMGUIOrder => 0;
         }
+
+        public float localGUIScale = 1;
+        public float IMGUILocalGUIScale => localGUIScale;
 
         public bool showSidebarGUI = true;
         public bool showClientTitle = true;
@@ -45,6 +61,7 @@ namespace PluginHub.Runtime
 
         // 客户端列表
         public List<IIMGUI> clientList = new List<IIMGUI>();
+        public List<bool> isFoldoutList = new List<bool>();
 
         #region 刷新客户端操作
 
@@ -76,14 +93,18 @@ namespace PluginHub.Runtime
 
         public void RefreshClientList()
         {
-            Debug.Log("RefreshClientList");
+            Debug.Log("[IMGUIManager] RefreshClientList");
             clientList.Clear();
+            isFoldoutList.Clear();
             MonoBehaviour[] monoInScene = FindObjectsOfType<MonoBehaviour>();
             // Debug.Log(s.Length);
             foreach (var client in monoInScene)
             {
                 if (client is IIMGUI imGUI)
+                {
                     clientList.Add(imGUI);
+                    isFoldoutList.Add(false);
+                }
             }
             // Debug.Log(clientList.Count);
             clientList.Sort((a, b) => a.IMGUIOrder.CompareTo(b.IMGUIOrder));
@@ -100,9 +121,8 @@ namespace PluginHub.Runtime
             }
             GUILayout.EndHorizontal();
 
-            GUILayout.Label($"GUIScale: {localGUIScale:F2}");
-            localGUIScale = GUILayout.HorizontalSlider(localGUIScale, 0.1f, 2.0f);
-
+            // GUILayout.Label($"GUIScale: {localGUIScale:F2}");
+            // localGUIScale = GUILayout.HorizontalSlider(localGUIScale, 0.1f, 2.0f);
 
             GUILayout.Label($"侧边栏宽度: {leftSideScrollWidth:F0}");
 
@@ -113,13 +133,12 @@ namespace PluginHub.Runtime
                 RefreshClientList();
         }
 
-        public override void IMGUIDraw()
+        public void IMGUIDraw()
         {
             if (!showSidebarGUI)
                 return;
 
-
-            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(localGUIScale);
+            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(IMGUILocalGUIScale);
             if (fullScreenWidth)
                 leftSideScrollWidth = screenSize.x;
 
@@ -135,22 +154,24 @@ namespace PluginHub.Runtime
                     for (int i = 0; i < clientList.Count; i++)
                     {
                         IIMGUI imGUI = clientList[i];
+                        bool isFoldout = isFoldoutList[i];
+
                         // 根据是否激活和是否启用来绘制
-                        if (imGUI.gameObject.activeInHierarchy == false || imGUI.enabled == false)
-                            continue;
+                        // if (imGUI.enableGUI == false || mono.gameObject.activeInHierarchy == false || mono.enabled == false)
+                            // continue;
 
                         // 画title
                         if (showClientTitle)
                         {
                             // 折叠中的客户端标题颜色变灰
-                            GUI.color = imGUI.hideGUIContent ? Color.gray : Color.white;
-                            imGUI.hideGUIContent = GUILayout.Toggle(imGUI.hideGUIContent,
+                            GUI.color = isFoldout ? Color.gray : Color.white;
+                            isFoldoutList[i] = GUILayout.Toggle(isFoldout,
                                 $"{imGUI.IMGUITitle} ({imGUI.IMGUIOrder})", "Box");
                             GUI.color = Color.white;
                         }
 
                         // 画内容
-                        if (!imGUI.hideGUIContent)
+                        if (!isFoldout)
                             imGUI.IMGUILeftSideDraw();
                     }
                 }
@@ -159,6 +180,5 @@ namespace PluginHub.Runtime
             GUILayout.EndVertical();
         }
 
-        public override int IMGUIOrder => 0;
     }
 }

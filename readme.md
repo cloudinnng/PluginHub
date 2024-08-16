@@ -216,6 +216,6 @@
 
 
 # 感谢
-该项目使用`JetBrains`的`Rider`作为开发工具，感谢`JetBrains`提供的开源许可证支持。  
+该项目使用`JetBrains`的`Rider`作为开发工具，感谢`JetBrains`提供的[开源许可证](https://jb.gg/OpenSourceSupport)。  
 [<img src="ReadmeImg/jetbrains.png" height="50" >](https://jb.gg/OpenSourceSupport)  
 [<img src="ReadmeImg/Rider.png" height="50">](https://www.jetbrains.com/rider/)

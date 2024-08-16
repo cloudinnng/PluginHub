@@ -15,14 +15,29 @@ namespace PluginHub.Runtime
     [CustomEditor(typeof(IMGUIManager))]
     public class IMGUIManagerEditor : Editor
     {
+        private bool foldout = false;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             IMGUIManager imGUIManager = target as IMGUIManager;
+
+            foldout = EditorGUILayout.Foldout(foldout, $"客户端数量：{imGUIManager.clientList.Count}");
+            if (foldout)
+            {
+                // 显示出当前的客户端列表
+                for (int i = 0; i < imGUIManager.clientList.Count; i++)
+                {
+                    IMGUIManager.IIMGUI imGUI = imGUIManager.clientList[i];
+                    GUILayout.Label($"[{i}] {imGUI.GetType().ToString()} ({imGUI.IMGUIOrder})");
+                }
+            }
+
             if (GUILayout.Button("刷新客户端列表"))
                 imGUIManager.RefreshClientList();
+
         }
     }
+
     #endif
 
     // 【IMGUI基础组件】
@@ -31,21 +46,31 @@ namespace PluginHub.Runtime
     // 用户脚本可以通过继承IIMGUI，将自己的GUI绘制到屏幕上 (脚本需继承自MonoBehaviour)
     // 思路来自Debugger.CustomWindow.ICustomWindowGUI
     // 与其不同的是，他不依附于Debugger.CustomWindow，而是直接显示在屏幕上
+    //
+    // IIMGUI 使用[抽象类]存在的问题：
+    // 1、无法同时继承多个抽象类，以实现多个界面绘制功能
+    // 2、占用了继承位，客户端无法继承其他类
+    //
+    // IIMGUI 使用[接口]存在的问题：
+    // 1、接口无法包含字段，无法直接在实现的客户端检视面板中添加localGUIScale滑动条以便用户调整
+    // 2、带不上Mono的引用
+
     [ExecuteAlways]
     public class IMGUIManager : SceneSingleton<IMGUIManager>
     {
         // 继承此类，以成为客户端
-        public abstract class IIMGUI : MonoBehaviour
+        public interface IIMGUI
         {
-            public float localGUIScale = 1.0f;// 本地GUI缩放因子，让不同的GUI客户端在全局GUI缩放下可以有不同的本地缩放比例
-            public abstract void IMGUIDraw(); // 绘制GUI
-            public virtual int IMGUIOrder => 0;
+            public bool IMGUIEnable => true;// 是否绘制GUI
+            public void IMGUIDraw(); // 绘制GUI
+            public int IMGUIOrder => 0;// 绘制顺序
+            public float IMGUILocalGUIScale => 1;// 本地UI缩放因子
         }
 
+        // 全局GUI开关
         public bool showGUI = true;
-        [Tooltip("用户设置的UI全局缩放因子")]
+        // 用户设置的UI全局缩放因子
         public float globalGUIScale = 1.0f;
-
 
         // 真实屏幕尺寸
         private static Vector2 _realScreenSize;
@@ -54,6 +79,7 @@ namespace PluginHub.Runtime
 
         // 客户端列表
         public List<IIMGUI> clientList = new List<IIMGUI>();
+
 
         #region 刷新客户端操作
 
@@ -85,14 +111,17 @@ namespace PluginHub.Runtime
 
         public void RefreshClientList()
         {
-            Debug.Log("RefreshClientList");
+            Debug.Log("[IMGUIManager] RefreshClientList");
+
             clientList.Clear();
             MonoBehaviour[] monoInScene = FindObjectsOfType<MonoBehaviour>();
             // Debug.Log(s.Length);
-            foreach (var client in monoInScene)
+            foreach (MonoBehaviour client in monoInScene)
             {
                 if (client is IIMGUI imGUI)
+                {
                     clientList.Add(imGUI);
+                }
             }
             // Debug.Log(clientList.Count);
             clientList.Sort((a, b) => a.IMGUIOrder.CompareTo(b.IMGUIOrder));
@@ -112,16 +141,6 @@ namespace PluginHub.Runtime
             if (!showGUI)
                 return;
 
-            // 检查无效客户端,并自动刷新
-            for (int i = 0; i < clientList.Count; i++)
-            {
-                if (clientList[i] == null)
-                {
-                    RefreshClientList();
-                    break;
-                }
-            }
-
             Matrix4x4 originalMatrix = GUI.matrix;
 
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(globalGUIScale,globalGUIScale, 1));
@@ -130,18 +149,20 @@ namespace PluginHub.Runtime
                 for (int i = 0; i < clientList.Count; i++)
                 {
                     IIMGUI imGUI = clientList[i];
-                    // 根据是否激活和是否启用来绘制
-                    if (imGUI.gameObject.activeInHierarchy == false || imGUI.enabled == false)
+
+                    if (imGUI.IMGUIEnable == false)
                         continue;
 
-                    float localScale = imGUI.localGUIScale * globalGUIScale;
-                    GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(localScale, localScale, 1));
+                    float scale = imGUI.IMGUILocalGUIScale * globalGUIScale;
+                    if(scale<0.1f)
+                        Debug.LogWarning($"[IMGUIManager] {imGUI.GetType().ToString()} 的 IMGUILocalGUIScale 设置过小，可能导致GUI无法显示");
+                    scale = Mathf.Clamp(scale, 0.1f, 2.0f);
+
+                    GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(scale, scale, 1));
                     imGUI.IMGUIDraw();
                 }
             }
             GUI.matrix = originalMatrix;
         }
-
-
     }
 }
