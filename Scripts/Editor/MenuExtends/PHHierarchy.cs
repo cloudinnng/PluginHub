@@ -193,7 +193,7 @@ namespace PluginHub.Editor
             }
             // Select
             Selection.objects = gameObjects.ToArray();
-            Debug.Log($"Selected {gameObjects.Count} Same Name Silbing");
+            Debug.Log($"[PH] Selected {gameObjects.Count} Same Name Silbing");
         }
 
         private static void SelectSimilarNamSilbing(GameObject gameObject)
@@ -214,7 +214,7 @@ namespace PluginHub.Editor
             }
             // Select
             Selection.objects = gameObjects.ToArray();
-            Debug.Log($"Selected {gameObjects.Count} Similar Name Silbing");
+            Debug.Log($"[PH] Selected {gameObjects.Count} Similar Name Silbing");
         }
 
         private static void SelectAllSilbing(GameObject gameObject)
@@ -232,7 +232,7 @@ namespace PluginHub.Editor
             }
             // Select
             Selection.objects = gameObjects.ToArray();
-            Debug.Log($"Selected {gameObjects.Count} All Silbing");
+            Debug.Log($"[PH] Selected {gameObjects.Count} All Silbing");
         }
 
 
@@ -243,7 +243,7 @@ namespace PluginHub.Editor
             if (gameObject != null)
             {
                 EditorGUIUtility.systemCopyBuffer = gameObject.name;
-                Debug.Log($"{gameObject.name} 已拷贝");
+                Debug.Log($"[PH] {gameObject.name} 已拷贝");
             }
         }
 
@@ -256,13 +256,13 @@ namespace PluginHub.Editor
             {
                 string strCopy = GetParentChildPath(gameObjectA.transform, gameObjectB.transform);
                 EditorGUIUtility.systemCopyBuffer = strCopy;
-                Debug.Log($"{strCopy} 已拷贝");
+                Debug.Log($"[PH] {strCopy} 已拷贝");
             }
             else if (TransformEx.AIsBParent(gameObjectB.transform, gameObjectA.transform))
             {
                 string strCopy = GetParentChildPath(gameObjectB.transform, gameObjectA.transform);
                 EditorGUIUtility.systemCopyBuffer = strCopy;
-                Debug.Log($"{strCopy} 已拷贝");
+                Debug.Log($"[PH] {strCopy} 已拷贝");
             }
         }
 
@@ -387,7 +387,7 @@ namespace PluginHub.Editor
             {
                 string path = GetGameObjectFindPath(gameObject.transform);
                 EditorGUIUtility.systemCopyBuffer = path;
-                Debug.Log($"{path} 已拷贝");
+                Debug.Log($"[PH] {path} 已拷贝");
             }
         }
 

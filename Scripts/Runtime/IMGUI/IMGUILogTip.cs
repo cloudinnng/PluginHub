@@ -20,9 +20,11 @@ namespace PluginHub.Runtime
             public float alpha;
         }
 
-
+        public float localGUIScale = 1.3f;
         public bool alwaysShow = false;// 测试用
         public bool ignoreNormalLog = true;
+        public float showDuration = 2;
+
         private GUIContent tempContent = new GUIContent();
 
         [SerializeField]
@@ -72,7 +74,7 @@ namespace PluginHub.Runtime
         {
             yield return null;
             yield return null;
-            toastInstance.alpha = 2;
+            toastInstance.alpha = showDuration;
         }
 
 
@@ -92,7 +94,7 @@ namespace PluginHub.Runtime
         }
 
         public int IMGUIOrder => 99999;
-        public float IMGUILocalGUIScale => 1.3f;
+        public float IMGUILocalGUIScale => localGUIScale;
 
         private void DrawToast(int positionIndex,ToastInstance toastInstance)
         {
@@ -105,7 +107,7 @@ namespace PluginHub.Runtime
             area.y -= positionIndex * (areaSize.y + 3);
 
             toastInstance.color.a = alwaysShow ? 1 : Mathf.Clamp01(toastInstance.alpha);
-            toastInstance.color.a -= positionIndex * 0.2f;
+            // toastInstance.color.a -= positionIndex * 0.2f;
             GUI.color = toastInstance.color;
             GUILayout.BeginArea(area, GUI.skin.box);
             {
