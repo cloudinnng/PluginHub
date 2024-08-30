@@ -136,8 +136,8 @@ namespace PluginHub.Runtime
             }
             GUILayout.EndHorizontal();
 
-            // GUILayout.Label($"GUIScale: {localGUIScale:F2}");
-            // localGUIScale = GUILayout.HorizontalSlider(localGUIScale, 0.1f, 2.0f);
+            GUILayout.Label($"GUIScale: {localGUIScale:F2}");
+            localGUIScale = GUILayout.HorizontalSlider(localGUIScale, 0.1f, 2.0f);
 
             GUILayout.Label($"侧边栏宽度: {leftSideScrollWidth:F0}");
 
