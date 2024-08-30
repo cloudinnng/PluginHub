@@ -138,6 +138,8 @@ namespace PluginHub.Editor
         //构建预处理
         public void OnPreprocessBuild(BuildReport report)
         {
+            if(!Directory.Exists(Application.streamingAssetsPath))
+                Directory.CreateDirectory(Application.streamingAssetsPath);
             //写 BuildInfo.txt
             INIParser iniParser = new INIParser();
             iniParser.Open(Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt"));

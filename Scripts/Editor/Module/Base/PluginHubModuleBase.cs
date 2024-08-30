@@ -224,12 +224,11 @@ namespace PluginHub.Editor
             return false;
         }
 
-        // 2024年4月7日 该模块生命周期方法暂时被禁用了,有bug,无法很好的使用
         //这个方法在Unity打开时就会执行，不需要打开PluginHubWindow
-        // public virtual void OnInitOnload()
-        // {
-        //     Debug.Log($"{moduleName} mudule : OnInitOnload");
-        // }
+        public virtual void OnInitOnload()
+        {
+            if (moduleDebug) Debug.Log($"{moduleName} mudule : OnInitOnload");
+        }
 
         #endregion
 
@@ -268,7 +267,7 @@ namespace PluginHub.Editor
 
         #endregion
 
-        #region 为子模块提供记录 Asset 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。材质模块用于保存喜爱的材质
+        #region 为子类模块提供记录 Asset 功能，存储到EditorPrefs。用于保存模块的数据，例如场景模块的喜爱场景。材质模块用于保存喜爱的材质
 
         //存储到EditorPrefs的字符串,调试用
         public string RecordableSavedString => EditorPrefs.GetString(RecordableAssetsKey, "");

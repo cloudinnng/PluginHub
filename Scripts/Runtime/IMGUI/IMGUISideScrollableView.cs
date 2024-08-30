@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -63,6 +64,19 @@ namespace PluginHub.Runtime
         public List<IIMGUI> clientList = new List<IIMGUI>();
         public List<bool> isFoldoutList = new List<bool>();
 
+        public bool showFPS = true;
+        private FpsCounter fpsCounter = new FpsCounter(0.2f);
+
+
+        private void Update()
+        {
+            if(showFPS)
+                fpsCounter.Update();
+
+            if (Input.GetKeyDown(KeyCode.F4))
+                showSidebarGUI = !showSidebarGUI;
+        }
+
         #region 刷新客户端操作
 
         private void OnValidate()
@@ -116,6 +130,7 @@ namespace PluginHub.Runtime
             GUILayout.BeginHorizontal();
             {
                 showSidebarGUI = GUILayout.Toggle(showSidebarGUI, "显示GUI");
+                showFPS = GUILayout.Toggle(showFPS, "显示FPS");
                 showClientTitle = GUILayout.Toggle(showClientTitle, "显示客户端标题");
                 fullScreenWidth = GUILayout.Toggle(fullScreenWidth, "占满屏幕宽度");
             }
@@ -129,55 +144,68 @@ namespace PluginHub.Runtime
             if (!fullScreenWidth)
                 leftSideScrollWidth = GUILayout.HorizontalSlider(leftSideScrollWidth, 100, 2000);
 
-            if (GUILayout.Button("刷新客户端列表"))
+            if (GUILayout.Button($"刷新客户端列表 {clientList.Count}"))
                 RefreshClientList();
+
+            GUILayout.Label($"F4 切换GUI显示");
         }
 
         public void IMGUIDraw()
         {
-            if (!showSidebarGUI)
-                return;
-
-            Vector2 screenSize = IMGUIManager.Instance.ScreenSize(IMGUILocalGUIScale);
-            if (fullScreenWidth)
-                leftSideScrollWidth = screenSize.x;
-
-            // 侧边栏
-            GUILayout.BeginVertical("Box", GUILayout.Height(screenSize.y), GUILayout.Width(leftSideScrollWidth));
+            if (showSidebarGUI)
             {
-                // 滚动视图
-                // 8是 Box Style 的 padding left + padding right
-                int boxPadding = 8;
-                leftScrollPos = GUILayout.BeginScrollView(leftScrollPos, GUILayout.Width(leftSideScrollWidth - boxPadding));
+                Vector2 screenSize = IMGUIManager.Instance.ScreenSize(IMGUILocalGUIScale);
+                if (fullScreenWidth)
+                    leftSideScrollWidth = screenSize.x;
+
+                // 侧边栏
+                GUILayout.BeginVertical("Box", GUILayout.Height(screenSize.y), GUILayout.Width(leftSideScrollWidth));
                 {
-                    // 绘制侧边栏内容GUI
-                    for (int i = 0; i < clientList.Count; i++)
+                    // 滚动视图
+                    // 8是 Box Style 的 padding left + padding right
+                    int boxPadding = 8;
+                    leftScrollPos = GUILayout.BeginScrollView(leftScrollPos, GUILayout.Width(leftSideScrollWidth - boxPadding));
                     {
-                        IIMGUI imGUI = clientList[i];
-                        bool isFoldout = isFoldoutList[i];
-
-                        // 根据是否激活和是否启用来绘制
-                        // if (imGUI.enableGUI == false || mono.gameObject.activeInHierarchy == false || mono.enabled == false)
-                            // continue;
-
-                        // 画title
-                        if (showClientTitle)
+                        // 绘制侧边栏内容GUI
+                        for (int i = 0; i < clientList.Count; i++)
                         {
-                            // 折叠中的客户端标题颜色变灰
-                            GUI.color = isFoldout ? Color.gray : Color.white;
-                            isFoldoutList[i] = GUILayout.Toggle(isFoldout,
-                                $"{imGUI.IMGUITitle} ({imGUI.IMGUIOrder})", "Box");
-                            GUI.color = Color.white;
-                        }
+                            IIMGUI imGUI = clientList[i];
+                            bool isFoldout = isFoldoutList[i];
 
-                        // 画内容
-                        if (!isFoldout)
-                            imGUI.IMGUILeftSideDraw();
+                            // 根据是否激活和是否启用来绘制
+                            // if (imGUI.enableGUI == false || mono.gameObject.activeInHierarchy == false || mono.enabled == false)
+                                // continue;
+
+                            // 画title
+                            if (showClientTitle)
+                            {
+                                // 折叠中的客户端标题颜色变灰
+                                GUI.color = isFoldout ? Color.gray : Color.white;
+                                isFoldoutList[i] = GUILayout.Toggle(isFoldout,
+                                    $"{imGUI.IMGUITitle} ({imGUI.IMGUIOrder})", "Box");
+                                GUI.color = Color.white;
+                            }
+
+                            // 画内容
+                            if (!isFoldout)
+                                imGUI.IMGUILeftSideDraw();
+                        }
                     }
+                    GUILayout.EndScrollView();
                 }
-                GUILayout.EndScrollView();
+                GUILayout.EndVertical();
             }
-            GUILayout.EndVertical();
+
+            // FPS
+            if (showFPS)
+            {
+                GUI.color = Color.green;
+                string text = $"FPS: {fpsCounter.CurrentFps:F1}";
+                Vector2 size = GUI.skin.label.CalcSize(GUIContentEx.Temp(text));
+                Rect rect = new Rect(0, 0, size.x, size.y);
+                GUI.Label(rect, text);
+                GUI.color = Color.white;
+            }
         }
 
     }

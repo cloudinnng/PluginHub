@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using PluginHub.Editor;
 using UnityEditor;
@@ -40,7 +41,6 @@ namespace PluginHub.Editor
                     // Debug.Log("创建 PluginHub 主窗口");//调用Close()之后会释放_window实例。
                     _window = GetWindow<PluginHubWindow>("Plugin Hub Window");
                     _window.minSize = new Vector2(325, 200);
-                    _window.InitModule();
                 }
                 return _window;
             }
@@ -73,6 +73,7 @@ namespace PluginHub.Editor
         {
             if (Window != null)
                 Window.Close();
+            InitModule();
             Window.Show();
         }
 
@@ -83,8 +84,8 @@ namespace PluginHub.Editor
         }
 
         //ScriptableObject配置
-        private ModuleConfigSO _moduleConfigSO;
-        public ModuleConfigSO moduleConfigSO
+        private static ModuleConfigSO _moduleConfigSO;
+        public static ModuleConfigSO moduleConfigSO
         {
             get
             {
@@ -139,14 +140,29 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_ButtonPadding", value); }
         }
 
-        private void OnValidate()
+        // private void OnValidate()
+        // {
+        //     //这里也初始化一下 避免修改脚本后丢失引用
+        //     InitModule();
+        // }
+
+        [InitializeOnLoadMethod]
+        private static void InitializeOnLoadMethod()
         {
-            //这里也初始化一下 避免修改脚本后丢失引用
             InitModule();
+            for (int i = 0; i < moduleList.Count; i++)
+                moduleList[i].OnInitOnload();
         }
 
-        public void InitModule()
+        // 释放所有模块，重新加载模块
+        private static void InitModule()
         {
+            // 先释放之前的模块
+            foreach (var module in moduleList)
+            {
+                module.OnDisable();
+                module.OnDestroy();
+            }
             moduleList.Clear();
 
             List<ModuleTabConfig> tabConfigs = moduleConfigSO.tabConfigs;
@@ -162,11 +178,14 @@ namespace PluginHub.Editor
                         //调用模块的构造函数
                         try
                         {
-                            PluginHubModuleBase module =
-                                (PluginHubModuleBase)monoScript.GetClass().GetConstructor(new Type[] { }).Invoke(null);
+                            // 使用反射调用模块的构造函数
+                            ConstructorInfo constructor = monoScript.GetClass().GetConstructor(new Type[] { });
+                            PluginHubModuleBase module = (PluginHubModuleBase)constructor.Invoke(null);
+                            // Debug.Log($"加载模块：{monoScript.name}");
                             if (module != null)
                             {
                                 module.Init(i);
+                                // module.OnEnable();
                                 moduleList.Add(module);
                             }
                         }

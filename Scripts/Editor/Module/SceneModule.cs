@@ -27,13 +27,14 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_FiliterText", value); }
         }
 
-
         string[] allScenePaths = null; //项目中所有场景文件的路径
 
-        public override void OnEnable()
+
+        // 场景模块需要在用户未打开PluginHubWindows的情况下，监听场景的打开、关闭、加载、创建等事件，以记录最近打开的场景
+        public override void OnInitOnload()
         {
-            base.OnEnable();
-            
+            base.OnInitOnload();
+
             EditorSceneManager.sceneOpened -= OnSceneOpened;
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorSceneManager.sceneLoaded -= OnSceneLoaded;
@@ -46,12 +47,21 @@ namespace PluginHub.Editor
             //当打开的时候，添加当前场景到最近场景中
             AddSceneToRecent(SceneManager.GetActiveScene());
         }
+        // public override void OnDisable()
+        // {
+        //     EditorSceneManager.sceneOpened -= OnSceneOpened;
+        //     EditorSceneManager.sceneLoaded -= OnSceneLoaded;
+        //     EditorSceneManager.newSceneCreated -= OnSceneCreated;
+        //     EditorSceneManager.sceneClosed -= OnSceneClosed;
+        // }
 
-        
-        
         protected override void DrawModuleDebug()
         {
             base.DrawModuleDebug();
+
+            // TODO
+            GUILayout.Label("bug 有时候会出现无法跟踪到用户打开的场景的情况，必须重新打开PluginHubWindows才能行");
+            GUILayout.Label($"{recentScene.Count} recent scene");
             GUILayout.TextArea(recentScenePaths);
         }
 
@@ -70,7 +80,7 @@ namespace PluginHub.Editor
 
                 Color oldColor = GUI.color;
                 GUI.color = Color.yellow;
-                GUILayout.Label("Favorite Scene :");
+                GUILayout.Label($"Favorite Scene ({RecordableAssets.Count}): ");
                 GUI.color = oldColor;
 
                 //画出收藏的场景
@@ -84,7 +94,7 @@ namespace PluginHub.Editor
                     DrawSceneRow(i, path, sceneAsset, true);
                 }
 
-                GUILayout.Label("Recent Scene : ");
+                GUILayout.Label($"Recent Scene ({recentScene.Count}): ");
 
                 
                 //画出最近场景
@@ -178,7 +188,9 @@ namespace PluginHub.Editor
         }
 
         //画出一个展示一个场景文件的行GUI
+
         //inFavoriteList:  这个场景行GUI是否绘制在喜爱列表里
+
         private void DrawSceneRow(int id, string sceneAssetPath, SceneAsset sceneAsset, bool inFavoriteList)
         {
             GUILayout.BeginHorizontal();
@@ -288,15 +300,7 @@ namespace PluginHub.Editor
             AddSceneToRecent(scene);
         }
 
-        public override void OnDisable()
-        {
-            EditorSceneManager.sceneOpened -= OnSceneOpened;
-            EditorSceneManager.sceneLoaded -= OnSceneLoaded;
-            EditorSceneManager.newSceneCreated -= OnSceneCreated;
-            EditorSceneManager.sceneClosed -= OnSceneClosed;
-        }
-        
-        
+
         //用于存储最近的场景的列表，使用分号分隔
         private string recentScenePaths
         {

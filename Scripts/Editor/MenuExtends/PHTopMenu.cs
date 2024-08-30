@@ -38,9 +38,9 @@ namespace PluginHub.Editor
     public class PHTopMenu
     {
         #region 用于菜单标题，组织和分类分隔作用
-        [MenuItem("PluginHub/快捷打开", false, -301)]
+        [MenuItem("PluginHub/快捷打开", false, -321)]
         public static void Shortcut() { }
-        [MenuItem("PluginHub/快捷打开", true, -301)]
+        [MenuItem("PluginHub/快捷打开", true, -321)]
         public static bool ShortcutValid() => false;
         [MenuItem("PluginHub/不常用的工具和命令", false, -101)]
         public static void Separator() { }
@@ -60,7 +60,8 @@ namespace PluginHub.Editor
 
         #region 快捷打开 Folder/Window
 
-        private static string _projectRootPath{ get { return Application.dataPath.Replace("/Assets", ""); } }
+        // E:/UnityProject/EditorDevelopBook
+        private static string _projectRootPath => Application.dataPath.Replace("/Assets", "");
         private static void OpenFolder(string path)
         {
             Debug.Log("Open Folder: " + path);
@@ -69,23 +70,32 @@ namespace PluginHub.Editor
                 Debug.Log("Folder not exist, create it.");
                 Directory.CreateDirectory(path);
             }
+            // 在windows中 EditorUtility.RevealInFinder(path)
+            // 传入 E:/UnityProject/EditorDevelopBook 能够打开 EditorDevelopBook 的上层目录
+            // 传入 E:/UnityProject/EditorDevelopBook/ 能够打开 EditorDevelopBook 目录
             EditorUtility.RevealInFinder(path);
+        }
+
+        [MenuItem("PluginHub/Open/Folder ProjectRoot", false, -320)]
+        public static void OpenFolderProjectRoot()
+        {
+            OpenFolder(_projectRootPath + "/");
         }
 
         [MenuItem("PluginHub/Open/Folder StreamingAssets", false, -300)]
         public static void OpenFolderStreamingAssets()
         {
-            OpenFolder(Application.streamingAssetsPath);
+            OpenFolder(Application.streamingAssetsPath + "/");
         }
         [MenuItem("PluginHub/Open/Folder PersistentDataPath", false, -299)]
         public static void OpenFolderPersistentDataPath()
         {
-            OpenFolder(Application.persistentDataPath);
+            OpenFolder(Application.persistentDataPath + "/");
         }
         [MenuItem("PluginHub/Open/Folder DataPath", false, -298)]
         public static void OpenFolderDataPath()
         {
-            OpenFolder(Application.dataPath);
+            OpenFolder(Application.dataPath + "/");
         }
         //--------------------------
         [MenuItem("PluginHub/Open/Folder Build", false, -281)]

@@ -25,6 +25,7 @@ public class CustomCanvasGroupEditor : Editor
 
             if (!Application.isPlaying)
             {
+                serializedObject.ApplyModifiedProperties();
                 EditorUtility.SetDirty(target);
             }
         }

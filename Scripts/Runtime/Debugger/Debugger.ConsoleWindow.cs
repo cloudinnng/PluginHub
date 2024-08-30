@@ -12,7 +12,6 @@ namespace PluginHub.Runtime
         public class ConsoleWindow : IDebuggerWindow
         {
             private readonly LinkedList<LogNode> _logs = new LinkedList<LogNode>(); //保存日志
-            public int _maxLine = 3000; //考虑在移动平台使用较低的该值
 
             //过滤
             private bool _infoFilter = true;
@@ -290,7 +289,7 @@ namespace PluginHub.Runtime
                 }
 
                 _logs.AddLast(new LogNode(logType, logMessage, stackTrace));
-                while (_logs.Count > _maxLine)
+                while (_logs.Count > Debugger.Instance.consoleMaxLine)
                 {
                     _logs.RemoveFirst();
                 }

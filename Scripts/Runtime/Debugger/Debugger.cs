@@ -82,7 +82,8 @@ namespace PluginHub.Runtime
         [Header("配置")]
         [Tooltip("是否在显示调试器大窗口的时候禁用 EventSystem 以避免响应下方的UGUI事件")]
         public bool deactiveEventSystem = false;
-
+        [Tooltip("存储最多x条日志信息.考虑在移动平台使用较低的该值")]
+        public int consoleMaxLine = 300;
 
         private bool _isShowDebugger = false; //dont call this
         private bool _showFullWindow = false; //dont call this
@@ -91,7 +92,7 @@ namespace PluginHub.Runtime
         private float _guiScale = 1;
         private int _selectIndex = 0; //选择的tab索引
         private readonly FpsCounter _fps = new FpsCounter(0.5f);
-
+        private bool _showCreditsPage = false; //是否显示关于页面
 
         //window
         private ConsoleWindow _consoleWindow = new ConsoleWindow(); //控制台窗口
@@ -237,7 +238,55 @@ namespace PluginHub.Runtime
         private string GetTextColor()
         {
             return _consoleWindow.ErrorCount <= 0 ? "white" : "red";
-            ;
+        }
+
+
+        private void DrawCreditsPage()
+        {
+            GUILayout.BeginVertical("box");
+            GUILayout.BeginVertical("box");
+            {
+                if (GUILayout.Button("Back to Debugger"))
+                    _showCreditsPage = false;
+
+                GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
+                titleStyle.fontSize = 50;
+                titleStyle.alignment = TextAnchor.MiddleCenter;
+                GUILayout.Label("Credits", titleStyle);
+
+                GUIStyle headerStyle = new GUIStyle(GUI.skin.label);
+                headerStyle.fontSize = 20;
+
+                GUILayout.Label("致用户：",headerStyle);
+                GUILayout.Label("使用`键（键盘左上角ESC键下面）显示/隐藏调试器，移动设备也可以用旋转手势呼出，只需手指按下在屏幕中画圈即可。");
+                GUILayout.Label("Debugger有两种窗口模式，仅显示FPS信息的小窗口和全功能大窗口。按Tab键切换小窗口/正常窗口，也可以点击FPS文本和右上角的最小化按钮来切换。");
+                GUILayout.Label("通常，您只需要关注 Console 标签页和 Custom 标签页。");
+                GUILayout.Label("当互动软件发生错误和功能异常时，请携带Console标签页中的信息联系开发者。");
+                GUILayout.Label("在Custom标签页中，您可以看到互动软件的自定义界面，这些功能是由开发者为您定制的，每款互动软件各不相同，您可以在这里查看互动软件的状态与管理互动软件的运行。");
+                GUILayout.Space(20);
+                GUILayout.Label("致开发者：",headerStyle);
+
+                GUILayout.Label("您正在使用的 GUI 覆盖层 Debugger 是开源项目 PluginHub 的一部分。");
+                GUILayout.Label("开发者可以在 Custom 页面为每个互动软件添加自定义的 GUI 界面，这在制作系统后台时非常有用。");
+                GUILayout.Label("新 PluginHub 现在是一份加速 Unity3D 项目开发的代码模板。包含 Runtime(运行时) 和 Editor(编辑器) 功能");
+                GUILayout.Label("目前 PluginHub 由我一人维护，您可以进入 PluginHub 开源主页点击右上角的 Star 按钮来支持我的开发。");
+
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label("开源页面：https://github.com/cloudinnng/PluginHub");
+                    if (GUILayout.Button("带我去 PluginHub 开源主页",GUILayout.Width(200)))
+                        Application.OpenURL("https://github.com/cloudinnng/PluginHub");
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.FlexibleSpace();
+
+                if (GUILayout.Button("Back to Debugger",GUILayout.Height(50)))
+                    _showCreditsPage = false;
+
+            }
+            GUILayout.EndVertical();
+            GUILayout.EndVertical();
         }
 
         private void DrawBigWindow(int windowId)
@@ -245,25 +294,34 @@ namespace PluginHub.Runtime
             GUI.DragWindow(new Rect(0, 0, float.MaxValue, 25));
             GUILayout.Space(5);
 
-            //顶部按钮
-            GUILayout.BeginHorizontal();
+            if (_showCreditsPage)
             {
-                //绘制顶层Tab标签按钮
-                _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(25f));
-
-                //最小化按钮
-                if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))
-                    isShowFullWindow = false;
-
-                //关闭调试器按钮
-                if (GUILayout.Button("X", GUILayout.Height(25f), GUILayout.Width(30f)))
-                    isShowDebugger = false;
+                DrawCreditsPage();
             }
-            GUILayout.EndHorizontal();
+            else
+            {
+                //顶部按钮
+                GUILayout.BeginHorizontal();
+                {
+                    //绘制顶层Tab标签按钮
+                    _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(25f));
 
+                    //最小化按钮
+                    if (GUILayout.Button("?", GUILayout.Height(25f), GUILayout.Width(30f)))
+                        _showCreditsPage = !_showCreditsPage;
 
-            //画出选择的窗口
-            registeredWindowDic.Values.ToArray()[_selectIndex].OnDraw();
+                    //最小化按钮
+                    if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))
+                        isShowFullWindow = false;
+
+                    //关闭调试器按钮
+                    if (GUILayout.Button("X", GUILayout.Height(25f), GUILayout.Width(30f)))
+                        isShowDebugger = false;
+                }
+                GUILayout.EndHorizontal();
+                //画出选择的窗口
+                registeredWindowDic.Values.ToArray()[_selectIndex].OnDraw();
+            }
         }
 
         private void OnGUI()

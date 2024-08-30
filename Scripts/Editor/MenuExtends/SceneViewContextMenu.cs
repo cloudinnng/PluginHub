@@ -122,7 +122,8 @@ namespace PluginHub.Editor
         private static void GoToMousePos()
         {
             if (MousePosToWorldPos(out Vector3 worldPos, out float distance))
-                SceneCameraTween.GoTo(worldPos, distance / 12 > 0.5f ? distance / 12 : 0.5f, SceneView.lastActiveSceneView.rotation);
+                //SceneCameraTween.GoTo(worldPos, distance / 12 > 0.5f ? distance / 12 : 0.5f, SceneView.lastActiveSceneView.rotation);
+                SceneCameraTween.GoTo(worldPos, distance / 12, SceneView.lastActiveSceneView.rotation);
             else
                 Debug.Log("No mesh renderer hit");
         }
