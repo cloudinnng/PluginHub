@@ -58,24 +58,24 @@ namespace PluginHub.Runtime
         /// <summary>
         /// 运行时打开文件浏览器并导航到一个文件夹 如果isCreate为真，则当path不存在的时候会自动创建
         /// </summary>
-        public static void OpenFileExplorer(string path, bool isCreate = false)
+        public static void OpenFileExplorer(string directory, bool isCreate = false)
         {
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(directory))
             {
                 //如果目录不存在 创建之
                 if (isCreate)
                 {
-                    Debug.Log($"Make dir {path}");
-                    Directory.CreateDirectory(path);
+                    Debug.Log($"Make dir {directory}");
+                    Directory.CreateDirectory(directory);
                 }
                 else
                 {
-                    Debug.LogWarning(path + " not exist");
+                    Debug.LogWarning(directory + " not exist");
                     return;
                 }
             }
 
-            string args = $"/Select, {path}";
+            string args = $"/Select, {directory}";
             args = args.Replace("/", "\\");
             ProcessStartInfo pfi = new ProcessStartInfo("Explorer.exe", args);
             Process.Start(pfi);

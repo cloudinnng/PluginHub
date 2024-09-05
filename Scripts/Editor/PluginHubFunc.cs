@@ -186,14 +186,15 @@ namespace PluginHub.Editor
             return tempTextContent;
         }
 
+        private static GUIContent tempIconContent;
         //获取一个带Icon的GUIContent，也可以附加tooltip
         public static GUIContent Icon(string iconStr, string text = "", string tooltip = "")
         {
             //各种icon参见   https://unitylist.com/p/5c3/Unity-editor-icons
-            GUIContent guiContent = EditorGUIUtility.IconContent(iconStr);
-            guiContent.text = text;
-            guiContent.tooltip = tooltip;
-            return guiContent;
+            tempIconContent = EditorGUIUtility.IconContent(iconStr);
+            tempIconContent.text = text;
+            tempIconContent.tooltip = tooltip;
+            return tempIconContent;
         }
 
         #endregion
