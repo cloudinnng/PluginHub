@@ -10,7 +10,7 @@ namespace PluginHub.Editor
 {
     // 场景视图上下文菜单
     // 添加场景视图任意空白位置的右键菜单
-    public static class SceneViewContextMenu
+    public static class PHSceneContextMenu
     {
         //场景视图游标（跟blender学习），用于辅助其他功能
         public static Vector3 sceneViewCursor { get; private set; }

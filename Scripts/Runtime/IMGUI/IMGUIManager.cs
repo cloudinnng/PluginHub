@@ -8,6 +8,21 @@ using UnityEngine.Serialization;
 using Object = System.Object;
 
 
+// 【IMGUI基础组件（必须在场景中存在）】
+//
+// 提供一个IMGUI集中管理器，用于管理各个脚本的IMGUI绘制
+// 其他脚本可以注册到IMGUIManager中，实现自己的GUI绘制，IMGUIManager会在OnGUI中调用他们的绘制方法
+// 注册到IMGUIManager的脚本称为其客户端
+// 注册方式是继承IMGUIManager.IIMGUI接口
+//
+// IIMGUI 使用[抽象类]存在的问题：
+// 1、无法同时继承多个抽象类，以实现多个界面绘制功能
+// 2、占用了继承位，客户端无法继承其他类
+//
+// IIMGUI 使用[接口]存在的问题：
+// 1、接口无法包含字段，无法直接在实现的客户端检视面板中添加localGUIScale滑动条以便用户调整
+// 2、带不上Mono的引用
+
 namespace PluginHub.Runtime
 {
     #if UNITY_EDITOR
@@ -39,21 +54,6 @@ namespace PluginHub.Runtime
     }
 
     #endif
-
-    // 【IMGUI基础组件】
-    //
-    // 提供左侧边栏绘制和普通GUI绘制（全屏区域）
-    // 用户脚本可以通过继承IIMGUI，将自己的GUI绘制到屏幕上 (脚本需继承自MonoBehaviour)
-    // 思路来自Debugger.CustomWindow.ICustomWindowGUI
-    // 与其不同的是，他不依附于Debugger.CustomWindow，而是直接显示在屏幕上
-    //
-    // IIMGUI 使用[抽象类]存在的问题：
-    // 1、无法同时继承多个抽象类，以实现多个界面绘制功能
-    // 2、占用了继承位，客户端无法继承其他类
-    //
-    // IIMGUI 使用[接口]存在的问题：
-    // 1、接口无法包含字段，无法直接在实现的客户端检视面板中添加localGUIScale滑动条以便用户调整
-    // 2、带不上Mono的引用
 
     [ExecuteAlways]
     public class IMGUIManager : SceneSingleton<IMGUIManager>

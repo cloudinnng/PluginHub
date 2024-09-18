@@ -1,4 +1,4 @@
-    using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +43,7 @@ namespace PluginHub.Runtime
             public Color color;
         }
 
+        public float LocalGUIScale = 1;
         public int maxLogCount = 100;
         private List<LogNode> _logs = new List<LogNode>();
         private LogNode _selectedLogNode;// 当前选中的日志
@@ -103,7 +104,9 @@ namespace PluginHub.Runtime
             _logs.Clear();
         }
 
-        public float IMGUILocalGUIScale { get; }
+
+
+        public float IMGUILocalGUIScale => LocalGUIScale;
 
         public void IMGUIDraw()
         {

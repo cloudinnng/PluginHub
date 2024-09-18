@@ -91,7 +91,7 @@ namespace PluginHub.Editor
                 GUILayout.BeginVertical(GUILayout.Width(100));
                 {
                     if (GUILayout.Button("到场景游标"))
-                        placementFirstPosition = SceneViewContextMenu.sceneViewCursor;
+                        placementFirstPosition = PHSceneContextMenu.sceneViewCursor;
                     if (GUILayout.Button("向上吸附"))
                     {
                         Vector3? pos = CalculateToCeilingPosition(placementFirstPosition);
@@ -120,7 +120,7 @@ namespace PluginHub.Editor
                 GUILayout.BeginVertical(GUILayout.Width(100));
                 {
                     if (GUILayout.Button("到场景游标"))
-                        placementSecondPosition = SceneViewContextMenu.sceneViewCursor;
+                        placementSecondPosition = PHSceneContextMenu.sceneViewCursor;
                     if (GUILayout.Button("向上吸附"))
                     {
                         Vector3? pos = CalculateToCeilingPosition(placementSecondPosition);

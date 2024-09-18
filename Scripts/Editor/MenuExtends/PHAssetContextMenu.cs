@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PluginHub.Editor
 {
-    public static class InspectorAssetContextMenu
+    public static class PHAssetContextMenu
     {
         #region Material
         [MenuItem("CONTEXT/Material/PH 使用 [Shader名称] 命名Material资产")]

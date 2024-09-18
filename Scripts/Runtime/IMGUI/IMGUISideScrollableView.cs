@@ -5,6 +5,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
+
+// 依赖IMGUIManager
+// 提供左侧边栏滚动视图框架
+// 用户脚本可以通过继承IMGUISideScrollableView.IIMGUI接口，将自己的UI添加到左侧边栏滚动视图中
 namespace PluginHub.Runtime
 {
 
@@ -62,6 +66,7 @@ namespace PluginHub.Runtime
 
         // 客户端列表
         public List<IIMGUI> clientList = new List<IIMGUI>();
+        // private Dictionary<string,bool> isFoldoutDic = new Dictionary<string, bool>();
         public List<bool> isFoldoutList = new List<bool>();
 
         public bool showFPS = true;

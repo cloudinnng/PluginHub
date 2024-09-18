@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace PluginHub.Editor
 {
-    public static class InspectorComponentContextMenu
+    public static class PHComponentContextMenu
     {
         #region BoxCollider
         [MenuItem("CONTEXT/BoxCollider/PH 自动为BoxCollider计算Size")]

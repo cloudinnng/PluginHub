@@ -7,7 +7,7 @@ using UnityEngine;
 namespace PluginHub.Editor
 {
     // 项目视图资产右键上下文菜单
-    public static class ProjectContextMenu
+    public static class PHProjectContextMenu
     {
         //获取选中资产的绝对路径
         public static string GetSelectionAssetAbsolutePath()
