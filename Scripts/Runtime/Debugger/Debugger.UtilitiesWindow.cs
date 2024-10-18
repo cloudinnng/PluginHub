@@ -135,6 +135,8 @@ namespace PluginHub.Runtime
                             Screen.SetResolution(2560, 1440, fullScreen);
                         if (GUILayout.Button("4K",GUILayout.Width(100)))
                             Screen.SetResolution(3840, 2160, fullScreen);
+                        if (GUILayout.Button("1024 x 768",GUILayout.Width(100)))
+                            Screen.SetResolution(1024, 768, fullScreen);
                     }
                     GUILayout.EndHorizontal();
 

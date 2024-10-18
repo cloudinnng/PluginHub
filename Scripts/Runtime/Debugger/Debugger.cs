@@ -9,6 +9,8 @@ using UnityEngine.SceneManagement;
 namespace PluginHub.Runtime
 {
     /// <summary>
+    /// 2024年10月12日
+    /// 增加了全屏模式，在全屏下显示大窗口模式，这个更适合在移动设备上使用
     /// 2024年2月2日
     /// 增加了激活时禁用EventSystem的功能
     /// 2022年8月2日：
@@ -47,7 +49,7 @@ namespace PluginHub.Runtime
         {
             MEDIUM_640x480,
             LARGE_800x600,
-            LARGE_1067x600,
+            LARGE_1067x600,// 16:9
             XLARGE_1024x768,
         }
         private static Vector2Int GetResolution(DebuggerResolutionType type)
@@ -88,7 +90,7 @@ namespace PluginHub.Runtime
         private bool _isShowDebugger = false; //dont call this
         private bool _showFullWindow = false; //dont call this
         private Rect _minWindowRect;
-        private Rect _normalWindowRect;
+        private Rect _fullWindowRect;
         private float _guiScale = 1;
         private int _selectIndex = 0; //选择的tab索引
         private readonly FpsCounter _fps = new FpsCounter(0.5f);
@@ -105,6 +107,17 @@ namespace PluginHub.Runtime
         private Dictionary<string, IDebuggerWindow> registeredWindowDic = new Dictionary<string, IDebuggerWindow>();
         private string[] topstTabNames; //顶部选项卡tab文本
 
+
+
+        // 返回经过缩放后的屏幕大小
+        private Vector2 realScreenSize => new Vector2(Screen.width / _guiScale, Screen.height / _guiScale);
+        [Tooltip("采用全屏模式显示大窗口")]
+        public bool fullScreenMode = true;
+        [Tooltip("全屏模式下是否采用全屏宽度")]
+        public bool fullScreenWidth = false;
+        [Tooltip("使用全屏模式时顶部留白,在刘海屏手机上可能需要设置")]
+        public float fullScreenModeTopSpace = 0;
+
         private void Start()
         {
             //设置默认值
@@ -112,7 +125,7 @@ namespace PluginHub.Runtime
             _selectIndex = defaultTab;
             _minWindowRect = new Rect(0, 0, MIN_WINDOW_SIZE.x, MIN_WINDOW_SIZE.y);
             NORMAL_WINDOW_SIZE = GetResolution(resolutionType);
-            _normalWindowRect = new Rect(0, 0, NORMAL_WINDOW_SIZE.x, NORMAL_WINDOW_SIZE.y);
+            _fullWindowRect = new Rect(0, 0, NORMAL_WINDOW_SIZE.x, NORMAL_WINDOW_SIZE.y);
             SetWindowPosition((int)defaultWindowPosition.x, (int)defaultWindowPosition.y);
             isShowDebugger = defaultOpen;
 
@@ -162,9 +175,9 @@ namespace PluginHub.Runtime
                 if (_isShowDebugger) //显示的时候自动调整GUI缩放
                 {
                     if (Screen.width > Screen.height) //根据高
-                        _guiScale = Screen.height / (_normalWindowRect.height + 20);
+                        _guiScale = Screen.height / (_fullWindowRect.height + 20);
                     else //根据宽
-                        _guiScale = Screen.width / (_normalWindowRect.width + 20);
+                        _guiScale = Screen.width / (_fullWindowRect.width + 20);
                     //刷新客户端
                     _customWindow.RefreshDebuggerClientRoutine();
                 }
@@ -196,7 +209,7 @@ namespace PluginHub.Runtime
         public void SetWindowPosition(int x, int y)
         {
             _minWindowRect.position = new Vector2(x, y);
-            _normalWindowRect.position = new Vector2(x, y);
+            _fullWindowRect.position = new Vector2(x, y);
         }
 
         void Update()
@@ -291,7 +304,10 @@ namespace PluginHub.Runtime
 
         private void DrawBigWindow(int windowId)
         {
-            GUI.DragWindow(new Rect(0, 0, float.MaxValue, 25));
+            if (fullScreenMode)
+                GUILayout.Space(fullScreenModeTopSpace);
+            else
+                GUI.DragWindow(new Rect(0, 0, float.MaxValue, 25));
             GUILayout.Space(5);
 
             if (_showCreditsPage)
@@ -333,9 +349,28 @@ namespace PluginHub.Runtime
             GUI.matrix = Matrix4x4.Scale(new Vector3(_guiScale, _guiScale, 1));
             {
                 if (isShowFullWindow)
-                    _normalWindowRect = GUILayout.Window(0, _normalWindowRect, DrawBigWindow, "<b>Debugger</b>");
+                {
+                    if (fullScreenMode)
+                    {
+                        if(fullScreenWidth)
+                            GUILayout.BeginVertical("Box",GUILayout.Height(realScreenSize.y),GUILayout.Width(realScreenSize.x));
+                        else
+                            GUILayout.BeginVertical("Box",GUILayout.Height(realScreenSize.y),GUILayout.Width(_fullWindowRect.width));
+                        {
+                            DrawBigWindow(1);
+                        }
+                        GUILayout.EndVertical();
+
+                    }
+                    else
+                    {
+                        _fullWindowRect = GUILayout.Window(0, _fullWindowRect, DrawBigWindow, "<b>Debugger</b>");
+                    }
+                }
                 else
+                {
                     _minWindowRect = GUILayout.Window(0, _minWindowRect, DrawMinWindow, "<b>Debugger</b>");
+                }
             }
             GUI.matrix = tmp; //记得设置回来 不然会有bug
         }

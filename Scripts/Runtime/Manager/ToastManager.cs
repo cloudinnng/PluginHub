@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using PluginHub.Runtime;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -9,6 +8,7 @@ using UnityEngine.UI;
 namespace PluginHub.Runtime
 {
 #if UNITY_EDITOR
+    using UnityEditor;
 
     [CustomEditor(typeof(ToastManager))]
     public class ToastManagerEditor : Editor

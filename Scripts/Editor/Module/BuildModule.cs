@@ -527,7 +527,8 @@ namespace PluginHub.Editor
                             //压缩这个构建到当前目录
                             if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))
                             {
-                                string timeStr = DateTime.Now.ToString("MM月dd日 HH-mm");
+                                // 2024年10月18日,目前遇到跨年的项目了-_-,为了分清楚版本添加了年份
+                                string timeStr = DateTime.Now.ToString("yy年MM月dd日 HH-mm");
                                 string destZipPath = Path.Combine(directory + $" {timeStr}.zip");
                                 CreateZip(directory, destZipPath);
                             }

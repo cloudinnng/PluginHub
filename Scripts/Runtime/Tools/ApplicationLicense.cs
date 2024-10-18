@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using UnityEditor;
 using UnityEngine;
 
 namespace PluginHub.Runtime
 {
 
     #if UNITY_EDITOR
+    using UnityEditor;
     [CustomEditor(typeof(ApplicationLicense))]
     public class ApplicationLicenseEditor : Editor
     {

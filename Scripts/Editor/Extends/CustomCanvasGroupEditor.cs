@@ -5,30 +5,31 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-//
-[CustomEditor(typeof(CanvasGroup))]
-public class CustomCanvasGroupEditor : Editor
+namespace PluginHub.Editor
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(CanvasGroup))]
+    public class CustomCanvasGroupEditor : UnityEditor.Editor
     {
-        base.OnInspectorGUI();
-        //DrawDefaultInspector();
-
-        CanvasGroup canvasGroupComponent = target as CanvasGroup;
-        bool isAlpha0 = Mathf.Approximately(canvasGroupComponent.alpha, 0);
-        if (GUILayout.Button(isAlpha0?"Alpha = 1":"Alpha = 0"))
+        public override void OnInspectorGUI()
         {
-            if (isAlpha0)
-                canvasGroupComponent.alpha = 1;
-            else
-                canvasGroupComponent.alpha = 0;
+            base.OnInspectorGUI();
+            //DrawDefaultInspector();
 
-            if (!Application.isPlaying)
+            CanvasGroup canvasGroupComponent = target as CanvasGroup;
+            bool isAlpha0 = Mathf.Approximately(canvasGroupComponent.alpha, 0);
+            if (GUILayout.Button(isAlpha0 ? "Alpha = 1" : "Alpha = 0"))
             {
-                serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty(target);
+                if (isAlpha0)
+                    canvasGroupComponent.alpha = 1;
+                else
+                    canvasGroupComponent.alpha = 0;
+
+                if (!Application.isPlaying)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    EditorUtility.SetDirty(target);
+                }
             }
         }
     }
 }
-

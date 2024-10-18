@@ -318,7 +318,10 @@ namespace PluginHub.Editor
         public override void OnDisable()
         {
             base.OnDisable();
-            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            if (!Application.isPlaying)
+            {
+                EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            }
         }
 
         private string GetLightTypeName(LightType lightType)
