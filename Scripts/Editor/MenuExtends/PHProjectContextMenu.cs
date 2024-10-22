@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -41,6 +43,7 @@ namespace PluginHub.Editor
                 string name = obj.name;
                 sb.AppendLine(name);
             }
+
             EditorGUIUtility.systemCopyBuffer = sb.ToString(); //复制到系统剪切板
             Debug.Log($"{sb}   已复制到剪切板");
         }
@@ -104,7 +107,8 @@ namespace PluginHub.Editor
         #region PhotoShop Menu
 
         //图片文件格式
-        public static string[] imageExtensions = new string[] { ".png", ".jpg", ".jpeg", ".bmp", ".psd", ".tga", ".tif", ".tiff", ".gif", ".exr" };
+        public static string[] imageExtensions = new string[]
+            { ".png", ".jpg", ".jpeg", ".bmp", ".psd", ".tga", ".tif", ".tiff", ".gif", ".exr" };
 
         //判断一个路径是否是一个图片文件
         private static bool IsImageFile(string path)
@@ -116,28 +120,9 @@ namespace PluginHub.Editor
                     return true;
                 }
             }
+
             return false;
         }
-        //菜单验证函数
-        [MenuItem("Assets/PH 使用PS打开图片文件", true)]
-        public static bool OpenImgUsePSValidate(MenuCommand menuCommand)
-        {
-            string[] paths = GetSelectedImageAbsPath();
-            foreach (var path in paths)
-            {
-                if (!File.Exists(path) || !IsImageFile(path))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        [MenuItem("Assets/PH 清除Phototoshop路径")]
-        public static void ClearPhototoshopNativePath()
-        {
-            EditorPrefs.DeleteKey(native_ps_path_key);
-        }
-
 
         [MenuItem("Assets/PH 使用PS打开图片文件")]
         public static void OpenImgUsePS(MenuCommand menuCommand)
@@ -166,6 +151,27 @@ namespace PluginHub.Editor
             }
         }
 
+        [MenuItem("Assets/PH 使用PS打开图片文件", true)]
+        public static bool OpenImgUsePSValidate(MenuCommand menuCommand)
+        {
+            string[] paths = GetSelectedImageAbsPath();
+            foreach (var path in paths)
+            {
+                if (!File.Exists(path) || !IsImageFile(path))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [MenuItem("Assets/PH 清除Phototoshop路径")]
+        public static void ClearPhototoshopNativePath()
+        {
+            EditorPrefs.DeleteKey(native_ps_path_key);
+        }
+
         private static string[] GetSelectedImageAbsPath()
         {
             List<string> imagePaths = new List<string>();
@@ -184,7 +190,6 @@ namespace PluginHub.Editor
         #endregion
 
         #region notepad++ Menu
-
 
         [MenuItem("Assets/PH 使用notepad++打开文件", true)]
         public static bool OpenFileUseNotepadValid(MenuCommand menuCommand)
@@ -211,13 +216,15 @@ namespace PluginHub.Editor
                 }
             }
         }
+
         #endregion
 
 
         [MenuItem("Assets/PH 使用目录名 重命名场景资产", false)]
         public static void RenameSceneAssetUseDirectoryName()
         {
-            string dirName = Path.GetFileName(Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)));
+            string dirName =
+                Path.GetFileName(Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)));
             string assetName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(Selection.activeObject));
             string assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
             string newPath = Path.Combine(Path.GetDirectoryName(assetPath), dirName + ".unity");
@@ -225,6 +232,7 @@ namespace PluginHub.Editor
             AssetDatabase.MoveAsset(assetPath, newPath);
             AssetDatabase.Refresh();
         }
+
         [MenuItem("Assets/PH 使用目录名 重命名场景资产", true)]
         public static bool RenameSceneAssetUseDirectoryNameValidate()
         {
@@ -245,5 +253,61 @@ namespace PluginHub.Editor
         {
             ProjectWindowUtil.CreateAssetWithContent("readme.txt", "");
         }
+
+        #region PH Find References
+
+        // 这个方法比Unity的查找方法还好用，可以找到项目中哪个场景或者预制体挂载了这个脚本
+        [MenuItem("Assets/PH Find References", false)]
+        private static void PHFindReferences()
+        {
+            EditorSettings.serializationMode = SerializationMode.ForceText;
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+            if (!string.IsNullOrEmpty(path))
+            {
+                string guid = AssetDatabase.AssetPathToGUID(path);
+                string withoutExtensions = "*.prefab*.unity*.mat*.asset";
+                string[] files = Directory.GetFiles(Application.dataPath, "*.*", SearchOption.AllDirectories)
+                    .Where(s => withoutExtensions.Contains(Path.GetExtension(s).ToLower())).ToArray();
+                int startIndex = 0;
+
+                EditorApplication.update = delegate()
+                {
+                    string file = files[startIndex];
+
+                    bool isCancel =
+                        EditorUtility.DisplayCancelableProgressBar("匹配资源中", file,
+                            (float)startIndex / (float)files.Length);
+
+                    if (Regex.IsMatch(File.ReadAllText(file), guid))
+                    {
+                        Debug.Log(file, AssetDatabase.LoadAssetAtPath<Object>(GetRelativeAssetsPath(file)));
+                    }
+
+                    startIndex++;
+                    if (isCancel || startIndex >= files.Length)
+                    {
+                        EditorUtility.ClearProgressBar();
+                        EditorApplication.update = null;
+                        startIndex = 0;
+                        Debug.Log("匹配结束");
+                    }
+                };
+            }
+        }
+
+        [MenuItem("Assets/PH Find References", true)]
+        private static bool VPHFindReferences()
+        {
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+            return (!string.IsNullOrEmpty(path));
+        }
+
+        private static string GetRelativeAssetsPath(string path)
+        {
+            return "Assets" + Path.GetFullPath(path).Replace(Path.GetFullPath(Application.dataPath), "")
+                .Replace('\\', '/');
+        }
+
+        #endregion
     }
 }
