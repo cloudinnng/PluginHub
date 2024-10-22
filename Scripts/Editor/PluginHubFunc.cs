@@ -131,32 +131,6 @@ namespace PluginHub.Editor
 
         #region Function
 
-        // 使用文件管理器打开指定路径
-        public static void OpenFileExplorer(string path, bool isCreate = true)
-        {
-            if (!Directory.Exists(path))
-            {
-                //如果目录不存在 创建之
-                if (isCreate)
-                {
-                    Debug.Log($"Make dir {path}");
-                    Directory.CreateDirectory(path);
-                }
-                else
-                {
-                    Debug.LogWarning(path + " not exist");
-                    return;
-                }
-            }
-            string args = $"/Select, {path}";
-            args = args.Replace("/","\\");
-            ProcessStartInfo pfi=new ProcessStartInfo("Explorer.exe",args);
-            Process.Start(pfi);
-            //该代码也是打开文件管理器，但是打开的目录在指向目录的上一层，稳定就行，不要随意换。
-            //不支持D:\UnityProject\TopWellCustomPattern\Assets\..\Build\ 这种带..的路径
-            //EditorUtility.RevealInFinder(path);
-        }
-
         //使用递归获取一个Transform的查找路径
         public static void GetFindPath(Transform transform, StringBuilder sb)
         {

@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using ICSharpCode.SharpZipLib.Zip;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -26,24 +28,6 @@ namespace PluginHub.Runtime
             // 存储飞书云文件的<文件token,文件名>
             private Dictionary<string,string> feiShuCloudFiles = new Dictionary<string, string>();
             // private float resolutionScale = 1;
-
-            private int inputResolutionWidth
-            {
-                get { return PlayerPrefs.GetInt("PH_inputResolutionWidth", 1280); }
-                set { PlayerPrefs.SetInt("PH_inputResolutionWidth", value); }
-            }
-
-            private int inputResolutionHeight
-            {
-                get { return PlayerPrefs.GetInt("PH_inputResolutionHeight", 720); }
-                set { PlayerPrefs.SetInt("PH_inputResolutionHeight", value); }
-            }
-
-            private bool fullScreen
-            {
-                get { return PlayerPrefs.GetInt("PH_fullScreen", 0) == 1; }
-                set { PlayerPrefs.SetInt("PH_fullScreen", value ? 1 : 0); }
-            }
 
             private bool exchangeWidthHeight
             {
@@ -88,57 +72,58 @@ namespace PluginHub.Runtime
                 GUILayout.EndVertical();
             }
 
+            Vector2Int[] resolution4by3 = new Vector2Int[]
+            {
+                new Vector2Int(640, 480), new Vector2Int(800, 600), new Vector2Int(960, 720), new Vector2Int(1024, 768),
+                new Vector2Int(1152, 864), new Vector2Int(1280, 960), new Vector2Int(1400, 1050), new Vector2Int(1600, 1200),
+                new Vector2Int(2048, 1536),
+            };
+            Vector2Int[] resolution16by9 = new Vector2Int[]
+            {
+                new Vector2Int(640, 360), new Vector2Int(854, 480), new Vector2Int(960, 540), new Vector2Int(1024, 576),
+                new Vector2Int(1280, 720), new Vector2Int(1366, 768), new Vector2Int(1600, 900), new Vector2Int(1920, 1080),
+                new Vector2Int(2560, 1440), new Vector2Int(3840, 2160),
+            };
+
+
             private void DrawResolutionModule()
             {
                 //移动平台上不显示
                 if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android)
                     return;
 
-                GUILayout.Label("Resolution:");
+                GUILayout.Label("Resolution / Screen");
 
                 GUILayout.BeginVertical("Box");
                 {
                     GUILayout.BeginHorizontal();
                     {
-                        GUILayout.Label("调用：Screen.SetResolution(w ,h ,false)");
-                        inputResolutionWidth = int.Parse(GUILayout.TextField(inputResolutionWidth.ToString(),GUILayout.Width(60)));
-                        GUILayout.Label("x",GUILayout.ExpandWidth(false));
-                        inputResolutionHeight = int.Parse(GUILayout.TextField(inputResolutionHeight.ToString(),GUILayout.Width(60)));
-                        // GUILayout.FlexibleSpace();
-                        if (GUILayout.Button("应用",GUILayout.Width(100)))
-                        {
-                            Screen.SetResolution(inputResolutionWidth, inputResolutionHeight, false);
-                        }
-                        if (GUILayout.Button("全屏/窗口 切换"))
-                        {
-                            Screen.fullScreen = !Screen.fullScreen;
-                        }
-                        if (GUILayout.Button("Native全屏"))
-                        {
-                            Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height,true);
-                        }
+                        GUILayout.Label("FullScreenMode :");
+                        Screen.fullScreenMode = (FullScreenMode)GUILayout.SelectionGrid((int)Screen.fullScreenMode, Enum.GetNames(typeof(FullScreenMode)), 4);
                     }
                     GUILayout.EndHorizontal();
 
                     GUILayout.BeginHorizontal();
                     {
-                        GUILayout.Label("分辨率快选:");
+                        if (GUILayout.Button($"NativeFullScreen ({Screen.currentResolution.width} x {Screen.currentResolution.height})"))
+                            Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, true);
 
                         GUILayout.FlexibleSpace();
-
-                        fullScreen = GUILayout.Toggle(fullScreen, "全屏");
-                        if (GUILayout.Button("720P",GUILayout.Width(100)))
-                            Screen.SetResolution(1280, 720, fullScreen);
-                        if (GUILayout.Button("1080P",GUILayout.Width(100)))
-                            Screen.SetResolution(1920, 1080, fullScreen);
-                        if (GUILayout.Button("2K",GUILayout.Width(100)))
-                            Screen.SetResolution(2560, 1440, fullScreen);
-                        if (GUILayout.Button("4K",GUILayout.Width(100)))
-                            Screen.SetResolution(3840, 2160, fullScreen);
-                        if (GUILayout.Button("1024 x 768",GUILayout.Width(100)))
-                            Screen.SetResolution(1024, 768, fullScreen);
+                        bool newValue = GUILayout.Toggle(Screen.fullScreen, "FullScreen");
+                        if (newValue != Screen.fullScreen)
+                            Screen.fullScreen = newValue;
                     }
                     GUILayout.EndHorizontal();
+
+                    // 显示所有分辨率
+                    string[] names4by3 = resolution4by3.Select(v => $"{v.x} x {v.y}").ToArray();
+                    string[] names16by9 = resolution16by9.Select(v => $"{v.x} x {v.y}").ToArray();
+                    int selected = GUILayout.SelectionGrid(-1, names4by3, 6);
+                    if (selected != -1)
+                        Screen.SetResolution(resolution4by3[selected].x, resolution4by3[selected].y, Screen.fullScreen);
+                    selected = GUILayout.SelectionGrid(-1, names16by9, 6);
+                    if (selected != -1)
+                        Screen.SetResolution(resolution16by9[selected].x, resolution16by9[selected].y, Screen.fullScreen);
 
                     GUILayout.BeginHorizontal();
                     {
@@ -315,7 +300,7 @@ namespace PluginHub.Runtime
                 }
                 GUILayout.EndHorizontal();
             }
-            
+
             private void DrawSceneModule()
             {
                 GUILayout.Label($"当前场景：{SceneManager.GetActiveScene().name}");

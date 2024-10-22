@@ -4,11 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace PluginHub.Editor
+namespace PluginHub.Runtime
 {
-    using UnityEditor;
     [CustomEditor(typeof(ShowCameraFrustum))]
     public class CameraHelperScriptEditor : Editor
     {
