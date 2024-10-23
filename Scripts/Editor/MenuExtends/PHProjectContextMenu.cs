@@ -278,9 +278,11 @@ namespace PluginHub.Editor
                         EditorUtility.DisplayCancelableProgressBar("匹配资源中", file,
                             (float)startIndex / (float)files.Length);
 
+                    int counter = 0;
                     if (Regex.IsMatch(File.ReadAllText(file), guid))
                     {
                         Debug.Log(file, AssetDatabase.LoadAssetAtPath<Object>(GetRelativeAssetsPath(file)));
+                        counter++;
                     }
 
                     startIndex++;
@@ -289,7 +291,7 @@ namespace PluginHub.Editor
                         EditorUtility.ClearProgressBar();
                         EditorApplication.update = null;
                         startIndex = 0;
-                        Debug.Log("匹配结束");
+                        Debug.Log($"匹配结束，共找到{counter}个引用");
                     }
                 };
             }

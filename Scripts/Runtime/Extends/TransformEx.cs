@@ -25,6 +25,7 @@ namespace PluginHub.Runtime
                     return true;
                 tmpParent = tmpParent.parent;
             }
+
             return false;
         }
 
@@ -40,6 +41,7 @@ namespace PluginHub.Runtime
                     return true;
                 tmpParent = tmpParent.parent;
             }
+
             return false;
         }
 
@@ -219,17 +221,17 @@ namespace PluginHub.Runtime
 
 
         //删除所有孩子对象
-        public static void DestroyChildren(this Transform transform, bool includeInactive)
+        public static void DestroyChildren(this Transform transform, bool includeInactive, bool immediate)
         {
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
-                Transform transf = transform.GetChild(i);
-                if (includeInactive)
-                    GameObject.Destroy(transf.gameObject);
-                else
+                Transform child = transform.GetChild(i);
+                if (includeInactive || child.gameObject.activeSelf)
                 {
-                    if (transf.gameObject.activeSelf)
-                        GameObject.Destroy(transf.gameObject);
+                    if (immediate)
+                        GameObject.DestroyImmediate(child.gameObject);
+                    else
+                        GameObject.Destroy(child.gameObject);
                 }
             }
         }
@@ -258,27 +260,11 @@ namespace PluginHub.Runtime
             transform.localPosition = finalPosition;
         }
 
-        //失活所有孩子对象
-        public static void DeactivateAllChild(this Transform parent)
+        public static Transform[] DirectChildren(this Transform parent)
         {
-            int count = parent.childCount;
-            for (int i = 0; i < count; i++)
-            {
-                parent.GetChild(i).gameObject.SetActive(false);
-            }
-        }
-
-        //返回所有直系孩子的数组
-        public static Transform[] Children(this Transform parent)
-        {
-            int count = parent.childCount;
-            Transform[] childList = new Transform[count];
-            for (int i = 0; i < count; i++)
-            {
-                childList[i] = parent.GetChild(i);
-            }
-
-            return childList;
+            return Enumerable.Range(0, parent.childCount)
+                .Select(i => parent.GetChild(i))
+                .ToArray();
         }
 
 
@@ -286,29 +272,18 @@ namespace PluginHub.Runtime
         //之后可以用GameObject.Find()找到对象
         public static void GetFindPath(this Transform transform, StringBuilder sb)
         {
-            if (transform.parent == null)
-            {
-                sb.Insert(0, $"/{transform.name}");
-                return;
-            }
-
             sb.Insert(0, $"/{transform.name}");
-            GetFindPath(transform.parent, sb);
+            if (transform.parent != null)
+            {
+                GetFindPath(transform.parent, sb);
+            }
         }
 
         //返回一系列Transform是否具有相同的父亲
         public static bool SameParent(Transform[] transforms)
         {
-            //先拿到第一个的父亲
-            Transform tmpTrans = transforms[0].parent;
-            for (int i = 1; i < transforms.Length; i++)
-            {
-                if (tmpTrans != transforms[i].parent)
-                {
-                    return false;
-                }
-            }
-            return true;
+            Transform parent = transforms[0].parent;
+            return transforms.All(t => t.parent == parent);
         }
     }
 }
