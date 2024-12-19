@@ -22,7 +22,6 @@ namespace PluginHub.Runtime
         {
             private float titleWidth = 240;
 
-            private static readonly TextEditor s_TextEditor = new TextEditor();
             private StringBuilder sb = new StringBuilder();
 
             private string[] tabNames = new string[] { "Summary", "Memory", "Screen" };
@@ -177,10 +176,7 @@ namespace PluginHub.Runtime
                     if (GUILayout.Button(content, "Label"))
                     {
                         //复制到剪贴板
-                        s_TextEditor.text = content;
-                        s_TextEditor.OnFocus();
-                        s_TextEditor.Copy();
-                        s_TextEditor.text = string.Empty;
+                        GUIUtility.systemCopyBuffer = content;
                     }
 
                     if (!string.IsNullOrWhiteSpace(buttonName) &&

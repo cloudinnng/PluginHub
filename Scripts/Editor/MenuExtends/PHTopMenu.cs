@@ -38,30 +38,47 @@ namespace PluginHub.Editor
     public class PHTopMenu
     {
         #region 用于菜单标题，组织和分类分隔作用
+
         [MenuItem("PluginHub/快捷打开", false, -321)]
-        public static void Shortcut() { }
+        public static void Shortcut()
+        {
+        }
+
         [MenuItem("PluginHub/快捷打开", true, -321)]
         public static bool ShortcutValid() => false;
+
         [MenuItem("PluginHub/不常用的工具和命令", false, -101)]
-        public static void Separator() { }
+        public static void Separator()
+        {
+        }
+
         [MenuItem("PluginHub/不常用的工具和命令", true, -101)]
         public static bool SeparatorValid() => false;
+
         [MenuItem("PluginHub/由模块代码添加的菜单", false, -1)]
-        public static void ModuleMenu() { }
+        public static void ModuleMenu()
+        {
+        }
+
         [MenuItem("PluginHub/由模块代码添加的菜单", true, -1)]
         public static bool ModuleMenuValid() => false;
+
         [MenuItem("PluginHub/带开关的功能", false, 99)]
-        public static void SwitchMenu() { }
+        public static void SwitchMenu()
+        {
+        }
+
         [MenuItem("PluginHub/带开关的功能", true, 99)]
         public static bool SwitchMenuValid() => false;
-        #endregion
 
+        #endregion
 
 
         #region 快捷打开 Folder/Window
 
         // E:/UnityProject/EditorDevelopBook
         private static string _projectRootPath => Application.dataPath.Replace("/Assets", "");
+
         private static void OpenFolder(string path)
         {
             Debug.Log("Open Folder: " + path);
@@ -70,6 +87,7 @@ namespace PluginHub.Editor
                 Debug.Log("Folder not exist, create it.");
                 Directory.CreateDirectory(path);
             }
+
             // 在windows中 EditorUtility.RevealInFinder(path)
             // 传入 E:/UnityProject/EditorDevelopBook 能够打开 EditorDevelopBook 的上层目录
             // 传入 E:/UnityProject/EditorDevelopBook/ 能够打开 EditorDevelopBook 目录
@@ -87,33 +105,39 @@ namespace PluginHub.Editor
         {
             OpenFolder(Application.streamingAssetsPath + "/");
         }
+
         [MenuItem("PluginHub/Open/Folder PersistentDataPath", false, -299)]
         public static void OpenFolderPersistentDataPath()
         {
             OpenFolder(Application.persistentDataPath + "/");
         }
+
         [MenuItem("PluginHub/Open/Folder DataPath", false, -298)]
         public static void OpenFolderDataPath()
         {
             OpenFolder(Application.dataPath + "/");
         }
+
         //--------------------------
         [MenuItem("PluginHub/Open/Folder Build", false, -281)]
         public static void OpenFolderBuild()
         {
             OpenFolder(_projectRootPath + "/Build/");
         }
+
         [MenuItem("PluginHub/Open/Folder Recordings", false, -280)]
         public static void OpenFolderRecordings()
         {
             OpenFolder(_projectRootPath + "/Recordings/");
         }
+
         [MenuItem("PluginHub/Open/Folder ExternalAssets", false, -279)]
         public static void OpenFolderExternalAssets()
         {
             // 这个文件夹非标准Unity文件夹，是个人习惯用于放置项目相关的外部资源，例如参考图，策划文档等。
             OpenFolder(_projectRootPath + "/ExternalAssets/");
         }
+
         //--------------------------
         //--------------------------
         [MenuItem("PluginHub/Open/Window Project Settings...", false, -260)]
@@ -121,49 +145,58 @@ namespace PluginHub.Editor
         {
             EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
         }
+
         [MenuItem("PluginHub/Open/Window Package Manager", false, -259)]
         public static void OpenWindowPackageManager()
         {
             EditorApplication.ExecuteMenuItem("Window/Package Manager");
         }
+
         [MenuItem("PluginHub/Open/Window Preferences...", false, -258)]
         public static void OpenWindowPreferences()
         {
             EditorApplication.ExecuteMenuItem("Edit/Preferences...");
         }
+
         //--------------------------
         [MenuItem("PluginHub/Open/Window Animation", false, -240)]
         public static void OpenWindowAnimation()
         {
             EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
         }
+
         [MenuItem("PluginHub/Open/Window Timeline", false, -239)]
         public static void OpenWindowTimeline()
         {
             EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
         }
+
         //--------------------------
         [MenuItem("PluginHub/Open/Window Lighting", false, -227)]
         public static void OpenWindowLighting()
         {
             EditorApplication.ExecuteMenuItem("Window/Rendering/Lighting");
         }
+
         [MenuItem("PluginHub/Open/Window Light Explorer", false, -226)]
         public static void OpenWindowLightExplorer()
         {
             EditorApplication.ExecuteMenuItem("Window/Rendering/Light Explorer");
         }
+
         [MenuItem("PluginHub/Open/Window UV Inspector", false, -225)]
         public static void OpenWindowUVInspector()
         {
             EditorApplication.ExecuteMenuItem("Window/nTools/UV Inspector");
         }
+
         //--------------------------
         [MenuItem("PluginHub/Open/Window Test Runner", false, -213)]
         public static void OpenWindowTestRunner()
         {
             EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
         }
+
         #endregion
 
         #region 不常用的工具和命令
@@ -173,6 +206,7 @@ namespace PluginHub.Editor
         {
             SceneGameScreenShot.ScreenShotSceneView();
         }
+
         [MenuItem("PluginHub/Game View Screenshot", false, -98)]
         public static void GameViewScreenshot()
         {
@@ -209,10 +243,6 @@ namespace PluginHub.Editor
             method.Invoke(window, null);//清空控制台
 #endif
         }
-
-
-
-
 
 
         [MenuItem("PluginHub/创建项目基本目录", false, -96)]
@@ -274,11 +304,16 @@ namespace PluginHub.Editor
 
         private static Shader GetAppropriateDefaultShader()
         {
+#if UNITY_6000_0_OR_NEWER
+            RenderPipelineAsset renderPipelineAsset = GraphicsSettings.defaultRenderPipeline;
+#else
+            RenderPipelineAsset renderPipelineAsset = GraphicsSettings.renderPipelineAsset;
+#endif
             //is URP?
-            if (GraphicsSettings.renderPipelineAsset != null)
+            if (renderPipelineAsset != null)
             {
                 //is HDRP?
-                if (GraphicsSettings.renderPipelineAsset.GetType().Name.Contains("HDRenderPipelineAsset"))
+                if (renderPipelineAsset.GetType().Name.Contains("HDRenderPipelineAsset"))
                 {
                     return Shader.Find("HDRP/Lit");
                 }
@@ -311,6 +346,5 @@ namespace PluginHub.Editor
         }
 
         #endregion
-
     }
 }

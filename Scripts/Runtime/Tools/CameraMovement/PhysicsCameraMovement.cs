@@ -22,11 +22,19 @@ namespace PluginHub.Runtime
             if (_rigidbody == null)
                 _rigidbody = gameObject.AddComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            _rigidbody.constraints = RigidbodyConstraints.FreezeRotationZ;// 禁止Z轴旋转
+            _rigidbody.constraints = RigidbodyConstraints.FreezeRotationZ; // 禁止Z轴旋转
             // 旋转阻力
+#if UNITY_6000_0_OR_NEWER
+            _rigidbody.angularDamping = 9999;
+#else
             _rigidbody.angularDrag = 9999;
+#endif
             // 移动阻力
+#if UNITY_6000_0_OR_NEWER
+            _rigidbody.linearDamping = 1;
+#else
             _rigidbody.drag = 1;
+#endif
             // _rigidbody.isKinematic = true;
 
             // 碰撞器
@@ -34,10 +42,18 @@ namespace PluginHub.Runtime
             if (_collider == null)
                 _collider = gameObject.AddComponent<SphereCollider>();
             _collider.radius = 0.5f;
+
+
+#if UNITY_6000_0_OR_NEWER
+            PhysicsMaterial physicMaterial = new PhysicsMaterial("NoFriction");
+            physicMaterial.frictionCombine = PhysicsMaterialCombine.Minimum;
+            physicMaterial.bounceCombine = PhysicsMaterialCombine.Minimum;
+#else
             PhysicMaterial physicMaterial = new PhysicMaterial("NoFriction");
-            physicMaterial.bounciness = 0;
             physicMaterial.frictionCombine = PhysicMaterialCombine.Minimum;
             physicMaterial.bounceCombine = PhysicMaterialCombine.Minimum;
+#endif
+            physicMaterial.bounciness = 0;
             physicMaterial.dynamicFriction = 0;
             physicMaterial.staticFriction = 0;
             _collider.sharedMaterial = physicMaterial;
@@ -47,17 +63,22 @@ namespace PluginHub.Runtime
         {
             // WSAD QE 移动
             float inputX = Input.GetKey(KeyCode.D) ? 1 : Input.GetKey(KeyCode.A) ? -1 : 0;
-            float inputZ = (Input.GetKey(KeyCode.W) || Input.GetAxis("Mouse ScrollWheel") > 0) ? 1 : (Input.GetKey(KeyCode.S) || Input.GetAxis("Mouse ScrollWheel") < 0) ? -1 : 0;
+            float inputZ = (Input.GetKey(KeyCode.W) || Input.GetAxis("Mouse ScrollWheel") > 0) ? 1 :
+                (Input.GetKey(KeyCode.S) || Input.GetAxis("Mouse ScrollWheel") < 0) ? -1 : 0;
             float inputY = Input.GetKey(KeyCode.E) ? 1 : Input.GetKey(KeyCode.Q) ? -1 : 0;
             Vector3 moveVector = transform.right * inputX + transform.forward * inputZ + transform.up * inputY;
-            if(Input.GetKey(KeyCode.LeftShift))// 加速
+            if (Input.GetKey(KeyCode.LeftShift)) // 加速
                 moveVector *= 5;
 
+#if UNITY_6000_0_OR_NEWER
+            _rigidbody.linearVelocity = moveVector * moveSpeed;
+#else
             _rigidbody.velocity = moveVector * moveSpeed;
+#endif
+
             // 速度快会穿墙
             // _rigidbody.MovePosition(_rigidbody.position + moveVector * moveSpeed * Time.deltaTime);
             // transform.Translate(moveVector * moveSpeed * Time.deltaTime, Space.World);
-
 
 
             // 鼠标右键控制视角旋转

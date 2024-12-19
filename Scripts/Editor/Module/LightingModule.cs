@@ -15,19 +15,22 @@ namespace PluginHub.Editor
         public override string moduleDescription => "为场景搭建提供灯光的摆放与制作辅助";
 
         //是否显示所有灯光的位置
-        public bool isShowAllLightPosition {
+        public bool isShowAllLightPosition
+        {
             get => EditorPrefs.GetBool($"{moduleIdentifyPrefix}_isShowAllLightPosition", false);
             set => EditorPrefs.SetBool($"{moduleIdentifyPrefix}_isShowAllLightPosition", value);
         }
 
         //是否自动设置灯光名字
-        public bool autoSetLightName {
+        public bool autoSetLightName
+        {
             get => EditorPrefs.GetBool($"{moduleIdentifyPrefix}_autoSetLightName", false);
             set => EditorPrefs.SetBool($"{moduleIdentifyPrefix}_autoSetLightName", value);
         }
 
         //
-        private float lightPlaceOffsetY {
+        private float lightPlaceOffsetY
+        {
             get => EditorPrefs.GetFloat($"{moduleIdentifyPrefix}_lightPlaceOffsetY", -0.05f);
             set => EditorPrefs.SetFloat($"{moduleIdentifyPrefix}_lightPlaceOffsetY", value);
         }
@@ -37,23 +40,38 @@ namespace PluginHub.Editor
         private List<Light> allLightObjects = new List<Light>();
 
         // 阵列放置的两个点
-        private Vector3 placementFirstPosition {
+        private Vector3 placementFirstPosition
+        {
             get
             {
-                string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementFirstPosition", "0,0,0").Split(',');
+                string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementFirstPosition", "0,0,0")
+                    .Split(',');
                 return new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
             }
-            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementFirstPosition", $"{value.x:F3},{value.y:F3},{value.z:F3}"); }
+            set
+            {
+                EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementFirstPosition",
+                    $"{value.x:F3},{value.y:F3},{value.z:F3}");
+            }
         }
-        private Vector3 placementSecondPosition {
+
+        private Vector3 placementSecondPosition
+        {
             get
             {
-                string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementSecondPosition", "0,0,0").Split(',');
+                string[] pos = EditorPrefs.GetString($"{moduleIdentifyPrefix}_placementSecondPosition", "0,0,0")
+                    .Split(',');
                 return new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
             }
-            set { EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementSecondPosition", $"{value.x:F3},{value.y:F3},{value.z:F3}"); }
+            set
+            {
+                EditorPrefs.SetString($"{moduleIdentifyPrefix}_placementSecondPosition",
+                    $"{value.x:F3},{value.y:F3},{value.z:F3}");
+            }
         }
-        private int placementCount {
+
+        private int placementCount
+        {
             get => EditorPrefs.GetInt($"{moduleIdentifyPrefix}_placementCount", 1);
             set => EditorPrefs.SetInt($"{moduleIdentifyPrefix}_placementCount", value);
         }
@@ -64,7 +82,8 @@ namespace PluginHub.Editor
         private float placementRange = 10;
 
         // 是否在场景中显示放置的gizmo （handle和放置位置预览）
-        private bool showPlacementGizmoInScene {
+        private bool showPlacementGizmoInScene
+        {
             get => EditorPrefs.GetBool($"{moduleIdentifyPrefix}_showPlacementGizmoInScene", true);
             set => EditorPrefs.SetBool($"{moduleIdentifyPrefix}_showPlacementGizmoInScene", value);
         }
@@ -109,7 +128,6 @@ namespace PluginHub.Editor
                         SceneCameraTween.GoTo(placementFirstPosition);
                 }
                 GUILayout.EndVertical();
-
             }
             GUILayout.EndHorizontal();
 
@@ -163,9 +181,10 @@ namespace PluginHub.Editor
                     light.range = placementRange;
                     light.transform.parent = Selection.gameObjects[0].transform;
                     light.transform.position = positions[i];
-                    light.transform.eulerAngles = new Vector3(90,0,0);
+                    light.transform.eulerAngles = new Vector3(90, 0, 0);
                 }
             }
+
             GUI.enabled = true;
 
 
@@ -195,14 +214,13 @@ namespace PluginHub.Editor
             //             );
             //     }
             // }
-
         }
 
         private Vector3[] CalculatePlacementPositions()
         {
             Vector3[] positions = new Vector3[placementCount];
             Vector3 direction = (placementSecondPosition - placementFirstPosition).normalized;
-            float distance = Vector3.Distance(placementFirstPosition,placementSecondPosition);
+            float distance = Vector3.Distance(placementFirstPosition, placementSecondPosition);
             for (int i = 0; i < placementCount; i++)
                 positions[i] = placementFirstPosition + direction * (distance / (placementCount - 1) * i);
 
@@ -214,13 +232,13 @@ namespace PluginHub.Editor
             if (!showPlacementGizmoInScene)
                 return false;
 
-            placementFirstPosition = Handles.PositionHandle(placementFirstPosition,Quaternion.identity);
-            placementSecondPosition = Handles.PositionHandle(placementSecondPosition,Quaternion.identity);
+            placementFirstPosition = Handles.PositionHandle(placementFirstPosition, Quaternion.identity);
+            placementSecondPosition = Handles.PositionHandle(placementSecondPosition, Quaternion.identity);
 
             Handles.BeginGUI();
             {
-                DrawSceneViewText(placementFirstPosition, "第一个点",new Vector2(0,30));
-                DrawSceneViewText(placementSecondPosition, "第二个点",new Vector2(0,30));
+                DrawSceneViewText(placementFirstPosition, "第一个点", new Vector2(0, 30));
+                DrawSceneViewText(placementSecondPosition, "第二个点", new Vector2(0, 30));
             }
             Handles.EndGUI();
 
@@ -229,7 +247,7 @@ namespace PluginHub.Editor
             foreach (var position in positions)
             {
                 float size = HandleUtility.GetHandleSize(position) * 0.1f;
-                Handles.SphereHandleCap(0,position,Quaternion.identity,size,EventType.Repaint);
+                Handles.SphereHandleCap(0, position, Quaternion.identity, size, EventType.Repaint);
             }
 
             return true;
@@ -238,7 +256,8 @@ namespace PluginHub.Editor
         //将位置向上移动到最近的天花板
         private Vector3? CalculateToCeilingPosition(Vector3 worldPos)
         {
-            bool recastResult = RaycastWithoutCollider.Raycast(worldPos + new Vector3(0,-0.05f,0), Vector3.up,out RaycastWithoutCollider.HitResult result);
+            bool recastResult = RaycastWithoutCollider.Raycast(worldPos + new Vector3(0, -0.05f, 0), Vector3.up,
+                out RaycastWithoutCollider.HitResult result);
             if (recastResult)
                 return result.hitPoint + Vector3.up * lightPlaceOffsetY;
             else
@@ -252,6 +271,7 @@ namespace PluginHub.Editor
                 Debug.LogError("没有选中的灯光");
                 return;
             }
+
             //将选中的灯光移动到最近的天花板
             foreach (var light in Selection.gameObjects)
             {
@@ -284,17 +304,19 @@ namespace PluginHub.Editor
                 if (recastResultZNegative)
                     resultCount++;
 
-                light.transform.position = (resultXPositive.hitPoint + resultXNegative.hitPoint + resultZPositive.hitPoint + resultZNegative.hitPoint) / resultCount;
+                light.transform.position =
+                    (resultXPositive.hitPoint + resultXNegative.hitPoint + resultZPositive.hitPoint +
+                     resultZNegative.hitPoint) / resultCount;
             }
         }
 
         public override void OnUpdate()
         {
             base.OnUpdate();
-        // }
-        // public override void RefreshData()
-        // {
-        //     base.RefreshData();
+            // }
+            // public override void RefreshData()
+            // {
+            //     base.RefreshData();
 
             //获取所有灯光对象
             allLightObjects.Clear();
@@ -328,8 +350,13 @@ namespace PluginHub.Editor
         {
             switch (lightType)
             {
+#if UNITY_6000_0_OR_NEWER
+                case LightType.Rectangle:
+                    return "Rectangle";
+#else
                 case LightType.Area:
                     return "Area";
+#endif
                 case LightType.Directional:
                     return "Dir";
                 case LightType.Disc:
@@ -341,6 +368,7 @@ namespace PluginHub.Editor
                 default:
                     break;
             }
+
             return "";
         }
 
@@ -357,19 +385,22 @@ namespace PluginHub.Editor
                 //面光
                 if (light.type == LightType.Rectangle)
                 {
-                    HandlesEx.DrawRect(light.transform.position,light.areaSize.x,light.areaSize.y,light.transform.rotation.eulerAngles);
+                    HandlesEx.DrawRect(light.transform.position, light.areaSize.x, light.areaSize.y,
+                        light.transform.rotation.eulerAngles);
                 }
                 //点光源
                 else if (light.type == LightType.Point)
                 {
-                    HandlesEx.DrawSphere(light.transform.position,light.range);
+                    HandlesEx.DrawSphere(light.transform.position, light.range);
                 }
                 //聚光灯
                 else if (light.type == LightType.Spot)
                 {
-                    Handles.DrawLine(light.transform.position,light.transform.position + light.transform.forward * light.range);
+                    Handles.DrawLine(light.transform.position,
+                        light.transform.position + light.transform.forward * light.range);
                 }
             }
+
             return isShowAllLightPosition;
         }
 
