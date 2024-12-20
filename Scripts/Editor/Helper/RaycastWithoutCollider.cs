@@ -50,7 +50,7 @@ namespace PluginHub.Editor
         {
             result = null;
             List<HitResult> hitResults = new List<HitResult>();
-            SkinnedMeshRenderer[] skinnedMeshRenderers = Object.FindObjectsOfType<SkinnedMeshRenderer>();
+            SkinnedMeshRenderer[] skinnedMeshRenderers = Object.FindObjectsByType<SkinnedMeshRenderer>(FindObjectsSortMode.None);
             Mesh tempMesh = new Mesh();
             for (int i = 0; i < skinnedMeshRenderers.Length; i++)
             {
@@ -98,7 +98,7 @@ namespace PluginHub.Editor
             // DebugEx.DebugRay(ray,9999,Color.green,3f);
 
             // 获取场景中所有MeshRenderer
-            MeshRenderer[] meshRenderers = Object.FindObjectsOfType<MeshRenderer>();
+            MeshRenderer[] meshRenderers = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
             // 遍历所有MeshRenderer
             // Debug.Log($"meshRenderers.Length: {meshRenderers.Length}");
             for (int i = 0; i < meshRenderers.Length; i++)

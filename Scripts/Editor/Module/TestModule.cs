@@ -52,12 +52,13 @@ namespace PluginHub.Editor
                 GUILayout.Label($"SceneView.lastActiveSceneView.eulerAngles: {SceneView.lastActiveSceneView.rotation.eulerAngles}");
             }
 
+            #if !UNITY_6000_0_OR_NEWER
             DrawSplitLine("SceneViewContextMenu");
             {
                 GUILayout.Label($"SceneViewContextMenu.mouseCurrPosition: {PHSceneContextMenu.mouseCurrPosition}");
                 GUILayout.Label($"{PHSceneContextMenu.mouseCurrPosition.x / SceneView.lastActiveSceneView.position.width},{1 - PHSceneContextMenu.mouseCurrPosition.y / SceneView.lastActiveSceneView.position.height}");
-
             }
+            #endif
             // DrawRow("Triangle in scene", "");
         }
 

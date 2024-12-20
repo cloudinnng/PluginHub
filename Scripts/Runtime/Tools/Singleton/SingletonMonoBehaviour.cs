@@ -45,9 +45,9 @@ namespace PluginHub.Runtime
 				{
 					if (_instance == null)
 					{
-						_instance = (T)FindObjectOfType(typeof(T));
+						_instance = FindObjectsByType<T>(FindObjectsSortMode.None)[0];
 
-						if (FindObjectsOfType(typeof(T)).Length > 1)
+						if (FindObjectsByType<T>(FindObjectsSortMode.None).Length > 1)
 						{
 							//出了点问题，这里有超过1个单例实例，重新打开场景可能会解决它。
 							Debug.LogError("[Singleton] Something went really wrong " +

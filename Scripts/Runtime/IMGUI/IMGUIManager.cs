@@ -114,7 +114,7 @@ namespace PluginHub.Runtime
             // Debug.Log("[IMGUIManager] RefreshClientList");
 
             clientList.Clear();
-            MonoBehaviour[] monoInScene = FindObjectsOfType<MonoBehaviour>();
+            MonoBehaviour[] monoInScene = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             // Debug.Log(s.Length);
             foreach (MonoBehaviour client in monoInScene)
             {

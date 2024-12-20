@@ -459,7 +459,7 @@ namespace PluginHub.Editor
         private static List<MRMatIndexInfos> QuerySceneObject(Material matToQuery)
         {
             List<MRMatIndexInfos> result = new List<MRMatIndexInfos>();
-            MeshRenderer[] meshRenderers = GameObject.FindObjectsOfType<MeshRenderer>();
+            MeshRenderer[] meshRenderers = GameObject.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
 
             for (int i = 0; i < meshRenderers.Length; i++)
             {
@@ -494,7 +494,7 @@ namespace PluginHub.Editor
         {
             //思路：收集场景中所有Meshrenderer上的材质，然后再去重
             List<Material> materialList = new List<Material>();
-            GameObject.FindObjectsOfType<MeshRenderer>().ToList().ForEach((mr) =>
+            GameObject.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None).ToList().ForEach((mr) =>
             {
                 Material[] sharedMaterials = mr.sharedMaterials;
                 materialList.AddRange(sharedMaterials);

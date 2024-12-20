@@ -44,7 +44,7 @@ namespace PluginHub.Runtime
             if (_instance == null)
             {
                 //这里用Resources.FindObjectsOfTypeAll<T>();会找到资产中的对象，而我只需要场景中的对象
-                T[] tObjInScene = Object.FindObjectsOfType<T>();
+                T[] tObjInScene = Object.FindObjectsByType<T>(FindObjectsSortMode.None);
                 if (tObjInScene.Length > 0)
                 {
                     _instance = tObjInScene[0];

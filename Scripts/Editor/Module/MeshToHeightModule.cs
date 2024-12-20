@@ -65,7 +65,7 @@ namespace PluginHub.Editor
             {
                 int counter = 0;
 
-                MeshRenderer[] meshRenderers = GameObject.FindObjectsOfType<MeshRenderer>();
+                MeshRenderer[] meshRenderers = GameObject.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
                 for (int i = 0; i < meshRenderers.Length; i++)
                 {
                     MeshRenderer meshRenderer = meshRenderers[i];

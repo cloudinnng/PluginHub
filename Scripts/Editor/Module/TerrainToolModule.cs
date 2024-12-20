@@ -51,7 +51,7 @@ namespace PluginHub.Editor
                 _globalTerrainCount = Mathf.Clamp(_globalTerrainCount, 0, 999);
                 if (GUILayout.Button("自动拾取所有地形"))
                 {
-                    _globalTerrains = GameObject.FindObjectsOfType<Terrain>();
+                    _globalTerrains = GameObject.FindObjectsByType<Terrain>(FindObjectsSortMode.None);
                     //按照层级顺序排序
                     _globalTerrains = _globalTerrains.OrderBy((terrain) => terrain.transform.GetSiblingIndex())
                         .ToArray();

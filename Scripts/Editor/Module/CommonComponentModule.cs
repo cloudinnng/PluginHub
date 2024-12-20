@@ -187,7 +187,7 @@ namespace PluginHub.Editor
         //通用查找方法，参数为可选的过滤条件
         public static GameObject[] TryFind<T>(Func<T, bool> predicate = null) where T : Component
         {
-            Component[] components = GameObject.FindObjectsOfType<T>();
+            Component[] components = GameObject.FindObjectsByType<T>(FindObjectsSortMode.None);
             if (predicate != null)
                 components = components.Where((component) => predicate.Invoke(component as T)).ToArray();
             return components.Select((o) => o.gameObject).ToArray();
@@ -196,7 +196,7 @@ namespace PluginHub.Editor
         //尝试寻找场景视图相机当前处于那些HDRP local volume对象内
         public static GameObject[] TryFindLocalVolume()
         {
-            BoxCollider[] boxColliders = GameObject.FindObjectsOfType<BoxCollider>();
+            BoxCollider[] boxColliders = GameObject.FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
             //过滤出Volume的boxcollider
             boxColliders = boxColliders.Where((box) =>
             {
@@ -229,7 +229,7 @@ namespace PluginHub.Editor
         //可以优化
         public static GameObject[] TryFindGlobalVolume()
         {
-            Component[] components = GameObject.FindObjectsOfType<Component>();
+            Component[] components = GameObject.FindObjectsByType<Component>(FindObjectsSortMode.None);
             components = components.Where((c) =>
             {
                 //过滤名字里面有Volume
@@ -259,14 +259,14 @@ namespace PluginHub.Editor
 
         public static GameObject[] TryFindDirectionalLight()
         {
-            Light[] lights = GameObject.FindObjectsOfType<Light>();
+            Light[] lights = GameObject.FindObjectsByType<Light>(FindObjectsSortMode.None);
             lights = lights.Where((light) => light.type == LightType.Directional).ToArray();
             return lights.Select((o) => o.gameObject).ToArray();
         }
 
         public static GameObject[] TryFindMainScripts()
         {
-            Component[] components = GameObject.FindObjectsOfType<Component>();
+            Component[] components = GameObject.FindObjectsByType<Component>(FindObjectsSortMode.None);
             components = components.Where((c) =>
             {
                 // string name = c.GetType().Name;//避免使用反射
@@ -279,7 +279,8 @@ namespace PluginHub.Editor
         //尝试寻找场景视图相机当前处于那些反射探头内
         public static GameObject[] TryFindReflectionProbe()
         {
-            ReflectionProbe[] reflectionProbes = GameObject.FindObjectsOfType<ReflectionProbe>();
+            ReflectionProbe[] reflectionProbes =
+                GameObject.FindObjectsByType<ReflectionProbe>(FindObjectsSortMode.None);
             //在范围内
             reflectionProbes = reflectionProbes
                 .Where((rp) => rp.bounds.Contains(SceneViewCameraPosition())).ToArray();
@@ -289,7 +290,7 @@ namespace PluginHub.Editor
         //寻找附近的灯光组件
         public static GameObject[] TryFindNearbyLight()
         {
-            Light[] lightObjs = GameObject.FindObjectsOfType<Light>();
+            Light[] lightObjs = GameObject.FindObjectsByType<Light>(FindObjectsSortMode.None);
             lightObjs = lightObjs.Where((lightObj) => !HasParentLight(lightObj.transform)).ToArray(); //它爸爸也是灯组件，忽略掉它
             //按距离排序
             lightObjs = lightObjs.OrderBy((lightObj) =>

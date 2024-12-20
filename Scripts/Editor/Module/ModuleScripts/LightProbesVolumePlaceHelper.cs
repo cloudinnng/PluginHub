@@ -50,7 +50,7 @@ namespace PluginHub.Editor
 
             if (GUILayout.Button("Disable Other Gizmos"))
             {
-                LightProbesVolumePlaceHelper[] helpers = FindObjectsOfType<LightProbesVolumePlaceHelper>();
+                LightProbesVolumePlaceHelper[] helpers = FindObjectsByType<LightProbesVolumePlaceHelper>(FindObjectsSortMode.None);
                 foreach (var helper in helpers)
                 {
                     helper.drawPreview = false;
@@ -63,7 +63,7 @@ namespace PluginHub.Editor
             {
                 if (GUILayout.Button("Disable All Gizmos"))
                 {
-                    LightProbesVolumePlaceHelper[] helpers = FindObjectsOfType<LightProbesVolumePlaceHelper>();
+                    LightProbesVolumePlaceHelper[] helpers = FindObjectsByType<LightProbesVolumePlaceHelper>(FindObjectsSortMode.None);
                     foreach (var helper in helpers)
                     {
                         helper.drawPreview = false;
@@ -72,7 +72,7 @@ namespace PluginHub.Editor
 
                 if (GUILayout.Button("Enable All Gizmos"))
                 {
-                    LightProbesVolumePlaceHelper[] helpers = FindObjectsOfType<LightProbesVolumePlaceHelper>();
+                    LightProbesVolumePlaceHelper[] helpers = FindObjectsByType<LightProbesVolumePlaceHelper>(FindObjectsSortMode.None);
                     foreach (var helper in helpers)
                     {
                         helper.drawPreview = true;
@@ -84,7 +84,7 @@ namespace PluginHub.Editor
             if (GUILayout.Button("Re Create all"))
             {
                 LightProbesVolumePlaceHelper[] lightProbesVolumePlaceHelpers =
-                    FindObjectsOfType<LightProbesVolumePlaceHelper>();
+                    FindObjectsByType<LightProbesVolumePlaceHelper>(FindObjectsSortMode.None);
                 for (int i = 0; i < lightProbesVolumePlaceHelpers.Length; i++)
                 {
                     lightProbesVolumePlaceHelpers[i].ExePlace();

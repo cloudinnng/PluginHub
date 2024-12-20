@@ -109,8 +109,10 @@ namespace PluginHub.Editor
                 placementFirstPosition = EditorGUILayout.Vector3Field("第一个点", placementFirstPosition);
                 GUILayout.BeginVertical(GUILayout.Width(100));
                 {
+#if !UNITY_6000_0_OR_NEWER
                     if (GUILayout.Button("到场景游标"))
                         placementFirstPosition = PHSceneContextMenu.sceneViewCursor;
+#endif
                     if (GUILayout.Button("向上吸附"))
                     {
                         Vector3? pos = CalculateToCeilingPosition(placementFirstPosition);
@@ -137,8 +139,10 @@ namespace PluginHub.Editor
                 placementSecondPosition = EditorGUILayout.Vector3Field("第二个点", placementSecondPosition);
                 GUILayout.BeginVertical(GUILayout.Width(100));
                 {
+#if !UNITY_6000_0_OR_NEWER
                     if (GUILayout.Button("到场景游标"))
                         placementSecondPosition = PHSceneContextMenu.sceneViewCursor;
+#endif
                     if (GUILayout.Button("向上吸附"))
                     {
                         Vector3? pos = CalculateToCeilingPosition(placementSecondPosition);
@@ -320,7 +324,7 @@ namespace PluginHub.Editor
 
             //获取所有灯光对象
             allLightObjects.Clear();
-            allLightObjects.AddRange(Object.FindObjectsOfType<Light>());
+            allLightObjects.AddRange(Object.FindObjectsByType<Light>(FindObjectsSortMode.None));
 
             //自动设置灯光名字
             if (autoSetLightName)

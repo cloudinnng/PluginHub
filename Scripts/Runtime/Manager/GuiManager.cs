@@ -104,7 +104,7 @@ namespace PluginHub.Runtime
 
             //重新寻找客户端
             _guiClientsDic.Clear();
-            MonoBehaviour[] monos = FindObjectsOfType<MonoBehaviour>();
+            MonoBehaviour[] monos = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             List<IGUIClient> clients = new List<IGUIClient>();
             for (int i = 0; i < monos.Length; i++)
             {

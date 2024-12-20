@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿
+// 旧版Unity 才有的代码，新版Unity已经不支持了
+#if !UNITY_6000_0_OR_NEWER
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PluginHub.Editor;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace PluginHub.Editor
 {
@@ -454,3 +459,4 @@ namespace PluginHub.Editor
 
     }
 }
+#endif

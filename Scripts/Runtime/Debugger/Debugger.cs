@@ -29,7 +29,7 @@ namespace PluginHub.Runtime
             {
                 if (_instance == null)
                 {
-                    Debugger[] debugger = FindObjectsOfType<Debugger>();
+                    Debugger[] debugger = FindObjectsByType<Debugger>(FindObjectsSortMode.None);
                     if (debugger != null)
                     {
                         if (debugger.Length == 1)
@@ -198,7 +198,7 @@ namespace PluginHub.Runtime
         {
             if (!deactiveEventSystem)
                 return;
-            EventSystem eventSystem = FindObjectOfType<EventSystem>();
+            EventSystem eventSystem = FindObjectsByType<EventSystem>(FindObjectsSortMode.None).FirstOrDefault();
             if (eventSystem && isShowFullWindow && isShowDebugger)
                 eventSystem.enabled = false;
             else

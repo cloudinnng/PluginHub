@@ -98,7 +98,7 @@ namespace PluginHub.Runtime
                 yield return new WaitForSeconds(0.2f);
                 //重新寻找客户端
                 _guiClientsDic.Clear();
-                MonoBehaviour[] monos = FindObjectsOfType<MonoBehaviour>();
+                MonoBehaviour[] monos = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
                 List<ICustomWindowGUI> clients = new List<ICustomWindowGUI>();
                 for (int i = 0; i < monos.Length; i++)
                 {

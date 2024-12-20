@@ -22,7 +22,7 @@ namespace PluginHub.Editor
             if (GUILayout.Button("打印空引用材质槽（如有）"))
             {
                 List<MeshRenderer> mrList = new List<MeshRenderer>();
-                GameObject.FindObjectsOfType<MeshRenderer>().ToList().ForEach((mr) =>
+                GameObject.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None).ToList().ForEach((mr) =>
                 {
                     Material[] smat = mr.sharedMaterials;
                     smat.ToList().ForEach((m) =>
@@ -41,7 +41,7 @@ namespace PluginHub.Editor
             GUI.enabled = matObject != null;
             if (GUILayout.Button("使用上面的材质解决所有的空材质紫色问题"))
             {
-                GameObject.FindObjectsOfType<MeshRenderer>().ToList().ForEach((mr) =>
+                GameObject.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None).ToList().ForEach((mr) =>
                 {
                     Material[] smat = mr.sharedMaterials;
                     bool hasNull = false;

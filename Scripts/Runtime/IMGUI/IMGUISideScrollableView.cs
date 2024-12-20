@@ -115,7 +115,7 @@ namespace PluginHub.Runtime
             // Debug.Log("[IMGUISideScrollableView] RefreshClientList");
             clientList.Clear();
             isFoldoutList.Clear();
-            MonoBehaviour[] monoInScene = FindObjectsOfType<MonoBehaviour>();
+            MonoBehaviour[] monoInScene = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             // Debug.Log(s.Length);
             foreach (var client in monoInScene)
             {
