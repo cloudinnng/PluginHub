@@ -1,45 +1,38 @@
-﻿
-// 旧版Unity 才有的代码，新版Unity已经不支持了
-#if !UNITY_6000_0_OR_NEWER
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using PluginHub.Editor;
 using PluginHub.Runtime;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 namespace PluginHub.Editor
 {
-    // 场景视图上下文菜单
-    // 添加场景视图任意空白位置的右键菜单
-    public static class PHSceneContextMenu
+    using UnityEngine;
+    using UnityEditor;
+    using UnityEditor.EditorTools;
+
+    [EditorTool("PH SceneView Tool")]
+    public class PHSceneViewTool : EditorTool
     {
+        // 为了能在 Tools 菜单里看到一个图标，可以指定一个 Texture2D
+        // [SerializeField] Texture2D m_ToolIcon;
+
         //场景视图游标（跟blender学习），用于辅助其他功能
         public static Vector3 sceneViewCursor { get; private set; }
         public static Vector3 lastSceneViewCursor { get; private set; }
         public static Vector2 mouseDownPosition { get; private set; }
         public static Vector2 mouseCurrPosition { get; private set; }
-        private static double mouseDownTime;
 
-        [InitializeOnLoadMethod]
-        private static void Init()
-        {
-            SceneView.duringSceneGui -= OnSceneGUI;
-            SceneView.duringSceneGui += OnSceneGUI;
-        }
 
-        private static void OnSceneGUI(SceneView obj)
+        /// <summary>
+        /// 当此工具被选中并且处于激活状态时，每帧都会调用该方法
+        /// </summary>
+        /// <param name="window">当前 EditorWindow，一般就是 SceneView</param>
+        public override void OnToolGUI(EditorWindow window)
         {
             Event e = Event.current;
+
             mouseCurrPosition = e.mousePosition;
             if (e.type == EventType.MouseDown && e.button == 1)
             {
                 // 记录鼠标按下的位置
                 mouseDownPosition = e.mousePosition;
-                mouseDownTime = EditorApplication.timeSinceStartup;
             }else if (e.type == EventType.MouseUp && e.button == 1)
             {
                 // 无修饰键
@@ -47,10 +40,10 @@ namespace PluginHub.Editor
                     return;
 
                 // 被认为是右键单击的条件
-                if ((e.mousePosition - mouseDownPosition).magnitude < 3 &&
-                    EditorApplication.timeSinceStartup - mouseDownTime < 0.2f)
+                if ((e.mousePosition - mouseDownPosition).magnitude < 3 )
                 {
                     ShowContextMenu(e);
+                    e.Use();
                 }
             }
         }
@@ -459,4 +452,3 @@ namespace PluginHub.Editor
 
     }
 }
-#endif
