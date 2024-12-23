@@ -81,7 +81,6 @@ namespace PluginHub.Editor
             menu.AddItem(new GUIContent("Bake Lighting"), false, () => Lightmapping.BakeAsync());
             menu.AddItem(new GUIContent("Cancel Bake"), false, () => Lightmapping.Cancel());
             menu.AddItem(new GUIContent("Create Light Here"), false, () => CreateNewGameObject<Light>());
-            menu.AddItem(new GUIContent("More/Force Stop Bake"), false, () => Lightmapping.ForceStop());
             menu.AddItem(new GUIContent("More/Clear Baked Data"), false, () => Lightmapping.Clear());
             menu.AddItem(new GUIContent("More/Clear Disk Cache"), false, () => Lightmapping.ClearDiskCache());
             menu.AddSeparator("");
