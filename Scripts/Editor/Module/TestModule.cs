@@ -55,8 +55,8 @@ namespace PluginHub.Editor
             #if !UNITY_6000_0_OR_NEWER
             DrawSplitLine("SceneViewContextMenu");
             {
-                GUILayout.Label($"SceneViewContextMenu.mouseCurrPosition: {PHSceneContextMenu.mouseCurrPosition}");
-                GUILayout.Label($"{PHSceneContextMenu.mouseCurrPosition.x / SceneView.lastActiveSceneView.position.width},{1 - PHSceneContextMenu.mouseCurrPosition.y / SceneView.lastActiveSceneView.position.height}");
+                GUILayout.Label($"SceneViewContextMenu.mouseCurrPosition: {PHSceneViewTool.mouseCurrPosition}");
+                GUILayout.Label($"{PHSceneViewTool.mouseCurrPosition.x / SceneView.lastActiveSceneView.position.width},{1 - PHSceneViewTool.mouseCurrPosition.y / SceneView.lastActiveSceneView.position.height}");
             }
             #endif
             // DrawRow("Triangle in scene", "");
