@@ -17,6 +17,8 @@ namespace PluginHub.Editor
         {
             DrawSceneBookmark();
 
+            GUILayout.Space(5);
+
             DrawSelectionTools();
         }
 
@@ -47,8 +49,6 @@ namespace PluginHub.Editor
             _assetBookmarkUIRow.DrawGUI(sceneBookmarkGroup);
         }
 
-
-
         #endregion
 
         #region SelectionTools
@@ -65,10 +65,6 @@ namespace PluginHub.Editor
                         if (GUILayout.Button("放到地上"))
                         {
                             SelectionObjToGround(false);
-                        }
-
-                        if (GUILayout.Button("!23"))
-                        {
                         }
                     }
                     GUILayout.EndHorizontal();
