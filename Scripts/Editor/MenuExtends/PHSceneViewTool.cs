@@ -1,5 +1,6 @@
 using System.Linq;
 using PluginHub.Runtime;
+using UnityEditor.Overlays;
 
 namespace PluginHub.Editor
 {
@@ -7,6 +8,7 @@ namespace PluginHub.Editor
     using UnityEditor;
     using UnityEditor.EditorTools;
 
+    // 这个注册的是编辑器工具（与移动，旋转工具同级），在Tools Overlay中会出现一个Icon
     [EditorTool("PH SceneView Tool")]
     public class PHSceneViewTool : EditorTool
     {
@@ -28,6 +30,7 @@ namespace PluginHub.Editor
         {
             Event e = Event.current;
 
+            // 右键菜单功能
             mouseCurrPosition = e.mousePosition;
             if (e.type == EventType.MouseDown && e.button == 1)
             {
@@ -46,6 +49,7 @@ namespace PluginHub.Editor
                     e.Use();
                 }
             }
+
         }
 
         // 显示右键上下文菜单
