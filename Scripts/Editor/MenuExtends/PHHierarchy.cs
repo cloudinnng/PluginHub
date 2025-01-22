@@ -25,12 +25,12 @@ namespace PluginHub.Editor
         {
             Event currEvent = Event.current;
 
-            hierachySceneItemHandler(instanceId, selectionRect);
+            hierarchySceneItemHandler(instanceId, selectionRect);
 
-            hierachyActiveObjItemHandler(instanceId, currEvent);
+            hierarchyActiveObjItemHandler(instanceId, currEvent);
 
             // 为挂有mono脚本的游戏对象添加图标
-            hierachyMonoIconItemHandler(instanceId, selectionRect);
+            hierarchyMonoIconItemHandler(instanceId, selectionRect);
 
             lastKeyBoardEvent = Event.current.isMouse ? lastKeyBoardEvent : Event.current;
         }
@@ -57,19 +57,24 @@ namespace PluginHub.Editor
 
         static Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.6275f);
 
-        private static void hierachyMonoIconItemHandler(int instanceId, Rect selectionRect)
+        private static void hierarchyMonoIconItemHandler(int instanceId, Rect selectionRect)
         {
             GameObject gameObject = (GameObject)EditorUtility.InstanceIDToObject(instanceId);
             if (gameObject == null) return;
             Component[] components = gameObject.GetComponents<MonoBehaviour>();
-            if (components.Length == 0) return;
+            if (components.Length == 0) return; // 没有挂载MonoBehaviour组件
+
+            bool hasUserScript = false;
             for (int i = components.Length - 1; i >= 0; i--)
             {
-                if (components[i] != null && (components[i].GetType().FullName.Contains("UnityEngine")
-                                              || components[i].GetType().FullName.Contains("TextMeshPro")
-                                              || components[i].GetType().FullName.Contains("TMPro")))
-                    return;
+                string name = components[i].GetType().FullName;
+                // Debug.Log(name,gameObject);
+                
+                if (components[i] != null && !name.Contains("UnityEngine") && !name.Contains("TextMeshPro") && !name.Contains("TMPro"))
+                    hasUserScript = true;
             }
+
+            if (!hasUserScript) return;
 
             GUI.color = monoIconColor;
             selectionRect.width = 16;
@@ -79,7 +84,7 @@ namespace PluginHub.Editor
 
         #endregion
 
-        private static void hierachyActiveObjItemHandler(int instanceId, Event currEvent)
+        private static void hierarchyActiveObjItemHandler(int instanceId, Event currEvent)
         {
             if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
                 return;
@@ -109,7 +114,7 @@ namespace PluginHub.Editor
             }
         }
 
-        private static void hierachySceneItemHandler(int instanceId, Rect selectionRect)
+        private static void hierarchySceneItemHandler(int instanceId, Rect selectionRect)
         {
             // 在层级视图场景GUI"条"上绘制几个快捷按钮
             int count = SceneManager.sceneCount; //目前拖入到层级视图的场景个数
