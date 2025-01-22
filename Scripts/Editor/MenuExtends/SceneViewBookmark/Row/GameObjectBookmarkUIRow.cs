@@ -16,6 +16,7 @@ namespace PluginHub.Editor
 
         protected override void DrawHorizontalInnerGUI(SceneBookmarkGroup group)
         {
+            // Debug.Log("GameObjectBookmarkUIRow DrawHorizontalInnerGUI");
             GUI.color = Selection.activeGameObject != null
                 ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE
                 : Color.white;
@@ -39,7 +40,7 @@ namespace PluginHub.Editor
                 {
                     GUIContent icon;
                     //图标图片非Unity内置图片
-                    if(externalIcon.Contains(gameObjectBookmark.componentName))
+                    if (externalIcon.Contains(gameObjectBookmark.componentName))
                     {
                         if (postProcessVolumeIcon == null)
                             postProcessVolumeIcon = Resources.Load<Texture>(gameObjectBookmark.componentName);
@@ -57,7 +58,7 @@ namespace PluginHub.Editor
                                          //没有按下ctrl alt shift
                                          && !Event.current.control && !Event.current.alt && !Event.current.shift;
 
-                    if (GUILayout.Button(icon,BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y)) || shortKeyPress)
+                    if (GUILayout.Button(icon, BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y)) || shortKeyPress)
                     {
                         HandleButton(gameObjectBookmark);
                     }

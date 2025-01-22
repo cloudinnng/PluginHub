@@ -12,8 +12,8 @@ namespace PluginHub.Editor
     [InitializeOnLoad]
     public static class PHHierarchy
     {
-
         private static Event lastKeyBoardEvent;
+
         static PHHierarchy()
         {
             EditorApplication.hierarchyWindowItemOnGUI -= hierarchyWindowItemOnGUIHandler;
@@ -29,9 +29,55 @@ namespace PluginHub.Editor
 
             hierachyActiveObjItemHandler(instanceId, currEvent);
 
-            lastKeyBoardEvent = Event.current.isMouse ? lastKeyBoardEvent : Event.current;
+            // 为挂有mono脚本的游戏对象添加图标
+            hierachyMonoIconItemHandler(instanceId, selectionRect);
 
+            lastKeyBoardEvent = Event.current.isMouse ? lastKeyBoardEvent : Event.current;
         }
+
+        #region MonoBehaviour Icon
+
+        private static Texture2D _monoBehaviourIconTexture;
+
+        private static Texture2D monoBehaviourIconTexture
+        {
+            get
+            {
+                if (_monoBehaviourIconTexture == null)
+                {
+                    string base64 =
+                        "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4EWP8//8/AyWABagZZEIhuYYwkasRpm/UAAaG0TAYDQNQfgClgz+wjEEODQAZqgWLOZX9TgAAAABJRU5ErkJggg==";
+                    _monoBehaviourIconTexture = new Texture2D(16, 16);
+                    _monoBehaviourIconTexture.LoadImage(System.Convert.FromBase64String(base64));
+                }
+
+                return _monoBehaviourIconTexture;
+            }
+        }
+
+        static Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.6275f);
+
+        private static void hierachyMonoIconItemHandler(int instanceId, Rect selectionRect)
+        {
+            GameObject gameObject = (GameObject)EditorUtility.InstanceIDToObject(instanceId);
+            if (gameObject == null) return;
+            Component[] components = gameObject.GetComponents<MonoBehaviour>();
+            if (components.Length == 0) return;
+            for (int i = components.Length - 1; i >= 0; i--)
+            {
+                if (components[i] != null && (components[i].GetType().FullName.Contains("UnityEngine")
+                                              || components[i].GetType().FullName.Contains("TextMeshPro")
+                                              || components[i].GetType().FullName.Contains("TMPro")))
+                    return;
+            }
+
+            GUI.color = monoIconColor;
+            selectionRect.width = 16;
+            GUI.DrawTexture(selectionRect, monoBehaviourIconTexture);
+            GUI.color = Color.white;
+        }
+
+        #endregion
 
         private static void hierachyActiveObjItemHandler(int instanceId, Event currEvent)
         {
@@ -47,12 +93,14 @@ namespace PluginHub.Editor
                     // 功能点： 按下鼠标中键可以选中所有兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
                         SelectAllSilbing(go);
-                }else if (currEvent.modifiers == EventModifiers.Control)
+                }
+                else if (currEvent.modifiers == EventModifiers.Control)
                 {
                     // 功能点： 按下Ctrl + 鼠标中键可以选中所有同名兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
                         SelectSameNameSilbing(go);
-                }else if (currEvent.modifiers == EventModifiers.Alt)
+                }
+                else if (currEvent.modifiers == EventModifiers.Alt)
                 {
                     // 功能点： 按下Alt + 鼠标中键可以选中所有相似名字的兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
@@ -64,10 +112,10 @@ namespace PluginHub.Editor
         private static void hierachySceneItemHandler(int instanceId, Rect selectionRect)
         {
             // 在层级视图场景GUI"条"上绘制几个快捷按钮
-            int count = SceneManager.sceneCount;//目前拖入到层级视图的场景个数
-            int loadedCount = 0;//目前已经加载的场景个数
+            int count = SceneManager.sceneCount; //目前拖入到层级视图的场景个数
+            int loadedCount = 0; //目前已经加载的场景个数
 
-            for (int i = 0; i < count; i++)//用于获取正确的loadedCount值
+            for (int i = 0; i < count; i++) //用于获取正确的loadedCount值
             {
                 Scene scene = SceneManager.GetSceneAt(i);
                 if (scene.isLoaded)
@@ -91,9 +139,9 @@ namespace PluginHub.Editor
 
                     //load/unload按钮
                     string buttonText = scene.isLoaded ? "Unload" : "Load";
-                    if(currentEvent.control)
+                    if (currentEvent.control)
                         buttonText = "Remove";
-                    if(currentEvent.alt)
+                    if (currentEvent.alt)
                         buttonText = "Isolate";
 
                     Vector2 sizeUnload = EditorStyles.label.CalcSize(new GUIContent(buttonText));
@@ -126,7 +174,7 @@ namespace PluginHub.Editor
                         //load/unload/remove按钮事件
                         if (enableLoadBtnEvent && loadRect.Contains(currentEvent.mousePosition))
                         {
-                            if (currentEvent.control)//如果按下了Ctrl键，则是remove场景（将场景从Hierarchy中移除）
+                            if (currentEvent.control) //如果按下了Ctrl键，则是remove场景（将场景从Hierarchy中移除）
                             {
                                 //check if scene is dirty
                                 if (scene.isDirty)
@@ -136,6 +184,7 @@ namespace PluginHub.Editor
                                     {
                                         EditorSceneManager.SaveScene(scene);
                                     }
+
                                     EditorSceneManager.CloseScene(scene, true);
                                 }
                                 else
@@ -143,9 +192,8 @@ namespace PluginHub.Editor
                                     //直接remove场景
                                     EditorSceneManager.CloseScene(scene, true);
                                 }
-
                             }
-                            else if (currentEvent.alt)//如果按下了Alt键，则在加载场景后关闭其他场景
+                            else if (currentEvent.alt) //如果按下了Alt键，则在加载场景后关闭其他场景
                             {
                                 EditorSceneManager.OpenScene(scene.path, OpenSceneMode.Additive); //加载场景
                                 //关闭其他场景
@@ -156,7 +204,7 @@ namespace PluginHub.Editor
                                         EditorSceneManager.CloseScene(scene1, false);
                                 }
                             }
-                            else//啥也没按
+                            else //啥也没按
                             {
                                 if (scene.isLoaded)
                                     EditorSceneManager.CloseScene(scene, false); //卸载场景
@@ -184,6 +232,7 @@ namespace PluginHub.Editor
                 Debug.LogWarning("No Parent");
                 return;
             }
+
             string name = gameObject.name;
             List<GameObject> gameObjects = new List<GameObject>();
             foreach (Transform child in parent)
@@ -191,6 +240,7 @@ namespace PluginHub.Editor
                 if (child.name == name)
                     gameObjects.Add(child.gameObject);
             }
+
             // Select
             Selection.objects = gameObjects.ToArray();
             Debug.Log($"[PH] Selected {gameObjects.Count} Same Name Silbing");
@@ -204,7 +254,8 @@ namespace PluginHub.Editor
                 Debug.LogWarning("No Parent");
                 return;
             }
-            string name = gameObject.name.Substring(0,gameObject.name.LastIndexOf(" "));
+
+            string name = gameObject.name.Substring(0, gameObject.name.LastIndexOf(" "));
             // Debug.Log(name);
             List<GameObject> gameObjects = new List<GameObject>();
             foreach (Transform child in parent)
@@ -212,6 +263,7 @@ namespace PluginHub.Editor
                 if (child.name.Contains(name))
                     gameObjects.Add(child.gameObject);
             }
+
             // Select
             Selection.objects = gameObjects.ToArray();
             Debug.Log($"[PH] Selected {gameObjects.Count} Similar Name Silbing");
@@ -225,11 +277,13 @@ namespace PluginHub.Editor
                 Debug.LogWarning("No Parent");
                 return;
             }
+
             List<GameObject> gameObjects = new List<GameObject>();
             foreach (Transform child in parent)
             {
                 gameObjects.Add(child.gameObject);
             }
+
             // Select
             Selection.objects = gameObjects.ToArray();
             Debug.Log($"[PH] Selected {gameObjects.Count} All Silbing");
@@ -301,6 +355,7 @@ namespace PluginHub.Editor
                 stack.Add(tmpParent.gameObject.name);
                 tmpParent = tmpParent.parent;
             }
+
             StringBuilder sb = new StringBuilder();
             for (int i = stack.Count - 2; i >= 0; i--)
             {
@@ -308,6 +363,7 @@ namespace PluginHub.Editor
                 if (i != 0)
                     sb.Append("/");
             }
+
             return sb.ToString();
         }
 
@@ -370,6 +426,7 @@ namespace PluginHub.Editor
                     }
                 }
             }
+
             EditorGUIUtility.systemCopyBuffer = sb.ToString();
         }
 
@@ -403,6 +460,7 @@ namespace PluginHub.Editor
                     sb.Insert(0, "/");
                 transform = transform.parent;
             }
+
             return sb.ToString();
         }
 

@@ -18,9 +18,10 @@ namespace PluginHub.Runtime
 			_style = new GUIStyle();
 			Font font = Font.CreateDynamicFontFromOSFont(new string[]
 			{
-				"Microsoft YaHei Bold",
-				"Microsoft YaHei",
-				"Arial Bold", "Arial"
+				// "Microsoft YaHei Bold",
+				// "Microsoft YaHei",  
+				// "Arial Bold",
+				"Arial"
 			}, 12);
 			_style.font = font;
 		}

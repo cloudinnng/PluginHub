@@ -32,6 +32,9 @@ namespace PluginHub.Runtime
         [Tooltip("启动程序后，如果目前是窗口模式，则保持窗口宽高比并自动使用合适的较大分辨率显示。这在使用窗口模式以多种平台下测试应用程序时非常方便有用,仅Standalone平台有效")]
         public bool autoWindowSize = false;
 
+        [Tooltip("设计分辨率,若有值,则系统会在没有运行在此分辨率的情况下,向用户做出提示")]
+        public Vector2Int designResolution = Vector2Int.zero;
+
         void Start()
         {
             Screen.sleepTimeout = screenNeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
@@ -83,7 +86,21 @@ namespace PluginHub.Runtime
                 }
                 Screen.SetResolution(useResolution.x, useResolution.y, false);
             }
+
+            if (designResolution != Vector2Int.zero)
+                StartCoroutine(nameof(Runner));
         }
+
+        private IEnumerator Runner()
+        {
+            while (true)
+            {
+                if (Screen.width != designResolution.x || Screen.height != designResolution.y)
+                    Debug.LogWarning($"系统未在设计分辨率下运行({designResolution.x} x {designResolution.y})");
+                yield return new WaitForSeconds(1);
+            }
+        }
+
 
         private static int targetFrameRate = 0;
 

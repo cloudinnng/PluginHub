@@ -64,7 +64,7 @@ namespace PluginHub.Editor
 
         //这里定义各种纹理的别名，用于匹配，优先级从高到低。
         //如果纹理文件名中包含这些别名，就会被赋值到对应的纹理属性上
-        private static string[] albedoAlias = new string[] { "MainTex", "Albedo", "BaseColorMap", "BaseColor", "Color", "Diffuse", "col", "Diff" };
+        private static string[] albedoAlias = new string[] { "MainTex", "Albedo", "BaseColorMap", "BaseColor", "Color", "Diffuse", "col", "Diff","BaseMap", "Base" };
         private static string[] metallicAlias = new string[] { "Metalness", "MetallicMap", "Metallic", "Metal" };
         private static string[] emissionAlias = new string[] { "EmissionMap", "Emission", "emiss" };
         private static string[] normalAlias = new string[] { "NormalMap", "Normal", "BumpMap", "_n" };//有时BumpMap就是法线贴图
@@ -73,10 +73,11 @@ namespace PluginHub.Editor
 
         private static int NameContainAlias(string name, string[] aliasArray)
         {
-            name = name.ToLower();
+            // name = name.ToLower();
+            // Debug.Log("name: " + name);
             for (int i = 0; i < aliasArray.Length; i++)
             {
-                if (name.Contains(aliasArray[i].ToLower()))
+                if (name.Contains(aliasArray[i]))
                 {
                     Debug.Log($"{name} 匹配到别名：{aliasArray[i]},优先级{i}");
                     return i;
@@ -106,7 +107,7 @@ namespace PluginHub.Editor
             {
                 //eg: Assets/03.Art/Textures/MetalSteelBrushed001/MetalSteelBrushed001_Sphere.png
                 string texPath = AssetDatabase.GUIDToAssetPath(texGuid);
-                string fileName = Path.GetFileNameWithoutExtension(texPath).ToLower();
+                string fileName = Path.GetFileNameWithoutExtension(texPath);
 
                 int aliasIndex = -1;
 
@@ -288,6 +289,11 @@ namespace PluginHub.Editor
                 bool occlusionOk = false;
                 //check if buildin rp and standard shader
                 if (material.shader.name.Contains("Standard"))
+                {
+                    material.SetTexture("_OcclusionMap", occlusion);
+                    occlusionOk = true;
+                }
+                if (material.HasProperty("_OcclusionMap"))
                 {
                     material.SetTexture("_OcclusionMap", occlusion);
                     occlusionOk = true;
