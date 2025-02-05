@@ -55,7 +55,7 @@ namespace PluginHub.Editor
             }
         }
 
-        static Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.6275f);
+        static Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.8f);
 
         private static void hierarchyMonoIconItemHandler(int instanceId, Rect selectionRect)
         {
@@ -67,10 +67,12 @@ namespace PluginHub.Editor
             bool hasUserScript = false;
             for (int i = components.Length - 1; i >= 0; i--)
             {
-                string name = components[i].GetType().FullName;
+                Component component = components[i];
+                if (component == null) continue;
+                string name = component.GetType().FullName;
                 // Debug.Log(name,gameObject);
                 
-                if (components[i] != null && !name.Contains("UnityEngine") && !name.Contains("TextMeshPro") && !name.Contains("TMPro"))
+                if (!name.Contains("UnityEngine") && !name.Contains("TextMeshPro") && !name.Contains("TMPro"))
                     hasUserScript = true;
             }
 
