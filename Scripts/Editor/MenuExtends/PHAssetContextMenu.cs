@@ -326,6 +326,13 @@ namespace PluginHub.Editor
         }
         #endregion
 
+        #region Texture
+        [MenuItem("CONTEXT/Texture/PH 纹理添加T_前缀")]
+        public static void RenameTexture(MenuCommand command)
+        {
+            // TODO
+        }
 
+        #endregion
     }
 }

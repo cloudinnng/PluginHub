@@ -9,6 +9,7 @@ using UnityEngine;
 namespace PluginHub.Editor
 {
     // 项目视图资产右键上下文菜单
+
     public static class PHProjectContextMenu
     {
         //获取选中资产的绝对路径
@@ -311,5 +312,93 @@ namespace PluginHub.Editor
         }
 
         #endregion
+
+        #region File Prefix 根据资产命名约定命名资产
+        [MenuItem("Assets/PH 根据资产命名约定添加前缀", false)]
+        private static void AddPrefixToSelectedAssets()
+        {
+            // 获取当前选中的所有资源
+            var selectedAssets = Selection.GetFiltered<Object>(SelectionMode.Assets);
+
+            foreach (var asset in selectedAssets)
+            {
+                string assetPath = AssetDatabase.GetAssetPath(asset);
+                AddPrefixToAsset(assetPath);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        [MenuItem("Assets/PH 根据资产命名约定添加前缀", true)]
+        private static bool ValidateAddPrefixToSelectedAssets()
+        {
+            // 仅在有资源选中时启用菜单项
+            return Selection.GetFiltered<Object>(SelectionMode.Assets).Length > 0;
+        }
+        private static void AddPrefixToAsset(string assetPath)
+        {
+            string fileName = System.IO.Path.GetFileName(assetPath);
+
+            // 根据文件扩展名获取前缀
+            string prefix = GetPrefixByExtension(assetPath);
+            if (string.IsNullOrEmpty(prefix))
+                return; // 没有匹配前缀则跳过
+
+            // 检查文件是否已经有前缀，避免重复添加
+            if (fileName.StartsWith(prefix))
+                return;
+
+            string directory = System.IO.Path.GetDirectoryName(assetPath);
+            string newFileName = prefix + fileName;
+            string newPath = System.IO.Path.Combine(directory, newFileName).Replace("\\", "/");
+
+            // 检查是否已存在同名文件，避免冲突
+            if (AssetDatabase.LoadAssetAtPath<Object>(newPath) != null)
+            {
+                Debug.LogWarning($"文件重命名冲突: {newPath} 已存在，跳过此文件。");
+                return;
+            }
+
+            // 重命名资源
+            Debug.Log($"PH 重命名资源: {assetPath} -> {newPath}");
+            AssetDatabase.RenameAsset(assetPath, newFileName);
+        }
+
+        private static string GetPrefixByExtension(string path)
+        {
+            string extension = System.IO.Path.GetExtension(path).ToLower();
+
+            switch (extension)
+            {
+                case ".png":
+                case ".jpg":
+                case ".tga":
+                case ".psd":
+                case ".bmp":
+                case ".exr":
+                case ".hdr":
+                case ".tif":
+                    return "T_";  // 纹理
+                case ".mat":
+                    return "M_";  // 材质
+                case ".shadergraph":
+                    return "SG_"; // Shader Graph
+                case ".shader":
+                    return "S_";  // Shader
+                case ".fbx":
+                case ".obj":
+                case ".blend":
+                    return "Mesh_";  // 模型 Mesh
+                case ".prefab":
+                    return "PFB_";  // 预制体 Prefab
+                default:
+                    return null;  // 不处理其他类型
+            }
+        }
+
+
+        #endregion
     }
+
 }
