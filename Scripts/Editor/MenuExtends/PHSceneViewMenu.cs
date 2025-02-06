@@ -300,7 +300,9 @@ namespace PluginHub.Editor
         {
             worldPos = Vector3.zero;
             distanceOut = 0;
+            // Debug.Log($"MousePosToWorldPos: {mouseDownPosition}");
             Ray ray = HandleUtility.GUIPointToWorldRay(mouseDownPosition);
+            // DebugEx.DebugRay(ray, 100f, Color.red, 10f);
             bool succeed = RaycastWithoutCollider.Raycast(ray.origin, ray.direction, out RaycastWithoutCollider.HitResult result);
             if (!succeed)
                 return false;
