@@ -36,31 +36,37 @@ namespace PluginHub.Editor
         {
             if (!isDisplayed) return;
 
-            Vector2 position = floating ? floatingPosition : rootVisualElement.worldBound.position;
-            if (floating) position.y += 25;
-            Vector2 size = this.size;
-            position.x += 4;
-            position.y += size.y - 50;
-            size.y = size.x;
-            // Debug.Log($"position: {position}, size: {size}");
+            // PerformanceTest.Start();
+            // {
+                Vector2 position = floating ? floatingPosition : rootVisualElement.worldBound.position;
+                if (floating) position.y += 25;
+                Vector2 size = this.size;
+                position.x += 4;
+                position.y += size.y - 50;
+                size.y = size.x;
+                // Debug.Log($"position: {position}, size: {size}");
 
-            Handles.BeginGUI();
-            Rect rect = new Rect(position, size);
-            GUILayout.BeginArea(rect);
-            {
-                GUILayout.Label(tempTipContent);
-            }
-            GUILayout.EndArea();
-            Handles.EndGUI();
+                Handles.BeginGUI();
+                Rect rect = new Rect(position, size);
+                GUILayout.BeginArea(rect);
+                {
+                    GUILayout.Label(tempTipContent);
+                }
+                GUILayout.EndArea();
+                Handles.EndGUI();
+            // }
+            // PerformanceTest.End("PHSceneOverlay.OnSceneGUI");
         }
 
         public override void OnGUI()
         {
-            SceneViewBookmark.DrawSceneBookmark();
-
-            GUILayout.Space(5);
-
-            SelectionTools.DrawSelectionTools();
+            // PerformanceTest.Start();
+            // {
+                SceneViewBookmark.DrawSceneBookmark();
+                GUILayout.Space(5);
+                SelectionTools.DrawSelectionTools();
+            // }
+            // PerformanceTest.End("PHSceneOverlay.OnGUI");
         }
     }
 }
