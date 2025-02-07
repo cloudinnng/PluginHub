@@ -47,11 +47,17 @@ namespace PluginHub.Editor
                 if (rect.Contains(Event.current.mousePosition))
                 {
                     Texture2D texture2D = ThumbnailManager.TryGetThumbnail(currScenePath, i.ToString());
-                    // PHSceneOverlay.sceneBookmarkBottomShowContent[$"Camera{i}"].image = texture2D;
-                    // ShowHoverTip(rect, cameraBookmark.valid ? ThumbnailManager.TryGetThumbnail(currScenePath, i.ToString()) : null);
-                }else
+                    PHSceneOverlay.tempTipContent.image = texture2D;
+                    PHSceneOverlay.tempTipContent.text = "";
+                    PHSceneOverlay.tipContentKey = $"CameraBookmarkUIRow{i}";
+                }
+                else
                 {
-                    // PHSceneOverlay.sceneBookmarkBottomShowContent[$"Camera{i}"].image = null;
+                    if (PHSceneOverlay.tipContentKey == $"CameraBookmarkUIRow{i}")
+                    {
+                        PHSceneOverlay.tempTipContent.image = null;
+                        PHSceneOverlay.tipContentKey = "";
+                    }
                 }
             }
         }

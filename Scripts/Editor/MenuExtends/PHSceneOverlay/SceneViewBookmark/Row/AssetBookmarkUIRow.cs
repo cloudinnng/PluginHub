@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace PluginHub.Editor
 {
@@ -49,6 +50,22 @@ namespace PluginHub.Editor
                     HandleButton(assetBookmark);
                 }
                 GUI.color = Color.white;
+
+                //鼠标放上去显示文字
+                Rect rect = GUILayoutUtility.GetLastRect();
+                if (rect.Contains(Event.current.mousePosition))
+                {
+                    PHSceneOverlay.tempTipContent.text = assetBookmark.text;
+                    PHSceneOverlay.tipContentKey = $"AssetBookmarkUIRow{i}";
+                }
+                else
+                {
+                    if (PHSceneOverlay.tipContentKey == $"AssetBookmarkUIRow{i}")
+                    {
+                        PHSceneOverlay.tempTipContent.text = "";
+                        PHSceneOverlay.tipContentKey = "";
+                    }
+                }
             }
         }
 

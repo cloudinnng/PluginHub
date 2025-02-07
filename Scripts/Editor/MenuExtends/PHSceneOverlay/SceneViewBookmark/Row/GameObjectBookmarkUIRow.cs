@@ -86,6 +86,21 @@ namespace PluginHub.Editor
                     rect1.height = 10;
                     GUI.Label(rect1, (i + 1).ToString());
                 }
+
+                //鼠标放上去显示文字
+                if (rect.Contains(Event.current.mousePosition))
+                {
+                    PHSceneOverlay.tempTipContent.text = gameObjectBookmark.text;
+                    PHSceneOverlay.tipContentKey = $"GameObjectBookmarkUIRow{i}";
+                }
+                else
+                {
+                    if (PHSceneOverlay.tipContentKey == $"GameObjectBookmarkUIRow{i}")
+                    {
+                        PHSceneOverlay.tempTipContent.text = "";
+                        PHSceneOverlay.tipContentKey = "";
+                    }
+                }
             }
         }
 
