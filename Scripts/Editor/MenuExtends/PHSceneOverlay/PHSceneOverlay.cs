@@ -20,53 +20,59 @@ namespace PluginHub.Editor
         {
             base.OnCreated();
             instance = this;
-            SceneView.duringSceneGui += OnSceneGUI;
+            SceneView.duringSceneGui += OnSceneGUIHoverTip;
+
+            // 移除 Unity Overlay 自带的 Hover 提示，以免遮挡我们的Hover提示
+            rootVisualElement.tooltip = "";
         }
         public override void OnWillBeDestroyed()
         {
             base.OnWillBeDestroyed();
             instance = null;
-            SceneView.duringSceneGui -= OnSceneGUI;
+            SceneView.duringSceneGui -= OnSceneGUIHoverTip;
         }
 
         public static GUIContent tempTipContent = new GUIContent();
         public static string tipContentKey = "";
-
-        private void OnSceneGUI(SceneView sceneView)
+        private void OnSceneGUIHoverTip(SceneView sceneView)
         {
             if (!isDisplayed) return;
+            if (tempTipContent == null || (tempTipContent.image == null && string.IsNullOrEmpty(tempTipContent.text))) return;
 
-            // PerformanceTest.Start();
-            // {
-                Vector2 position = floating ? floatingPosition : rootVisualElement.worldBound.position;
-                if (floating) position.y += 25;
-                Vector2 size = this.size;
-                position.x += 4;
-                position.y += size.y - 50;
-                size.y = size.x;
-                // Debug.Log($"position: {position}, size: {size}");
+            // 计算显示原点
+            Vector2 originPosition = floating ? floatingPosition : rootVisualElement.worldBound.position;
+            Vector2 overlaySize = this.size;
+            originPosition.x += 2;
+            originPosition.y += overlaySize.y - 20;
 
-                Handles.BeginGUI();
-                Rect rect = new Rect(position, size);
-                GUILayout.BeginArea(rect);
+            // Debug.Log($"position: {position}, size: {size}");
+            Handles.BeginGUI();
+            {
+                if (!string.IsNullOrEmpty(tempTipContent.text))// 画文字
                 {
-                    GUILayout.Label(tempTipContent);
+                    Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(tempTipContent.text));
+                    Rect backRect = new Rect(originPosition.x, originPosition.y, textSize.x + 10, textSize.y + 10);
+                    Rect textRect = new Rect(backRect.x + 5, backRect.y + 5, backRect.width - 10, backRect.height - 10);
+                    GUI.Button(backRect, "");
+                    GUI.Label(textRect, tempTipContent);
                 }
-                GUILayout.EndArea();
-                Handles.EndGUI();
-            // }
-            // PerformanceTest.End("PHSceneOverlay.OnSceneGUI");
+                else // 画图片
+                {
+                    overlaySize.y = overlaySize.x;
+                    Rect backRect = new Rect(originPosition, overlaySize);
+                    Rect imageRect = new Rect(originPosition.x + 5, originPosition.y + 5, overlaySize.x - 10, overlaySize.y - 10);
+                    GUI.Button(backRect, "");
+                    GUI.Label(imageRect, tempTipContent);
+                }
+            }
+            Handles.EndGUI();
         }
 
         public override void OnGUI()
         {
-            // PerformanceTest.Start();
-            // {
-                SceneViewBookmark.DrawSceneBookmark();
-                GUILayout.Space(5);
-                SelectionTools.DrawSelectionTools();
-            // }
-            // PerformanceTest.End("PHSceneOverlay.OnGUI");
+            SceneViewBookmark.DrawSceneBookmark();
+            GUILayout.Space(5);
+            SelectionTools.DrawSelectionTools();
         }
     }
 }
