@@ -30,7 +30,7 @@ namespace PluginHub.Editor
             for (int i = 0; i < BookmarkSettings.BOOKMARK_COUNT; i++)
             {
                 GameObjectBookmark gameObjectBookmark = group.gameObjectPaths[i];
-                GUI.color = gameObjectBookmark.valid
+                GUI.color = gameObjectBookmark.hasContentSaved
                     ? (gameObjectBookmark.IsActivated()
                         ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE
                         : BookmarkSettings.COLOR_BOOKMARK_BUTTON_NORMAL)
@@ -38,7 +38,7 @@ namespace PluginHub.Editor
 
                 string showName = (i + 1).ToString();
 
-                if (gameObjectBookmark.valid)
+                if (gameObjectBookmark.hasContentSaved)
                 {
                     GUIContent icon;
                     //图标图片非Unity内置图片
@@ -76,7 +76,7 @@ namespace PluginHub.Editor
 
 
                 Rect rect = GUILayoutUtility.GetLastRect();
-                if (gameObjectBookmark.valid)
+                if (gameObjectBookmark.hasContentSaved)
                 {
                     //右下角画一个lable表示快捷键
                     Rect rect1 = rect;
@@ -131,7 +131,7 @@ namespace PluginHub.Editor
             }
             else //没按ctrl 载入
             {
-                if (gameObjectBookmark.valid)
+                if (gameObjectBookmark.hasContentSaved)
                 {
                     Selection.activeGameObject = GameObject.Find(gameObjectBookmark.text);
                 }

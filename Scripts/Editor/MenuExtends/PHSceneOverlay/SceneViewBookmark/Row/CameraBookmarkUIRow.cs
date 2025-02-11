@@ -18,20 +18,22 @@ namespace PluginHub.Editor
             for (int i = 0; i < BookmarkSettings.BOOKMARK_COUNT; i++)
             {
                 CameraBookmark cameraBookmark = group.cameraBookmarks[i];
-                GUI.color = cameraBookmark.valid 
+                GUI.color = cameraBookmark.hasContentSaved
                     ? (cameraBookmark.IsActivated() 
                         ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE 
                         : BookmarkSettings.COLOR_BOOKMARK_BUTTON_NORMAL)
                     : BookmarkSettings.COLOR_BOOKMARK_BUTTON_EMPTY;
 
                 bool click = false;
-                if (cameraBookmark.valid)
+                if (cameraBookmark.hasContentSaved)
                 {
+                    // 画缩略图
                     Texture texture = ThumbnailManager.TryGetThumbnail(currScenePath, i.ToString());
                     click = GUILayout.Button(texture, BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
                 }
                 else
                 {
+                    // 画数字
                     click = GUILayout.Button((i + 1).ToString(), BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
                 }
 
@@ -66,21 +68,21 @@ namespace PluginHub.Editor
             string currScenePath = SceneManager.GetActiveScene().path;
             if (Event.current.control)//按了ctrl
             {
-                if (Event.current.button == 0)//左键
+                if (Event.current.button == 0)//左键save
                 {
                     cameraBookmark.Create();
                     BookmarkAssetSO.Instance.Save();
                     ThumbnailManager.CreateThumbnail(SceneView.lastActiveSceneView.camera, currScenePath, i.ToString());
-                }else if (Event.current.button == 1)//右键
+                }else if (Event.current.button == 1)//右键delete
                 {
                     ThumbnailManager.DeleteThumbnail(currScenePath, i.ToString());
-                    cameraBookmark.size = 0;
+                    cameraBookmark.pivot = Vector3.zero;
                     BookmarkAssetSO.Instance.Save();
                 }
             }
             else//没按ctrl
             {
-                if (cameraBookmark.valid)
+                if (cameraBookmark.hasContentSaved)
                 {
                     cameraBookmark.FlyTo();
                 }

@@ -409,5 +409,34 @@ namespace PluginHub.Runtime
         }
 
         #endregion
+
+        #region MoveRotate
+
+        public static IEnumerator DoMoveRotate(Transform transform, Vector3 targetPos, Vector3 targetAngle, float duration)
+        {
+            Vector3 startPos = transform.position;
+            Vector3 startAngle = transform.eulerAngles;
+            //lerp from nearlest angle
+            if (Mathf.Abs(startAngle.y - targetAngle.y) > 180)
+                if (startAngle.y > targetAngle.y) startAngle.y -= 360;
+                else startAngle.y += 360;
+
+            float time = 0;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float t = AnimCurve.Evaluate(time / duration);
+
+                Vector3 pos = Vector3.Lerp(startPos, targetPos, t);
+                Vector3 angle = Vector3.Lerp(startAngle, targetAngle, t);
+
+                transform.position = pos;
+                transform.eulerAngles = angle;
+                yield return null;
+            }
+        }
+
+        #endregion
+
     }
 }

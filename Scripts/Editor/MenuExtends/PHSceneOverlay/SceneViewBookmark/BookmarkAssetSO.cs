@@ -11,8 +11,8 @@ namespace PluginHub.Editor
     [System.Serializable]
     public abstract class IBookmark
     {
-        //指这个书签位是否保存了内容
-        public virtual bool valid { get; private set; }
+        //指这个书签位是否已保存了书签
+        public virtual bool hasContentSaved { get; private set; }
         
         public abstract bool IsActivated();//激活表示刚刚跳转到这个书签时候的状态
     }
@@ -40,7 +40,7 @@ namespace PluginHub.Editor
             ViewTweenInitializeOnLoad.GotoCameraBookmark(this, SceneView.lastActiveSceneView);
         }
 
-        public override bool valid => pivot != Vector3.zero && rotation != Quaternion.identity && size != 0;
+        public override bool hasContentSaved => pivot != Vector3.zero;
 
         public override bool IsActivated()
         {
@@ -112,7 +112,7 @@ namespace PluginHub.Editor
     {
         public string componentName;
 
-        public override bool valid => string.IsNullOrWhiteSpace(text) == false;
+        public override bool hasContentSaved => string.IsNullOrWhiteSpace(text) == false;
     }
     
     [System.Serializable]
@@ -120,7 +120,7 @@ namespace PluginHub.Editor
     {
         public string iconName;
 
-        public override bool valid => string.IsNullOrWhiteSpace(text) == false;
+        public override bool hasContentSaved => string.IsNullOrWhiteSpace(text) == false;
     }
     
 

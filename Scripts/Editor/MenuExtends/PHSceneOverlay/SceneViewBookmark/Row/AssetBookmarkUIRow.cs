@@ -24,7 +24,7 @@ namespace PluginHub.Editor
             for (int i = 0; i < BookmarkSettings.BOOKMARK_COUNT; i++)
             {
                 AssetObjectBookmark assetBookmark = group.assetPaths[i];
-                GUI.color = assetBookmark.valid
+                GUI.color = assetBookmark.hasContentSaved
                     ? (assetBookmark.IsActivated()
                         ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE
                         : BookmarkSettings.COLOR_BOOKMARK_BUTTON_NORMAL)
@@ -32,7 +32,7 @@ namespace PluginHub.Editor
                 
 
                 bool click = false;
-                if (assetBookmark.valid && !string.IsNullOrWhiteSpace(assetBookmark.iconName))
+                if (assetBookmark.hasContentSaved && !string.IsNullOrWhiteSpace(assetBookmark.iconName))
                 {
                     // GUIContent icon = EditorGUIUtility.IconContent($"d_{assetBookmark.iconName} Icon");
 
@@ -92,7 +92,7 @@ namespace PluginHub.Editor
             }
             else//没按ctrl
             {
-                if (assetBookmark.valid)
+                if (assetBookmark.hasContentSaved)
                 {
                     Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(assetBookmark.text);
                 }

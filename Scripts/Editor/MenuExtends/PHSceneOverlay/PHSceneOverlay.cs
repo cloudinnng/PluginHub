@@ -41,9 +41,12 @@ namespace PluginHub.Editor
 
             // 计算显示原点
             Vector2 originPosition = floating ? floatingPosition : rootVisualElement.worldBound.position;
+            // Vector2 originPosition = floatingPosition;
             Vector2 overlaySize = this.size;
             originPosition.x += 2;
             originPosition.y += overlaySize.y - 20;
+            if (!floating)
+                originPosition.y -= 25;
 
             // Debug.Log($"position: {position}, size: {size}");
             Handles.BeginGUI();
