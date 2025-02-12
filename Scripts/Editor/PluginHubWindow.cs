@@ -50,29 +50,28 @@ namespace PluginHub.Editor
         [UnityEditor.MenuItem("Window/Plugin Hub Window %&R", false, -10000)]
         public static void SwitchWindow()
         {
-            PluginHubWindow pluginHubWindow = EditorWindow.GetWindow<PluginHubWindow>();
-            if (pluginHubWindow != null)
+            if (Window.docked)//当窗口被停靠时，显示窗口
             {
-                if (pluginHubWindow.docked)//当窗口被停靠时，显示窗口
+                Debug.Log("显示 PluginHub 主窗口");
+                InitModule();
+                Window.Show();//显示窗口
+            }
+            else//当窗口未被停靠时，切换窗口的显示和隐藏，因此可以使用快捷键切换窗口的显示和隐藏
+            {
+                Debug.Log("切换 PluginHub 主窗口");
+                if (Window.position.x == 0)//在非dock下，可以用Window.position.x == 0判断窗口是否显示
                 {
-                    Debug.Log("显示 PluginHub 主窗口");
-                    Window.Show();//显示窗口
+                    InitModule();
+                    Window.Show();
                 }
-                else//当窗口未被停靠时，切换窗口的显示和隐藏，因此可以使用快捷键切换窗口的显示和隐藏
-                {
-                    Debug.Log("切换 PluginHub 主窗口");
-                    if (Window.position.x == 0)//在非dock下，可以用Window.position.x == 0判断窗口是否显示
-                        Window.Show();
-                    else
-                        Window.Close();//调用Close()之后，会释放PluginHubWindow实例。其中的值会消失，所以记得重要的变量使用EditorPrefs保存
-                }
+                else
+                    Window.Close();//调用Close()之后，会释放PluginHubWindow实例。其中的值会消失，所以记得重要的变量使用EditorPrefs保存
             }
         }
 
         public static void RestartWindow()
         {
-            if (Window != null)
-                Window.Close();
+            Window.Close();
             InitModule();
             Window.Show();
         }
@@ -145,14 +144,6 @@ namespace PluginHub.Editor
         //     //这里也初始化一下 避免修改脚本后丢失引用
         //     InitModule();
         // }
-
-        [InitializeOnLoadMethod]
-        private static void InitializeOnLoadMethod()
-        {
-            InitModule();
-            for (int i = 0; i < moduleList.Count; i++)
-                moduleList[i].OnInitOnload();
-        }
 
         // 释放所有模块，重新加载模块
         private static void InitModule()

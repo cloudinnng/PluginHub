@@ -18,7 +18,7 @@ namespace PluginHub.Editor
             get { return "场景"; }
         }
         public override ModuleType moduleType => ModuleType.Shortcut;
-        private List<SceneAsset> recentScene = new List<SceneAsset>(); //最近场景资产
+        private static List<SceneAsset> recentScene = new List<SceneAsset>(); //最近场景资产
         private bool showAllScene = false;
 
         private string filiterText
@@ -29,12 +29,10 @@ namespace PluginHub.Editor
 
         string[] allScenePaths = null; //项目中所有场景文件的路径
 
-
         // 场景模块需要在用户未打开PluginHubWindows的情况下，监听场景的打开、关闭、加载、创建等事件，以记录最近打开的场景
-        public override void OnInitOnload()
+        [InitializeOnLoadMethod]
+        public static void OnInitOnload()
         {
-            base.OnInitOnload();
-
             EditorSceneManager.sceneOpened -= OnSceneOpened;
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorSceneManager.sceneLoaded -= OnSceneLoaded;
@@ -170,7 +168,7 @@ namespace PluginHub.Editor
 
         }
 
-        private void AddSceneToRecent(Scene scene)
+        private static void AddSceneToRecent(Scene scene)
         {
             LoadRecentScenes();//先载入一下
             SceneAsset sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);
@@ -279,37 +277,37 @@ namespace PluginHub.Editor
         }
 
 
-        void OnSceneOpened(Scene scene, OpenSceneMode mode)
+        static void OnSceneOpened(Scene scene, OpenSceneMode mode)
         {
             //当打开场景，储存该场景
             AddSceneToRecent(scene);
         }
 
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             AddSceneToRecent(scene);
         }
 
-        private void OnSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
+        private static void OnSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
         {
             AddSceneToRecent(scene);
         }
 
-        private void OnSceneClosed(Scene scene)
+        private static void OnSceneClosed(Scene scene)
         {
             AddSceneToRecent(scene);
         }
 
 
         //用于存储最近的场景的列表，使用分号分隔
-        private string recentScenePaths
+        private static string recentScenePaths
         {
             get { return EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_RecentScene", ""); }
             set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_RecentScene", value); }
         }
         
         //将存储在EditorPrefs中的最近场景列表载入到recentScene中
-        private void LoadRecentScenes()
+        private static void LoadRecentScenes()
         {
             recentScene.Clear();
             string recentSceneStr = recentScenePaths;
@@ -327,7 +325,7 @@ namespace PluginHub.Editor
             }
         }
         //将recentScene中的场景储存到EditorPrefs中，使用分号分隔
-        private void SaveRecentScenes()
+        private static void SaveRecentScenes()
         {
             recentScenePaths = string.Join(";", recentScene.Select(s => AssetDatabase.GetAssetPath(s)).ToArray());
         }

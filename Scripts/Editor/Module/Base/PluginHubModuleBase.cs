@@ -224,12 +224,6 @@ namespace PluginHub.Editor
             return false;
         }
 
-        //这个方法在Unity打开时就会执行，不需要打开PluginHubWindow
-        public virtual void OnInitOnload()
-        {
-            if (moduleDebug) Debug.Log($"{moduleName} mudule : OnInitOnload");
-        }
-
         #endregion
 
         #region EditorWindow Functions 这些方法让模块内部可以使用EditorWindow的生命周期方法
