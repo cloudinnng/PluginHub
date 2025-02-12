@@ -35,6 +35,16 @@ namespace PluginHub.Editor
             menu.AddSeparator("");
 
 
+            // 创建菜单 （优点：创建的东西直接在鼠标击中的位置处）
+            menu.AddItem(new GUIContent("Create/Empty GameObject"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,null));
+            menu.AddItem(new GUIContent("Create/Cube"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,PrimitiveType.Cube));
+            menu.AddItem(new GUIContent("Create/Sphere"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,PrimitiveType.Sphere));
+            menu.AddItem(new GUIContent("Create/Cylinder"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,PrimitiveType.Cylinder));
+            menu.AddItem(new GUIContent("Create/Capsule"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,PrimitiveType.Capsule));
+            menu.AddItem(new GUIContent("Create/Plane"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,PrimitiveType.Plane));
+            menu.AddItem(new GUIContent("Create/Quad"), false, () => CreateNewGameObjectNextToSelection<Transform>(mouseDownPosition,PrimitiveType.Quad));
+            menu.AddSeparator("");
+
             // 移动命令
             // menu.AddItem(new GUIContent("Move Selection To Ceiling"), false, () => MoveSelectionToCeiling());
             // menu.AddItem(new GUIContent("Move Selection To Ground"), false, () => MoveSelectionToGround());
@@ -43,7 +53,7 @@ namespace PluginHub.Editor
             // 场景搭建相关命令
             menu.AddItem(new GUIContent("Bake Lighting"), false, () => Lightmapping.BakeAsync());
             menu.AddItem(new GUIContent("Cancel Bake"), false, () => Lightmapping.Cancel());
-            menu.AddItem(new GUIContent("Create Light Here"), false, () => CreateNewGameObject<Light>(mouseDownPosition));
+            menu.AddItem(new GUIContent("Create Light Here"), false, () => CreateNewGameObjectNextToSelection<Light>(mouseDownPosition,null));
             menu.AddItem(new GUIContent("More/Clear Baked Data"), false, () => Lightmapping.Clear());
             menu.AddItem(new GUIContent("More/Clear Disk Cache"), false, () => Lightmapping.ClearDiskCache());
             menu.AddSeparator("");
@@ -254,23 +264,31 @@ namespace PluginHub.Editor
             }
         }
 
-        // 在鼠标位置创建新的GameObject
-        private static void CreateNewGameObject<T>(Vector2 mouseDownPosition) where T : Behaviour
+        // 在鼠标位置创建新的GameObject,层级放在选中对象的下一个位置
+        private static void CreateNewGameObjectNextToSelection<T>(Vector2 mouseDownPosition,PrimitiveType? type) where T : Component
         {
             bool succee = MousePosToWorldPos(out Vector3 worldPos, out _, mouseDownPosition);
             if (succee)
             {
-                // 获取选中对象的父对象和同级索引
-                Transform parent = (Selection.gameObjects!=null && Selection.gameObjects.Length>0) ? Selection.gameObjects[0].transform.parent : null;
-                int siblingIndex = (Selection.gameObjects!=null && Selection.gameObjects.Length>0) ? Selection.gameObjects[0].transform.GetSiblingIndex() : 9999;
+                // 选中对象的父对象
+                Transform selectionParent = (Selection.gameObjects!=null && Selection.gameObjects.Length>0) ? Selection.gameObjects[0].transform.parent : null;
+                // 选中对象的同级索引
+                int selectionSiblingIndex = (Selection.gameObjects!=null && Selection.gameObjects.Length>0) ? Selection.gameObjects[0].transform.GetSiblingIndex() : 9999;
 
-                GameObject newGameObject = new GameObject($"{typeof(T)}");
+                GameObject newGameObject;
+                if(type == null)
+                    newGameObject = new GameObject($"{typeof(T)}");
+                else
+                    newGameObject = GameObject.CreatePrimitive(type.Value);
+
                 Undo.RegisterCreatedObjectUndo(newGameObject, $"Create {typeof(T)}");
-                newGameObject.AddComponent<T>();
+                if (typeof(T) != typeof(Transform))
+                    newGameObject.AddComponent<T>();
                 newGameObject.transform.position = worldPos;
-                if (parent != null)
-                    newGameObject.transform.SetParent(parent);
-                newGameObject.transform.SetSiblingIndex(siblingIndex + 1);
+                if (selectionParent != null)
+                    newGameObject.transform.SetParent(selectionParent);
+                if (selectionSiblingIndex != 9999)
+                    newGameObject.transform.SetSiblingIndex(selectionSiblingIndex + 1);
 
                 // 选中新创建的对象
                 Selection.activeGameObject = newGameObject;

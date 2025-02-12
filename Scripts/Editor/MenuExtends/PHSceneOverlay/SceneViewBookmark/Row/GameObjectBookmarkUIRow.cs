@@ -11,10 +11,9 @@ namespace PluginHub.Editor
 {
     public class GameObjectBookmarkUIRow : IBookmarkUIRow
     {
-        private Texture postProcessVolumeIcon;
-
         //遇到这些字符串,注意是外部Resources文件夹下的icon图标
-        private string[] externalIcon = new[] { "PostProcessing" };
+        private string[] externalIconNames = new[] { "PostProcessing" };
+        private Dictionary<string, GUIContent> externalIconGUIContents = new Dictionary<string, GUIContent>();
 
         protected override void DrawHorizontalInnerGUI(SceneBookmarkGroup group)
         {
@@ -41,26 +40,26 @@ namespace PluginHub.Editor
                 if (gameObjectBookmark.hasContentSaved)
                 {
                     GUIContent icon;
-                    //图标图片非Unity内置图片
-                    if (externalIcon.Contains(gameObjectBookmark.componentName))
+
+                    if(externalIconGUIContents.ContainsKey(gameObjectBookmark.componentName))// 有就取出来
+                        icon = externalIconGUIContents[gameObjectBookmark.componentName];
+                    else// 没有就加载 放进去
                     {
-                        if (postProcessVolumeIcon == null)
-                            postProcessVolumeIcon = Resources.Load<Texture>(gameObjectBookmark.componentName);
-                        icon = new GUIContent(postProcessVolumeIcon);
-                    }
-                    else
-                    {
-                        //图标可以使用Unity内置图片
-                        icon = EditorGUIUtility.IconContent($"d_{gameObjectBookmark.componentName} Icon");
+                        if (externalIconNames.Contains(gameObjectBookmark.componentName)) //图标图片非Unity内置图片
+                        {
+                            Texture externalIcon = Resources.Load<Texture>(gameObjectBookmark.componentName);
+                            icon = new GUIContent(externalIcon);
+                            externalIconGUIContents.Add(gameObjectBookmark.componentName, icon);
+                        }
+                        else
+                        {
+                            //图标可以使用Unity内置图片
+                            icon = EditorGUIUtility.IconContent($"d_{gameObjectBookmark.componentName} Icon");
+                            externalIconGUIContents.Add(gameObjectBookmark.componentName, icon);
+                        }
                     }
 
-                    //1，2，3，4，5 快捷键选择游戏对象
-                    bool shortKeyPress = Event.current.keyCode == KeyCode.Alpha1 + i
-                                         // && Event.current.type == EventType.KeyUp
-                                         //没有按下ctrl alt shift
-                                         && !Event.current.control && !Event.current.alt && !Event.current.shift;
-
-                    if (GUILayout.Button(icon, BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y)) || shortKeyPress)
+                    if (GUILayout.Button(icon, BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y)))
                     {
                         HandleButton(gameObjectBookmark);
                     }
@@ -179,6 +178,8 @@ namespace PluginHub.Editor
                     return "AreaLight";
             }
 
+            if (componentNames.Contains("UnityEngine.Animation"))
+                return "Animation";
             if (componentNames.Contains("UnityEngine.Animator"))
                 return "Animator";
             if (componentNames.Contains("UnityEngine.ParticleSystem"))

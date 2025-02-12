@@ -39,55 +39,16 @@ namespace PluginHub.Editor
 
         private static void MoveGameObjectToGround(GameObject obj, bool detectFromTop)
         {
-            //MeshFilter meshFilter = obj.GetComponentInChildren<MeshFilter>();
-
-            //选择轴心处于最低位置的collier
-            Collider collider = FindLowestComponent<Collider>(obj);
-            bool colliderIsAdd = false; //标记碰撞器是否是后来加上去的
-            if (collider == null)
+            Vector3 origin = detectFromTop? obj.transform.position + Vector3.up * 1000 : obj.transform.position;
+            bool raycastResult = RaycastWithoutCollider.Raycast(origin, Vector3.down, out RaycastWithoutCollider.HitResult result);
+            if (raycastResult)
             {
-                //如果没有碰撞器,添加碰撞器
-                MeshRenderer meshRenderer = FindLowestComponent<MeshRenderer>(obj);
-                if (meshRenderer != null)
-                {
-                    collider = meshRenderer.gameObject.AddComponent<BoxCollider>();
-                }
-                else //如果连网格都没有
-                {
-                    collider = obj.AddComponent<BoxCollider>();
-                    ((BoxCollider)collider).size = Vector3.zero;
-                }
-
-                colliderIsAdd = true;
-            }
-
-            // collider.bounds位置会根据物体位置移动，但是不会旋转，三轴始终平行于世界坐标轴
-            Bounds colliderBounds = collider.bounds;
-
-            //原心点距离边框最下沿的距离
-            float pivotToMinY = obj.transform.position.y - colliderBounds.min.y;
-
-            Vector3 rayOrigin = collider.transform.position;
-            if (detectFromTop)
-                rayOrigin.y = 999999;
-
-            obj.SetActive(false); //暂时隐藏物体,防止射线打到自己
-
-            if(RaycastWithoutCollider.Raycast(rayOrigin, Vector3.down, out RaycastWithoutCollider.HitResult result))
+                Undo.RecordObject(obj.transform, "Move Selection To Ground");
+                obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y, obj.transform.position.z);
+            }else
             {
-                obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y + pivotToMinY,
-                    obj.transform.position.z);
-                Debug.Log($"对象{obj.name}已移动到{result.renderer.name}上", result.renderer);
+                Debug.LogError("未检测到地面");
             }
-            else
-            {
-                Debug.LogWarning($"对象{obj.name}下方没检测到地面");
-            }
-
-            obj.SetActive(true);
-
-            if (colliderIsAdd)
-                GameObject.DestroyImmediate(collider);
         }
         /// <summary>
         /// 找出一个对象身上的所有组件，并在其中找世界坐标Y最矮的一个返回

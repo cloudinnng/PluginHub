@@ -32,6 +32,7 @@ namespace PluginHub.Editor
             SceneView.duringSceneGui -= OnSceneGUIHoverTip;
         }
 
+        // 绘制鼠标悬停提示
         public static GUIContent tempTipContent = new GUIContent();
         public static string tipContentKey = "";
         private void OnSceneGUIHoverTip(SceneView sceneView)
