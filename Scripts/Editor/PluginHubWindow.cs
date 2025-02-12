@@ -90,9 +90,9 @@ namespace PluginHub.Editor
             {
                 if (_moduleConfigSO == null)
                     _moduleConfigSO = AssetDatabase.LoadAssetAtPath<ModuleConfigSO>(PluginHubConfig.MODULECONFIT_ASSET_PATH);
-                // 依然为空，创建一个
                 if (_moduleConfigSO == null)
                 {
+                    // 项目Assets下没有模块配置文件，创建一个
                     _moduleConfigSO = ScriptableObject.CreateInstance<ModuleConfigSO>();
                     _moduleConfigSO.MakeAllModuleConfig();
                     if (!System.IO.Directory.Exists(PluginHubConfig.ASSET_DIR))

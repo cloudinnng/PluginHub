@@ -253,7 +253,7 @@ namespace PluginHub.Editor
             tabConfigs.Clear();
             // TODO 添加所有模块到配置中
             string[] allModule = GetAllModulePath();
-            //<模块分类名,模块名列表>
+            //<模块类别,模块名列表>
             Dictionary<string,List<string>> moduleDic = new Dictionary<string, List<string>>();
 
             for (int i = 0; i < allModule.Length; i++)
