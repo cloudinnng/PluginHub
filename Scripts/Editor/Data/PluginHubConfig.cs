@@ -7,6 +7,8 @@ namespace PluginHub.Editor
     //与EditorPrefs不同，保存在ProjectSettings目录下，因此它可以被版本控制系统跟踪
     public static class PluginHubConfig
     {
+        internal const string ASSET_DIR = "Assets/Plugins/PluginHubAssets";
+        internal const string MODULECONFIT_ASSET_PATH = ASSET_DIR + "/PH_ModuleConfigSO.asset";
         public static string configPath { get; private set; }
         private static bool initialized = false;
         private static INIParser iniParser;

@@ -89,7 +89,16 @@ namespace PluginHub.Editor
             get
             {
                 if (_moduleConfigSO == null)
-                    _moduleConfigSO = Resources.Load<ModuleConfigSO>("PH_ModuleConfigSO");
+                    _moduleConfigSO = AssetDatabase.LoadAssetAtPath<ModuleConfigSO>(PluginHubConfig.MODULECONFIT_ASSET_PATH);
+                // 依然为空，创建一个
+                if (_moduleConfigSO == null)
+                {
+                    _moduleConfigSO = ScriptableObject.CreateInstance<ModuleConfigSO>();
+                    _moduleConfigSO.MakeAllModuleConfig();
+                    if (!System.IO.Directory.Exists(PluginHubConfig.ASSET_DIR))
+                        System.IO.Directory.CreateDirectory(PluginHubConfig.ASSET_DIR);
+                    AssetDatabase.CreateAsset(_moduleConfigSO, PluginHubConfig.MODULECONFIT_ASSET_PATH);
+                }
                 return _moduleConfigSO;
             }
         }

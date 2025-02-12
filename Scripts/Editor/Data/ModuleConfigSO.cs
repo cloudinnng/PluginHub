@@ -17,8 +17,7 @@ namespace PluginHub.Editor
     public class ModuleConfigSOEditor : UnityEditor.Editor
     {
         private ModuleConfigSO targetScript => (ModuleConfigSO)target;
-        //模块前缀
-        private string moduleFolder = "Packages/com.hellottw.pluginhub/Scripts/Editor/Module/";
+
         private string moduleFillterStr = "";
 
         public override void OnInspectorGUI()
@@ -49,7 +48,7 @@ namespace PluginHub.Editor
                 return x.moduleList.Select(y => y.name).ToArray();
             }).SelectMany(x => x).ToArray();
             //所有模块
-            string[] moduleFiles = GetAllModulePath();
+            string[] moduleFiles = targetScript.GetAllModulePath();
 
             //绘制模块搜索输入框
             moduleFillterStr = EditorGUILayout.TextField("模块搜索：", moduleFillterStr);
@@ -119,25 +118,25 @@ namespace PluginHub.Editor
                 if (GUILayout.Button("清空配置"))
                 {
                     targetScript.tabConfigs.Clear();
-                    MakeConfigDirtyAndSave();
+                    targetScript.MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
                 if (GUILayout.Button("载入场景搭建配置"))
                 {
-                    MakeConstructSceneConfig();
-                    MakeConfigDirtyAndSave();
+                    targetScript.MakeConstructSceneConfig();
+                    targetScript.MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
                 if (GUILayout.Button("载入精简模块配置"))
                 {
-                    MakeMinimalModuleConfig();
-                    MakeConfigDirtyAndSave();
+                    targetScript.MakeMinimalModuleConfig();
+                    targetScript.MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
                 if (GUILayout.Button("载入所有模块配置"))
                 {
-                    MakeAllModuleConfig();
-                    MakeConfigDirtyAndSave();
+                    targetScript.MakeAllModuleConfig();
+                    targetScript.MakeConfigDirtyAndSave();
                     PluginHubWindow.RestartWindow();
                 }
             }
@@ -146,16 +145,40 @@ namespace PluginHub.Editor
 
             if (GUILayout.Button("重启 PluginHubWindow", GUILayout.Height(30)))
             {
-                MakeConfigDirtyAndSave();
+                targetScript.MakeConfigDirtyAndSave();
                 PluginHubWindow.RestartWindow();
             }
         }
 
-        #region Tool Function
+
+
+    }
+
+#endif
+
+    //代表一个Tab页的数据
+    [System.Serializable]
+    public class ModuleTabConfig
+    {
+        public string tabName = "TabName";
+        public List<MonoScript> moduleList = new List<MonoScript>();
+    }
+
+    //ScriptableObject资产文件，用于存储哪些模块被添加到哪些Tab页
+    [CreateAssetMenu(fileName = "ModuleConfigSO", menuName = "ScriptableObjects/ModuleConfigSO", order = 1)]
+    public class ModuleConfigSO : ScriptableObject
+    {
+        public List<ModuleTabConfig> tabConfigs = new List<ModuleTabConfig>();
+        // public Object moduleFolder;
+
+
+
+        //模块前缀
+        private string moduleFolder = "Packages/com.hellottw.pluginhub/Scripts/Editor/Module/";
 
         //获取所有模块的路径
         //Packages/com.hellottw.pluginhub/Editor/Module/Base64TextureConvertModule.cs
-        private string[] GetAllModulePath()
+        public string[] GetAllModulePath()
         {
             //所有模块
             string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.AllDirectories);
@@ -164,24 +187,19 @@ namespace PluginHub.Editor
             return moduleFiles;
         }
 
-
-        private void MakeConfigDirtyAndSave()
+        public void MakeConfigDirtyAndSave()
         {
             //make dirty
-            EditorUtility.SetDirty(targetScript);
+            EditorUtility.SetDirty(this);
             AssetDatabase.SaveAssets();
         }
-        #endregion
-
-        #region 几个预设配置
-
 
         // 场景搭建的模块
-        private void MakeConstructSceneConfig()
+        public void MakeConstructSceneConfig()
         {
-            targetScript.tabConfigs.Clear();
+            tabConfigs.Clear();
 
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
+            tabConfigs.Add(new ModuleTabConfig()
             {
                 tabName = "场景搭建",
                 moduleList = new List<MonoScript>()
@@ -199,11 +217,11 @@ namespace PluginHub.Editor
         }
 
         //最小模块配置
-        private void MakeMinimalModuleConfig()
+        public void MakeMinimalModuleConfig()
         {
-            targetScript.tabConfigs.Clear();
+            tabConfigs.Clear();
 
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
+            tabConfigs.Add(new ModuleTabConfig()
             {
                 tabName = "快捷方式",
                 moduleList = new List<MonoScript>()
@@ -215,7 +233,7 @@ namespace PluginHub.Editor
                     AssetDatabase.LoadAssetAtPath<MonoScript>($"{moduleFolder}BuildModule.cs"),
                 }
             });
-            targetScript.tabConfigs.Add(new ModuleTabConfig()
+            tabConfigs.Add(new ModuleTabConfig()
             {
                 tabName = "工具",
                 moduleList = new List<MonoScript>()
@@ -230,9 +248,9 @@ namespace PluginHub.Editor
         }
 
         //默认模块配置
-        private void MakeAllModuleConfig()
+        public void MakeAllModuleConfig()
         {
-            targetScript.tabConfigs.Clear();
+            tabConfigs.Clear();
             // TODO 添加所有模块到配置中
             string[] allModule = GetAllModulePath();
             //<模块分类名,模块名列表>
@@ -267,33 +285,12 @@ namespace PluginHub.Editor
                 for (int i = 0; i < moduleList.Count; i++)
                     monoScripts.Add(AssetDatabase.LoadAssetAtPath<MonoScript>(moduleList[i]));
 
-                targetScript.tabConfigs.Add(new ModuleTabConfig()
+                tabConfigs.Add(new ModuleTabConfig()
                 {
                     tabName = tabName,
                     moduleList = monoScripts
                 });
             }
-
         }
-        #endregion
-    }
-
-#endif
-
-    //代表一个Tab页的数据
-    [System.Serializable]
-    public class ModuleTabConfig
-    {
-        public string tabName = "TabName";
-        public List<MonoScript> moduleList = new List<MonoScript>();
-    }
-
-    //ScriptableObject资产文件，用于存储哪些模块被添加到哪些Tab页
-    [CreateAssetMenu(fileName = "ModuleConfigSO", menuName = "ScriptableObjects/ModuleConfigSO", order = 1)]
-    public class ModuleConfigSO : ScriptableObject
-    {
-        public List<ModuleTabConfig> tabConfigs = new List<ModuleTabConfig>();
-
-        // public Object moduleFolder;
     }
 }
