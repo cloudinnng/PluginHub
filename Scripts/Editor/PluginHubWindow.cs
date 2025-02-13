@@ -154,6 +154,8 @@ namespace PluginHub.Editor
         //     InitModule();
         // }
 
+        // 如果不加这个，在用户修改代码重新编译后，所有模块会从内存中消失。
+        [InitializeOnLoadMethod]
         // 释放所有模块，重新加载模块
         private static void InitModule()
         {

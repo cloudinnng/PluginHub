@@ -443,7 +443,7 @@ namespace PluginHub.Editor
             return Selection.gameObjects.Length > 1;
         }
 
-        [MenuItem("GameObject/PH 拷贝 GameObject 查找路径", false, -49)]
+        [MenuItem("GameObject/PH 拷贝 GameObject.Find 查找路径", false, -49)]
         public static void CopyGameObjectFindPath()
         {
             GameObject gameObject = Selection.activeGameObject;
