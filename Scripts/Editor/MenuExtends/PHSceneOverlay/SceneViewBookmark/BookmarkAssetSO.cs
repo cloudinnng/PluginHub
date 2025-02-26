@@ -141,6 +141,7 @@ namespace PluginHub.Editor
                     instance = AssetDatabase.LoadAssetAtPath<BookmarkAssetSO>(BookmarkSettings.BOOKMARKS_ASSET_PATH);
                     if (instance == null)
                     {
+                        Debug.Log("BookmarkAssetSO not found, creating new one");
                         if (!System.IO.Directory.Exists(BookmarkSettings.ASSET_DIR))
                             System.IO.Directory.CreateDirectory(BookmarkSettings.ASSET_DIR);
                         instance = CreateInstance(typeof(BookmarkAssetSO)) as BookmarkAssetSO;
