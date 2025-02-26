@@ -296,7 +296,7 @@ namespace PluginHub.Editor
                     GUILayout.BeginHorizontal();
                     {
                         string path = CurrSceneBuildFullPath();
-                        if (GUILayout.Button(PluginHubFunc.GuiContent("构建当前场景", $"将会直接构建当前场景到{path}。")))
+                        if (GUILayout.Button(PluginHubFunc.GuiContent("构建当前场景", $"将会直接构建到{path}。")))
                         {
                             BuildCurrScene(false);
                             GUIUtility.ExitGUI();
