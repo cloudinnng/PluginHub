@@ -199,10 +199,13 @@ namespace PluginHub.Runtime
             if (!deactiveEventSystem)
                 return;
             EventSystem eventSystem = FindObjectsByType<EventSystem>(FindObjectsSortMode.None).FirstOrDefault();
-            if (eventSystem && isShowFullWindow && isShowDebugger)
-                eventSystem.enabled = false;
-            else
-                eventSystem.enabled = true;
+            if (eventSystem)
+            {
+                if (isShowFullWindow && isShowDebugger)
+                    eventSystem.enabled = false;
+                else
+                    eventSystem.enabled = true;
+            }
         }
 
         //将会同时设置mini窗口和正常窗口左上角坐标到指定位置
