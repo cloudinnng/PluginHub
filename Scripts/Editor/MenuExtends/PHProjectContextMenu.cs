@@ -392,6 +392,8 @@ namespace PluginHub.Editor
                     return "Mesh_";  // 模型 Mesh
                 case ".prefab":
                     return "PFB_";  // 预制体 Prefab
+                case ".controller":
+                    return "AC_";  // 动画控制器 Animation Controller
                 default:
                     return null;  // 不处理其他类型
             }

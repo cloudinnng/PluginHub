@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace PluginHub.Runtime
@@ -7,6 +8,35 @@ namespace PluginHub.Runtime
 //这个类扩展了GameObject的静态Find方法的功能
     public static class GameObjectEx
     {
+
+        // 这个方法可以找到隐藏的对象
+        public static GameObject Find(string path)
+        {
+            GameObject[] allObjects = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include,FindObjectsSortMode.None);
+            for (int i = 0; i < allObjects.Length; i++)
+            {
+                Transform transform = allObjects[i].transform;
+                string findPath = GetGameObjectFindPath(transform);
+                if (findPath == path)
+                    return allObjects[i].gameObject;
+            }
+            return null;
+        }
+
+        private static string GetGameObjectFindPath(Transform transform)
+        {
+            StringBuilder sb = new StringBuilder();
+            while (transform != null)
+            {
+                sb.Insert(0, transform.name);
+                if (transform.parent != null)
+                    sb.Insert(0, "/");
+                transform = transform.parent;
+            }
+            return sb.ToString();
+        }
+
+
         #region ByName
 
         /// <summary>

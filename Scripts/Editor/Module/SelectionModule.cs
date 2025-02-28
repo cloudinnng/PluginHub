@@ -112,19 +112,19 @@ namespace PluginHub.Editor
             Bounds bounds = new Bounds();
             if (Selection.gameObjects != null && Selection.gameObjects.Length > 0)
             {
-                List<MeshRenderer> meshRenderers = new List<MeshRenderer>();
+                List<Renderer> renderers = new List<Renderer>();
                 for  (int i = 0; i < Selection.gameObjects.Length; i++)
                 {
                     GameObject gameObject = Selection.gameObjects[i];
-                    MeshRenderer[] mrs = gameObject.GetComponentsInChildren<MeshRenderer>();
+                    Renderer[] mrs = gameObject.GetComponentsInChildren<Renderer>();
                     if (mrs != null && mrs.Length > 0)
-                        meshRenderers.AddRange(mrs);
+                        renderers.AddRange(mrs);
                 }
-                if (meshRenderers != null && meshRenderers.Count > 0)
+                if (renderers != null && renderers.Count > 0)
                 {
-                    bounds = meshRenderers[0].bounds;
-                    for (int i = 1; i < meshRenderers.Count; i++)
-                        bounds.Encapsulate(meshRenderers[i].bounds);
+                    bounds = renderers[0].bounds;
+                    for (int i = 1; i < renderers.Count; i++)
+                        bounds.Encapsulate(renderers[i].bounds);
                 }
             }
             return bounds;
