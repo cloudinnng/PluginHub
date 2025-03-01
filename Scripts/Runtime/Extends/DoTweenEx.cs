@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,7 +32,7 @@ namespace PluginHub.Runtime
         //并行执行协程的关键是使用StartCoroutine方法让其同时启动。
         //关键在于StartCoroutine方法的返回值是Coroutine，而不是IEnumerator
         //我们可以yield return Coroutine,也可以yield return IEnumerator。效果都是等待协程完成。
-        public static IEnumerator StartCoroutinesInParallel(IEnumerator[] routines, MonoBehaviour onwer)
+        public static IEnumerator StartCoroutinesInParallel(IEnumerator[] routines, MonoBehaviour onwer, Action onComplete = null)
         {
             Coroutine[] coroutines = new Coroutine[routines.Length];
             for (int i = 0; i < routines.Length; i++)
@@ -44,10 +45,11 @@ namespace PluginHub.Runtime
             {
                 yield return coroutines[i];
             }
+            onComplete?.Invoke();
         }
 
 
-        public static IEnumerator DoCustomAction(float duration, System.Action<float> action)
+        public static IEnumerator DoCustomAction(float duration, System.Action<float> action, Action onComplete = null)
         {
             float time = 0;
             while (time < duration)
@@ -57,11 +59,12 @@ namespace PluginHub.Runtime
                 action(t);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
         #region Move
 
-        public static IEnumerator DoMove(Transform transform, Vector3 targetPos, float duration)
+        public static IEnumerator DoMove(Transform transform, Vector3 targetPos, float duration, Action onComplete = null)
         {
             Vector3 startPos = transform.position;
             float time = 0;
@@ -73,9 +76,10 @@ namespace PluginHub.Runtime
                 transform.position = pos;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalMove(Transform transform, Vector3 targetLocalPos, float duration)
+        public static IEnumerator DoLocalMove(Transform transform, Vector3 targetLocalPos, float duration, Action onComplete = null)
         {
             Vector3 startPos = transform.localPosition;
             float time = 0;
@@ -87,9 +91,10 @@ namespace PluginHub.Runtime
                 transform.localPosition = pos;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoMoveX(Transform transform, float targetPosX, float duration)
+        public static IEnumerator DoMoveX(Transform transform, float targetPosX, float duration, Action onComplete = null)
         {
             float startX = transform.position.x;
             float time = 0;
@@ -101,9 +106,10 @@ namespace PluginHub.Runtime
                 transform.position = new Vector3(x, transform.position.y, transform.position.z);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalMoveX(Transform transform, float targetLocalPosX, float duration)
+        public static IEnumerator DoLocalMoveX(Transform transform, float targetLocalPosX, float duration, Action onComplete = null)
         {
             float startX = transform.localPosition.x;
             float time = 0;
@@ -117,7 +123,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public static IEnumerator DoMoveY(Transform transform, float targetPosY, float duration)
+        public static IEnumerator DoMoveY(Transform transform, float targetPosY, float duration, Action onComplete = null)
         {
             float startY = transform.position.y;
             float time = 0;
@@ -129,9 +135,10 @@ namespace PluginHub.Runtime
                 transform.position = new Vector3(transform.position.x, y, transform.position.z);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalMoveY(Transform transform, float targetLocalPosY, float duration)
+        public static IEnumerator DoLocalMoveY(Transform transform, float targetLocalPosY, float duration, Action onComplete = null)
         {
             float startY = transform.localPosition.y;
             float time = 0;
@@ -143,9 +150,10 @@ namespace PluginHub.Runtime
                 transform.localPosition = new Vector3(transform.localPosition.x, y, transform.localPosition.z);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoMoveZ(Transform transform, float targetPosZ, float duration)
+        public static IEnumerator DoMoveZ(Transform transform, float targetPosZ, float duration, Action onComplete = null)
         {
             float startZ = transform.position.z;
             float time = 0;
@@ -159,7 +167,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public static IEnumerator DoLocalMoveZ(Transform transform, float targetLocalPosZ, float duration)
+        public static IEnumerator DoLocalMoveZ(Transform transform, float targetLocalPosZ, float duration, Action onComplete = null)
         {
             float startZ = transform.localPosition.z;
             float time = 0;
@@ -173,7 +181,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public static IEnumerator DoAnchorMove(RectTransform rectTransform, Vector2 targetPos, float duration)
+        public static IEnumerator DoAnchorMove(RectTransform rectTransform, Vector2 targetPos, float duration, Action onComplete = null)
         {
             Vector2 startPos = rectTransform.anchoredPosition;
             float time = 0;
@@ -185,9 +193,10 @@ namespace PluginHub.Runtime
                 rectTransform.anchoredPosition = pos;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoAnchorMoveX(RectTransform rectTransform, float targetPosX, float duration)
+        public static IEnumerator DoAnchorMoveX(RectTransform rectTransform, float targetPosX, float duration, Action onComplete = null)
         {
             float startX = rectTransform.anchoredPosition.x;
             float time = 0;
@@ -199,9 +208,10 @@ namespace PluginHub.Runtime
                 rectTransform.anchoredPosition = new Vector2(x, rectTransform.anchoredPosition.y);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoAnchorMoveY(RectTransform rectTransform, float targetPosY, float duration)
+        public static IEnumerator DoAnchorMoveY(RectTransform rectTransform, float targetPosY, float duration, Action onComplete = null)
         {
             float startY = rectTransform.anchoredPosition.y;
             float time = 0;
@@ -213,9 +223,10 @@ namespace PluginHub.Runtime
                 rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, y);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoAnchorMoveZ(RectTransform rectTransform, float targetPosZ, float duration)
+        public static IEnumerator DoAnchorMoveZ(RectTransform rectTransform, float targetPosZ, float duration, Action onComplete = null)
         {
             float startZ = rectTransform.anchoredPosition3D.z;
             float time = 0;
@@ -234,7 +245,7 @@ namespace PluginHub.Runtime
 
         #region SizeDelta
 
-        public static IEnumerator DoSizeDelta(RectTransform rectTransform, Vector2 targetSizeDelta, float duration)
+        public static IEnumerator DoSizeDelta(RectTransform rectTransform, Vector2 targetSizeDelta, float duration, Action onComplete = null)
         {
             Vector2 startSizeDelta = rectTransform.sizeDelta;
             float time = 0;
@@ -246,13 +257,14 @@ namespace PluginHub.Runtime
                 rectTransform.sizeDelta = sizeDelta;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
         #endregion
 
         #region Rotate
 
-        public static IEnumerator DoRotate(Transform transform, Vector3 targetAngle, float duration)
+        public static IEnumerator DoRotate(Transform transform, Vector3 targetAngle, float duration, Action onComplete = null)
         {
             Vector3 startAngle = transform.eulerAngles;
             //lerp from nearlest angle
@@ -269,9 +281,10 @@ namespace PluginHub.Runtime
                 transform.eulerAngles = angle;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalRotate(Transform transform, Vector3 targetLocalAngle, float duration)
+        public static IEnumerator DoLocalRotate(Transform transform, Vector3 targetLocalAngle, float duration, Action onComplete = null)
         {
             Vector3 startAngle = transform.localEulerAngles;
             //lerp from nearlest angle
@@ -288,9 +301,10 @@ namespace PluginHub.Runtime
                 transform.localEulerAngles = angle;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalRotateX(Transform transform, float targetLocalAngleX, float duration)
+        public static IEnumerator DoLocalRotateX(Transform transform, float targetLocalAngleX, float duration, Action onComplete = null)
         {
             float startAngleX = transform.localEulerAngles.x;
             //lerp from nearlest angle
@@ -309,7 +323,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public static IEnumerator DoLocalRotateY(Transform transform, float targetLocalAngleY, float duration)
+        public static IEnumerator DoLocalRotateY(Transform transform, float targetLocalAngleY, float duration, Action onComplete = null)
         {
             float startAngleY = transform.localEulerAngles.y;
             //lerp from nearlest angle
@@ -326,9 +340,10 @@ namespace PluginHub.Runtime
                 transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, y, transform.localEulerAngles.z);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalRotateZ(Transform transform, float targetLocalAngleZ, float duration)
+        public static IEnumerator DoLocalRotateZ(Transform transform, float targetLocalAngleZ, float duration, Action onComplete = null)
         {
             float startAngleZ = transform.localEulerAngles.z;
             //lerp from nearlest angle
@@ -345,13 +360,14 @@ namespace PluginHub.Runtime
                 transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, z);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
         #endregion
 
         #region Scale
 
-        public static IEnumerator DoLocalScale(Transform transform, Vector3 targetLocalScale, float duration)
+        public static IEnumerator DoLocalScale(Transform transform, Vector3 targetLocalScale, float duration, Action onComplete = null)
         {
             Vector3 startScale = transform.localScale;
             float time = 0;
@@ -364,9 +380,10 @@ namespace PluginHub.Runtime
                 transform.localScale = scale;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
-        public static IEnumerator DoLocalScaleX(Transform transform, float targetLocalScaleX, float duration)
+        public static IEnumerator DoLocalScaleX(Transform transform, float targetLocalScaleX, float duration, Action onComplete = null)
         {
             float startScaleX = transform.localScale.x;
             float time = 0;
@@ -380,7 +397,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public static IEnumerator DoLocalScaleY(Transform transform, float targetLocalScaleY, float duration)
+        public static IEnumerator DoLocalScaleY(Transform transform, float targetLocalScaleY, float duration, Action onComplete = null)
         {
             float startScaleY = transform.localScale.y;
             float time = 0;
@@ -394,7 +411,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        public static IEnumerator DoLocalScaleZ(Transform transform, float targetLocalScaleZ, float duration)
+        public static IEnumerator DoLocalScaleZ(Transform transform, float targetLocalScaleZ, float duration, Action onComplete = null)
         {
             float startScaleZ = transform.localScale.z;
             float time = 0;
@@ -406,13 +423,14 @@ namespace PluginHub.Runtime
                 transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, z);
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
         #endregion
 
         #region MoveRotate
 
-        public static IEnumerator DoMoveRotate(Transform transform, Vector3 targetPos, Vector3 targetAngle, float duration)
+        public static IEnumerator DoMoveRotate(Transform transform, Vector3 targetPos, Vector3 targetAngle, float duration, Action onComplete = null)
         {
             Vector3 startPos = transform.position;
             Vector3 startAngle = transform.eulerAngles;
@@ -434,6 +452,7 @@ namespace PluginHub.Runtime
                 transform.eulerAngles = angle;
                 yield return null;
             }
+            onComplete?.Invoke();
         }
 
         #endregion
