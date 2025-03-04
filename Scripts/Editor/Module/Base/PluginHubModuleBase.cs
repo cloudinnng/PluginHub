@@ -431,6 +431,12 @@ namespace PluginHub.Editor
                 PluginHubFunc.IconBtnLayoutOptions);
         }
 
+        // 使用指定icon画一个icon按钮
+        public bool DrawIconBtn(string iconStr, string btnTip)
+        {
+            return GUILayout.Button(PluginHubFunc.Icon(iconStr, "", btnTip), PluginHubFunc.IconBtnLayoutOptions);
+        }
+
 
         #endregion
 

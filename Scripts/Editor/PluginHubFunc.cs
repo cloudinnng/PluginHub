@@ -36,6 +36,7 @@ namespace PluginHub.Editor
         //选中的颜色
         public static readonly Color SelectedColor = new Color(0.572549f, 0.7960784f, 1f, 1f);
 
+        public static readonly float NormalBtnHeight = 19f;
         //定义一个仅能容纳一个icon的小型按钮的尺寸，icon按钮专用
         private static readonly Vector2 iconBtnSize = new Vector2(28f, 19f);
 

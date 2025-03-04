@@ -146,7 +146,7 @@ namespace PluginHub.Editor
 
                     //load/unload按钮
                     string buttonText = scene.isLoaded ? "Unload" : "Load";
-                    if (currentEvent.control)
+                    if (currentEvent.shift)
                         buttonText = "Remove";
                     if (currentEvent.alt)
                         buttonText = "Isolate";
@@ -181,7 +181,7 @@ namespace PluginHub.Editor
                         //load/unload/remove按钮事件
                         if (enableLoadBtnEvent && loadRect.Contains(currentEvent.mousePosition))
                         {
-                            if (currentEvent.control) //如果按下了Ctrl键，则是remove场景（将场景从Hierarchy中移除）
+                            if (currentEvent.shift) //如果按下了Ctrl键，则是remove场景（将场景从Hierarchy中移除）
                             {
                                 //check if scene is dirty
                                 if (scene.isDirty)

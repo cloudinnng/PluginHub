@@ -1,20 +1,16 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PluginHub.Editor;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.Build.Content;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Editor
@@ -376,11 +372,25 @@ namespace PluginHub.Editor
                     if (Application.platform == RuntimePlatform.OSXEditor)
                         path = $"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode";
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 IOS 项目", $"将构建到{path}")))
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 IOS 项目", $"将构建到{path}"),GUILayout.Height(PluginHubFunc.NormalBtnHeight)))
                     {
                         //执行构建
                         BuildIOS(path);
                         GUIUtility.ExitGUI();
+                    }
+
+                    // 快捷打开xCode项目的icon按钮
+                    if (Application.platform == RuntimePlatform.OSXEditor){
+                        string xCodePath = Path.Combine(fullPath, $"Unity-iPhone.xcodeproj");
+                        xCodePath = xCodePath.Replace('\\', '/');
+                        bool exist = Directory.Exists(xCodePath);
+                        GUI.enabled = exist;
+                        if (DrawIconBtn("BuildSettings.iPhone On@2x", $"打开xCode项目{xCodePath}"))
+                        {
+                            OpenFile(xCodePath);
+                            GUIUtility.ExitGUI();
+                        }
+                        GUI.enabled = true;
                     }
 
                     DrawIconBtnOpenFolder(path, true);
@@ -577,6 +587,24 @@ namespace PluginHub.Editor
                 proc.StartInfo.Verb = "runas"; //使用管理员运行
             proc.Start();
             Debug.Log($"Run exe {exeFullPath}");
+        }
+
+        //macos 可用
+        public static void OpenFile(string filePath)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "open",
+                    Arguments = filePath,
+                    UseShellExecute = false
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"打开文件失败: {e.Message}");
+            }
         }
 
         private static void DrawItem(string title, string content)
