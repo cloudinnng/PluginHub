@@ -30,7 +30,8 @@ namespace PluginHub.Runtime
             private LinkedListNode<LogNode> _selectedNode = null;
 
             //log 是否使用独立视图。独立视图中，日志详情会占据整个窗口
-            private bool _independentView = false;
+            // private bool _independentView = false;
+            // private bool _maximize = false;
 
             public void OnStart()
             {
@@ -42,18 +43,18 @@ namespace PluginHub.Runtime
             {
                 GUILayout.BeginHorizontal();
                 {
-                    if (GUILayout.Button("Clear", GUILayout.Width(80f)))
+                    if (GUILayout.Button("Clear", GUILayout.Width(70f)))
                     {
                         _logs.Clear();
                     }
 
                     _lockScroll = GUILayout.Toggle(_lockScroll, "Lock Scroll", GUILayout.Width(90f));
 
-                    enableSearch = GUILayout.Toggle(enableSearch, "Search", GUILayout.Width(60f));
+                    enableSearch = GUILayout.Toggle(enableSearch, "Search", GUILayout.Width(65f));
 
 
                     GUILayout.FlexibleSpace();
-                    _independentView = GUILayout.Toggle(_independentView, "Independent View", GUILayout.Width(120f));
+                    // _independentView = GUILayout.Toggle(_independentView, "Independent View", GUILayout.Width(120f));
                     _infoFilter = GUILayout.Toggle(_infoFilter, string.Format("Info ({0})", _infoCount.ToString()));
                     _warningFilter = GUILayout.Toggle(_warningFilter,
                         string.Format("Warning ({0})", _warningCount.ToString()));
@@ -74,24 +75,21 @@ namespace PluginHub.Runtime
                     GUILayout.EndHorizontal();
                 }
 
-                if (_independentView)
+                if (_selectedNode == null)
                 {
-                    if (_selectedNode == null)
-                    {
-                        DrawLogList();
-                    }
-                    else //_selectedNode != null
-                    {
-                        DrawLogDetail(0);
-                    }
+                    DrawLogList();
                 }
                 else
                 {
-                    DrawLogList();
-                    if (_selectedNode != null)
-                    {
-                        DrawLogDetail(100);
-                    }
+                    // if (_maximize)
+                    // {
+                    //     DrawLogDetail(0);
+                    // }
+                    // else
+                    // {
+                        DrawLogList();
+                        DrawLogDetail(Debugger.Instance.realScreenSize.y / 3f);
+                    // }
                 }
             }
 
@@ -176,37 +174,42 @@ namespace PluginHub.Runtime
                     GUILayout.BeginVertical("box");
                 else
                     GUILayout.BeginVertical("box",GUILayout.Height(height));
-                {
-                    _stackScrollPosition = GUILayout.BeginScrollView(_stackScrollPosition);
                     {
-                        GUILayout.BeginHorizontal();
-                        Color32 color = GetLogStringColor(_selectedNode.Value.LogType);
-                        GUILayout.Label(string.Format("<color=#{0}{1}{2}{3}><b>{4}</b></color>",
-                            color.r.ToString("x2"),
-                            color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"),
-                            _selectedNode.Value.LogMessage));
-
-                        if (GUILayout.Button("Back", GUILayout.Width(60f), GUILayout.Height(30f)))
+                        _stackScrollPosition = GUILayout.BeginScrollView(_stackScrollPosition);
                         {
-                            _selectedNode = null;
-                            GUIUtility.ExitGUI();
-                        }
+                            GUILayout.BeginHorizontal();
+                            Color32 color = GetLogStringColor(_selectedNode.Value.LogType);
+                            GUILayout.Label(string.Format("<color=#{0}{1}{2}{3}><b>{4}</b></color>",
+                                color.r.ToString("x2"),
+                                color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"),
+                                _selectedNode.Value.LogMessage));
 
-                        if (GUILayout.Button("COPY", GUILayout.Width(60f), GUILayout.Height(30f)))
-                        {
-                            TextEditor textEditor = new TextEditor();
-                            textEditor.text = string.Format("{0}\n\n{1}", _selectedNode.Value.LogMessage,
-                                _selectedNode.Value.StackTrack);
-                            textEditor.OnFocus();
-                            textEditor.Copy();
-                        }
+                            // if (GUILayout.Button("Maximize", GUILayout.Width(80f), GUILayout.Height(30f)))
+                            // {
+                            //     _maximize = !_maximize;
+                            // }
 
-                        GUILayout.EndHorizontal();
-                        GUILayout.Label(_selectedNode.Value.StackTrack);
+                            // if (GUILayout.Button("Back", GUILayout.Width(60f), GUILayout.Height(30f)))
+                            // {
+                            //     _selectedNode = null;
+                            //     GUIUtility.ExitGUI();
+                            // }
+
+                            if (GUILayout.Button("COPY", GUILayout.Width(60f), GUILayout.Height(30f)))
+                            {
+                                TextEditor textEditor = new TextEditor();
+                                textEditor.text = string.Format("{0}\n\n{1}", _selectedNode.Value.LogMessage,
+                                    _selectedNode.Value.StackTrack);
+                                textEditor.OnFocus();
+                                textEditor.Copy();
+                            }
+
+                            GUILayout.EndHorizontal();
+                            GUILayout.Label(_selectedNode.Value.StackTrack);
+                        }
+                        GUILayout.EndScrollView();
                     }
-                    GUILayout.EndScrollView();
-                }
-                GUILayout.EndVertical();
+                    GUILayout.EndVertical();
             }
 
 
