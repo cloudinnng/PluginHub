@@ -4,27 +4,56 @@ using UnityEngine;
 
 namespace PluginHub.Editor
 {
-
-    public class SelectionTools
+    public class CommonTools
     {
-        public static void DrawSelectionTools()
+        private static Vector2 _iconBtnSize = new Vector2(20, 20);
+        private static GUIStyle _iconBtnStyle;
+        private static GUIStyle iconBtnStyle
         {
-            // 检查选中物体
-            if (Selection.activeGameObject != null)
+            get
             {
-                var selectedObject = Selection.activeGameObject;
-                if (selectedObject.GetComponent<MeshRenderer>())
+                if (_iconBtnStyle == null)
                 {
-                    GUILayout.BeginHorizontal();
+                    _iconBtnStyle = new GUIStyle(GUI.skin.button);
+                    _iconBtnStyle.border = new RectOffset(0, 0, 0, 0);
+                    _iconBtnStyle.padding = new RectOffset(1, 1, 0, 0);
+                    _iconBtnStyle.margin = new RectOffset(3, 3, 0, 0);
+                }
+                return _iconBtnStyle;
+            }
+        }
+
+        public static void DrawTools()
+        {
+            GUILayout.BeginHorizontal();
+            {
+                // 检查选中物体
+                if (Selection.activeGameObject != null)
+                {
+                    var selectedObject = Selection.activeGameObject;
+                    if (selectedObject.GetComponent<MeshRenderer>())
                     {
-                        if (GUILayout.Button("放到地上"))
+                        if (GUILayout.Button(PluginHubFunc.GuiContent("↓","放到地上"),iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                         {
                             SelectionObjToGround(false);
                         }
                     }
-                    GUILayout.EndHorizontal();
                 }
+
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera","","移动到Main相机视图"), iconBtnStyle,GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    if(SceneView.lastActiveSceneView != null && Camera.main != null)
+                        ViewTweenInitializeOnLoad.GotoCamera(Camera.main, SceneView.lastActiveSceneView);
+                }
+
+                GUI.color = PHSceneShiftMenu.NoNeedShift ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("Button Icon","","右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle,GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    PHSceneShiftMenu.NoNeedShift = !PHSceneShiftMenu.NoNeedShift;
+                }
+                GUI.color = Color.white;
             }
+            GUILayout.EndHorizontal();
         }
 
         private static void SelectionObjToGround(bool detectFromTop)

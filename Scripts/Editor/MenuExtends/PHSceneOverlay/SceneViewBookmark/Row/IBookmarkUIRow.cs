@@ -18,8 +18,8 @@ namespace PluginHub.Editor
                     _bookmarkButtonStyle = new GUIStyle("button");
                     _bookmarkButtonStyle.normal.textColor = Color.white;
                     _bookmarkButtonStyle.hover.textColor = Color.cyan;
-                    _bookmarkButtonStyle.margin = new RectOffset(4, 4, 4, 4);
-                    _bookmarkButtonStyle.padding = new RectOffset(4, 4, 3, 3);
+                    _bookmarkButtonStyle.margin = new RectOffset(4, 4, 2, 2);
+                    _bookmarkButtonStyle.padding = new RectOffset(2,2, 1, 1);
                     _bookmarkButtonStyle.fontStyle = FontStyle.Normal;
                     _bookmarkButtonStyle.alignment = TextAnchor.MiddleCenter;
                     _bookmarkButtonStyle.border = new RectOffset(0, 0, 0, 0);

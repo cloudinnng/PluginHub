@@ -37,7 +37,7 @@ namespace PluginHub.Editor
 
 
                 //输入按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("CollabEdit Icon", "", "Input"), miniBtnOption))
+                if (GUILayout.Button(PluginHubFunc.IconContent("CollabEdit Icon", "", "Input"), miniBtnOption))
                 {
                     inputStr0 = _theColor.r.ToString("F3");
                     inputStr1 = _theColor.g.ToString("F3");
@@ -50,7 +50,7 @@ namespace PluginHub.Editor
                     addFSuffix = !addFSuffix;
 
                 //拷贝按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("Clipboard", "", "Copy"), GUILayout.ExpandWidth(false)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("Clipboard", "", "Copy"), GUILayout.ExpandWidth(false)))
                     GUIUtility.systemCopyBuffer = text;
             }
             GUILayout.EndHorizontal();
@@ -62,7 +62,7 @@ namespace PluginHub.Editor
                 GUILayout.Label(text);
 
                 //输入按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("CollabEdit Icon", "", "Input"), miniBtnOption))
+                if (GUILayout.Button(PluginHubFunc.IconContent("CollabEdit Icon", "", "Input"), miniBtnOption))
                 {
                     inputStr0 = (_theColor.r * 255).ToString("F0");
                     inputStr1 = (_theColor.g * 255).ToString("F0");
@@ -71,7 +71,7 @@ namespace PluginHub.Editor
                     intentInput = 1;
                 }
                 //拷贝按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("Clipboard", "", "Copy"), GUILayout.ExpandWidth(false)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("Clipboard", "", "Copy"), GUILayout.ExpandWidth(false)))
                     GUIUtility.systemCopyBuffer = text;
             }
             GUILayout.EndHorizontal();
@@ -83,7 +83,7 @@ namespace PluginHub.Editor
                 GUILayout.Label(addPrefix ? $"#{hexColor}" : hexColor);
 
                 //输入按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("CollabEdit Icon", "", "Input"), miniBtnOption))
+                if (GUILayout.Button(PluginHubFunc.IconContent("CollabEdit Icon", "", "Input"), miniBtnOption))
                 {
                     inputStr0 = hexColor.Substring(0, 2);
                     inputStr1 = hexColor.Substring(2, 2);
@@ -97,7 +97,7 @@ namespace PluginHub.Editor
                     addPrefix = !addPrefix;
 
                 //拷贝按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("Clipboard", "", "Copy"), miniBtnOption))
+                if (GUILayout.Button(PluginHubFunc.IconContent("Clipboard", "", "Copy"), miniBtnOption))
                     GUIUtility.systemCopyBuffer = addPrefix ? $"#{hexColor}" : hexColor;
             }
             GUILayout.EndHorizontal();

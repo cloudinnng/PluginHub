@@ -9,7 +9,7 @@ namespace PluginHub.Editor
         protected override void DrawHorizontalInnerGUI(SceneBookmarkGroup group)
         {
             //画行首的图标
-            GUILayout.Label(EditorGUIUtility.IconContent("Camera Icon").image, 
+            GUILayout.Label(EditorGUIUtility.IconContent("Camera Icon").image,
                 GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), 
                 GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
             

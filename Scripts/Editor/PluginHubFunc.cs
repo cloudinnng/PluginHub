@@ -113,7 +113,7 @@ namespace PluginHub.Editor
         #region Layout Helper Functions
 
         /// <summary>
-        /// 在for循环中进行水平布局，每行显示numberOfLines个对象，使用该方法判断是否应该开始水平布局
+        /// 在for循环中使用BeginHorizontal()进行水平布局，每行显示numberOfLines个对象，使用该方法判断是否应该开始水平布局
         /// </summary>
         /// <param name="i">循环索引</param>
         /// <param name="numberOfLines">一行按钮的个数，设置一行几个</param>
@@ -163,7 +163,7 @@ namespace PluginHub.Editor
 
         private static GUIContent tempIconContent;
         //获取一个带Icon的GUIContent，也可以附加tooltip
-        public static GUIContent Icon(string iconStr, string text = "", string tooltip = "")
+        public static GUIContent IconContent(string iconStr, string text = "", string tooltip = "")
         {
             //各种icon参见   https://unitylist.com/p/5c3/Unity-editor-icons
             tempIconContent = EditorGUIUtility.IconContent(iconStr);

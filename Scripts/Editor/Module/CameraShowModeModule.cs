@@ -52,7 +52,7 @@ namespace PluginHub.Editor
                     }
 
                     //刷新Icon  切换最近的两个相机模式
-                    if (GUILayout.Button(PluginHubFunc.Icon("d_RotateTool On@2x", "", "切换显示最近两个相机模式"), GUILayout.Width(44),
+                    if (GUILayout.Button(PluginHubFunc.IconContent("d_RotateTool On@2x", "", "切换显示最近两个相机模式"), GUILayout.Width(44),
                             GUILayout.Height(36)))
                     {
                         SwitchRecentCameraModeShotcut(currMode);

@@ -297,12 +297,12 @@ namespace PluginHub.Editor
                 GUI.enabled = true;
 
                 //选中模块配置文件按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("d_ScriptableObject Icon", "", "模块配置文件"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_ScriptableObject Icon", "", "模块配置文件"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     Selection.activeObject = moduleConfigSO;
                 }
                 //绘制PluginHub开源主页按钮
-                if (GUILayout.Button(PluginHubFunc.Icon("UnityEditor.VersionControl", "", "前往PluginHub开源主页"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.IconContent("UnityEditor.VersionControl", "", "前往PluginHub开源主页"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     Application.OpenURL("https://github.com/cloudinnng/PluginHub");
                 }
@@ -310,7 +310,7 @@ namespace PluginHub.Editor
                 Color oldColor = GUI.color;
                 if (showSettingPanel)
                     GUI.color = PluginHubFunc.SelectedColor;
-                if (GUILayout.Button(PluginHubFunc.Icon("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.IconContent("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLayoutOptions))
                     showSettingPanel = !showSettingPanel;
                 GUI.color = oldColor;
 
@@ -319,7 +319,7 @@ namespace PluginHub.Editor
                 if (globalDebugMode)
                     GUI.color = PluginHubFunc.SelectedColor;
                 string iconName = "DebuggerDisabled";
-                if (GUILayout.Button(PluginHubFunc.Icon(iconName, "", "Global Debug Mode"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.IconContent(iconName, "", "Global Debug Mode"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     globalDebugMode = !globalDebugMode;
                 }
@@ -329,7 +329,7 @@ namespace PluginHub.Editor
                 oldColor = GUI.color;
                 if (alwaysRepaintGUI)
                     GUI.color = PluginHubFunc.SelectedColor;
-                if (GUILayout.Button(PluginHubFunc.Icon("Refresh", "", "Always refresh the PluginHubWindow GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.IconContent("Refresh", "", "Always refresh the PluginHubWindow GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
                 {
                     alwaysRepaintGUI = !alwaysRepaintGUI;
                 }

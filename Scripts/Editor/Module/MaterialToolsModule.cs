@@ -311,7 +311,7 @@ namespace PluginHub.Editor
 
                             DrawMaterialTypeLabel(material);
                             //🔍 Search icon
-                            GUIContent searchGC = PluginHubFunc.Icon("Search On Icon", "");
+                            GUIContent searchGC = PluginHubFunc.IconContent("Search On Icon", "");
                             searchGC.tooltip = "在场景中搜索所有引用该材质的Meshrender";
 
                             if (GUILayout.Button(searchGC, GUILayout.Width(30),
@@ -323,7 +323,7 @@ namespace PluginHub.Editor
                             }
 
                             //download icon
-                            GUIContent replaceGC = PluginHubFunc.Icon("Download-Available", "");
+                            GUIContent replaceGC = PluginHubFunc.IconContent("Download-Available", "");
                             replaceGC.tooltip = "将前一个按钮的搜索结果的材质引用替换成这一行列出的材质";
 
                             if (GUILayout.Button(replaceGC, GUILayout.Width(30),

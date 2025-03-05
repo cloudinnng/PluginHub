@@ -32,7 +32,7 @@ namespace PluginHub.Editor
         /// <param name="sceneView">Sceneview that you wish to apply theis bookmark to.</param>
         public ViewTween(CameraBookmark targetBookmark, SceneView sceneView)
         {
-            if (sceneView == null || targetBookmark == null)
+            if (targetBookmark == null || sceneView == null)
                 return;
 
             Complete = false;
@@ -48,6 +48,35 @@ namespace PluginHub.Editor
             view.orthographic = target.Orthographic;
 
             startTime = EditorApplication.timeSinceStartup;
+        }
+
+        // 使用此方法让场景相机移动到指定Camera位置
+        public ViewTween(Camera camera, SceneView sceneView)
+        {
+            if (camera == null || sceneView == null)
+                return;
+
+            Complete = false;
+
+            view = sceneView;
+            target = new CameraBookmark()
+            {
+                is2DMode = camera.orthographic,
+                Orthographic = camera.orthographic,
+                pivot = camera.transform.position,
+                rotation = camera.transform.rotation,
+                size = 0.01f
+            };
+
+            initPosition = sceneView.pivot;
+            initRotation = sceneView.rotation;
+            initSize = sceneView.size;
+
+            view.in2DMode = target.is2DMode;
+            view.orthographic = target.Orthographic;
+
+            startTime = EditorApplication.timeSinceStartup;
+
         }
 
         /// <summary>

@@ -12,6 +12,12 @@ namespace PluginHub.Editor
     // 按下shift键时，右键出现的菜单是PH菜单，不按shift键时，右键出现的菜单是Unity默认菜单
     public class PHSceneShiftMenu
     {
+        public static bool NoNeedShift
+        {
+            get => EditorPrefs.GetBool("PHSceneShiftMenu_NoNeedShift", false);
+            set => EditorPrefs.SetBool("PHSceneShiftMenu_NoNeedShift", value);
+        }
+
         [InitializeOnLoadMethod]
         public static void Init()
         {
@@ -37,7 +43,7 @@ namespace PluginHub.Editor
             }
             else if (e.type == EventType.MouseUp && e.button == 1)
             {
-                if (!e.shift)
+                if (!e.shift && !NoNeedShift)
                     return;
 
                 // 被认为是右键单击的条件
@@ -48,7 +54,11 @@ namespace PluginHub.Editor
                 }
             }
         }
-
+        // [MenuItem("CONTEXT/GameObjectToolContext/Test", false, int.MinValue)]
+        // static void Test()
+        // {
+        //
+        // }
     }
 
 }

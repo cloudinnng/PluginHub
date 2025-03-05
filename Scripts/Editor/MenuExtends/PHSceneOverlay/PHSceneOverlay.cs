@@ -75,8 +75,8 @@ namespace PluginHub.Editor
         public override void OnGUI()
         {
             SceneViewBookmark.DrawSceneBookmark();
-            GUILayout.Space(5);
-            SelectionTools.DrawSelectionTools();
+            // GUILayout.Space(5);
+            CommonTools.DrawTools();
         }
     }
 }

@@ -249,7 +249,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.Standalone On"));
+                    GUILayout.Label(PluginHubFunc.IconContent("BuildSettings.Standalone On"));
                     GUILayout.Label($"平台 : {BuildTarget.StandaloneWindows64}");
                 }
                 GUILayout.EndHorizontal();
@@ -331,7 +331,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.iPhone On"));
+                    GUILayout.Label(PluginHubFunc.IconContent("BuildSettings.iPhone On"));
                     GUILayout.Label($"平台 : {BuildTarget.iOS}");
                 }
                 GUILayout.EndHorizontal();
@@ -407,7 +407,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.Android On"));
+                    GUILayout.Label(PluginHubFunc.IconContent("BuildSettings.Android On"));
                     GUILayout.Label($"平台 : {BuildTarget.Android}");
                 }
                 GUILayout.EndHorizontal();
@@ -439,7 +439,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.WebGL On"));
+                    GUILayout.Label(PluginHubFunc.IconContent("BuildSettings.WebGL On"));
                     GUILayout.Label($"平台 : {BuildTarget.WebGL}");
                 }
                 GUILayout.EndHorizontal();
@@ -471,7 +471,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("BuildSettings.Standalone On"));
+                    GUILayout.Label(PluginHubFunc.IconContent("BuildSettings.Standalone On"));
                     GUILayout.Label($"平台 : {BuildTarget.StandaloneOSX}");
                 }
                 GUILayout.EndHorizontal();
@@ -504,7 +504,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("VerticalLayoutGroup Icon"));
+                    GUILayout.Label(PluginHubFunc.IconContent("VerticalLayoutGroup Icon"));
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(PluginHubFunc.GuiContent("构建库:", "下方显示项目Build目录下的所有打包文件"));
                     GUILayout.FlexibleSpace();

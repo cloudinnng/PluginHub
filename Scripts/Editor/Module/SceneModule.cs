@@ -202,7 +202,7 @@ namespace PluginHub.Editor
                 //draw curr scene icon
                 if (SceneManager.GetActiveScene().path.Equals(sceneAssetPath))
                 {
-                    GUILayout.Label(PluginHubFunc.Icon("d_SceneAsset Icon", "", "this is current scene"), GUILayout.Height(19),
+                    GUILayout.Label(PluginHubFunc.IconContent("d_SceneAsset Icon", "", "this is current scene"), GUILayout.Height(19),
                         GUILayout.Width(20));
                 }
                 
@@ -221,7 +221,7 @@ namespace PluginHub.Editor
                 }
 
                 //open folder button
-                if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", "", "open in explorer"), PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubFunc.IconContent("FolderEmpty On Icon", "", "open in explorer"), PluginHubFunc.IconBtnLayoutOptions))
                 {
                     EditorUtility.RevealInFinder(sceneAssetPath);
                 }
@@ -230,7 +230,7 @@ namespace PluginHub.Editor
                 {
                     //star icon button
                     GUI.enabled = !RecordableObjectsContain(sceneAsset);
-                    if (GUILayout.Button(PluginHubFunc.Icon("d_Favorite@2x", "", "Add this scene to favorite list"),
+                    if (GUILayout.Button(PluginHubFunc.IconContent("d_Favorite@2x", "", "Add this scene to favorite list"),
                             GUILayout.Height(19f), GUILayout.Width(28)))
                     {
                         if (!RecordableObjectsContain(sceneAsset))
@@ -267,7 +267,7 @@ namespace PluginHub.Editor
 
                     GUI.enabled = true;
                     //remove icon
-                    if (GUILayout.Button(PluginHubFunc.Icon("winbtn_win_close@2x", "", "remove"), PluginHubFunc.IconBtnLayoutOptions))
+                    if (GUILayout.Button(PluginHubFunc.IconContent("winbtn_win_close@2x", "", "remove"), PluginHubFunc.IconBtnLayoutOptions))
                     {
                         RemoveRecordableObject(sceneAsset);
                     }

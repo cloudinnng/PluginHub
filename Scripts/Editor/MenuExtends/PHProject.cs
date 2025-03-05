@@ -35,7 +35,7 @@ namespace PluginHub.Editor
             if (string.IsNullOrWhiteSpace(assetPath)) return;
 
             GUI.color = Color.gray;
-            if (GUI.Button(rect, PluginHubFunc.Icon("FolderEmpty On Icon","",
+            if (GUI.Button(rect, PluginHubFunc.IconContent("FolderEmpty On Icon","",
                     $"使用资源管理器打开{assetPath}"), EditorStyles.label))
             {
                 Debug.Log("RevealInFinder: " + assetPath);

@@ -38,7 +38,12 @@ namespace PluginHub.Editor
         
         internal static void GotoCameraBookmark(CameraBookmark bookmark, SceneView sceneView)
         {
-            activeTweens.Add(new ViewTween(bookmark as CameraBookmark, sceneView));
+            activeTweens.Add(new ViewTween(bookmark, sceneView));
+        }
+
+        internal static void GotoCamera(Camera camera, SceneView sceneView)
+        {
+            activeTweens.Add(new ViewTween(camera, sceneView));
         }
     }
 }

@@ -116,7 +116,7 @@ namespace PluginHub.Editor
                     if (isDrawingSceneGUI)
                     {
                         GUILayout.Label(
-                            PluginHubFunc.Icon("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI，您可以在场景视图状态栏中勾选 Always Refresh 来让场景GUI绘制更加即时"),
+                            PluginHubFunc.IconContent("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI，您可以在场景视图状态栏中勾选 Always Refresh 来让场景GUI绘制更加即时"),
                             GUILayout.Width(19), GUILayout.Height(19));
                     }
 
@@ -125,7 +125,7 @@ namespace PluginHub.Editor
                     //针对开启debug的模块  绘制按钮时给个颜色，突出显示
                     if (moduleDebug)
                         GUI.color = Color.red;
-                    if (GUILayout.Button(PluginHubFunc.Icon("DebuggerDisabled", "", "Enable Module Debug"),
+                    if (GUILayout.Button(PluginHubFunc.IconContent("DebuggerDisabled", "", "Enable Module Debug"),
                             GUILayout.Height(19), GUILayout.ExpandWidth(false)))
                     {
                         moduleDebug = !moduleDebug;
@@ -355,7 +355,7 @@ namespace PluginHub.Editor
 
                 GUILayout.FlexibleSpace();
                 //拷贝按钮
-                if (copyBtn && GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", "Duplicate"),
+                if (copyBtn && GUILayout.Button(PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", "Duplicate"),
                         PluginHubFunc.IconBtnLayoutOptions))
                 {
                     EditorGUIUtility.systemCopyBuffer = content;
@@ -395,7 +395,7 @@ namespace PluginHub.Editor
             bool exist = checkExist ? Directory.Exists(checkPath) : true;
             GUI.enabled = exist;
             //open folder button
-            if (GUILayout.Button(PluginHubFunc.Icon("FolderEmpty On Icon", buttonTxt, path),
+            if (GUILayout.Button(PluginHubFunc.IconContent("FolderEmpty On Icon", buttonTxt, path),
                     (string.IsNullOrWhiteSpace(buttonTxt))
                         ? PluginHubFunc.IconBtnLayoutOptions[0]
                         : GUILayout.ExpandWidth(false),
@@ -411,7 +411,7 @@ namespace PluginHub.Editor
         public void DrawIconBtnCopy(string textToCopy)
         {
             //拷贝按钮
-            if (GUILayout.Button(PluginHubFunc.Icon("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
+            if (GUILayout.Button(PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
                     PluginHubFunc.IconBtnLayoutOptions))
             {
                 EditorGUIUtility.systemCopyBuffer = textToCopy;
@@ -421,20 +421,20 @@ namespace PluginHub.Editor
         // 画一个星星icon按钮,这种按钮一般用于添加到收藏夹
         public bool DrawIconBtnStar(string tooltip = "Add to favorite")
         {
-            return GUILayout.Button(PluginHubFunc.Icon("d_Favorite@2x", "", tooltip), PluginHubFunc.IconBtnLayoutOptions);
+            return GUILayout.Button(PluginHubFunc.IconContent("d_Favorite@2x", "", tooltip), PluginHubFunc.IconBtnLayoutOptions);
         }
 
         // 画一个删除icon按钮
         public bool DrawIconBtnDelete(string toolTip = "delete")
         {
-            return GUILayout.Button(PluginHubFunc.Icon("P4_DeletedLocal@2x", "", toolTip),
+            return GUILayout.Button(PluginHubFunc.IconContent("P4_DeletedLocal@2x", "", toolTip),
                 PluginHubFunc.IconBtnLayoutOptions);
         }
 
         // 使用指定icon画一个icon按钮
         public bool DrawIconBtn(string iconStr, string btnTip)
         {
-            return GUILayout.Button(PluginHubFunc.Icon(iconStr, "", btnTip), PluginHubFunc.IconBtnLayoutOptions);
+            return GUILayout.Button(PluginHubFunc.IconContent(iconStr, "", btnTip), PluginHubFunc.IconBtnLayoutOptions);
         }
 
 

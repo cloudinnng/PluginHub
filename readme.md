@@ -25,12 +25,13 @@
 
 
 ## 动态
+2025年3月5日：支持场景视图右键菜单（按下shift再右键）。添加了SceneViewOverlay。支持Unity6以上。
 2024年4月30日：大更新，添加了运行时代码库，丰富了`PluginHub`的功能。文档正在完善，或者也可以直接阅读源码。  
 2024年4月26日：现在尽量将类似功能的模块合并，以减少模块数量。
 
 ## 安装与使用
 
-已经过测试的`Unity3D`版本：`2021.3.x` 以上。更老的版本可能也可以使用，但是未经测试，可能会有API不兼容的情况。
+`Unity3D`版本：`6000.x` 以上。更老的版本可能有些API不兼容。
 
 随着功能增加和框架变更，之前的旧模块可能会出现问题，目前还在积极开发中。任何使用问题请提交`Issue`。
 
@@ -42,7 +43,7 @@
 6. 导航到`Window`->`PluginHub` 或者 `Ctrl+Alt+R`打开`PluginHubWindow`窗口
 7. 在`PluginHubWindow`窗口中展开模块的下拉卷展栏
 8. 开始使用
-9. 如果想要定制您的`PluginHubWindow`，请导航到`PluginHub\Resources\PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
+9. 如果想要定制您的`PluginHubWindow`，请导航到`Assets/Plugins/PluginHubAssets/PH_ModuleConfigSO.asset`，在检视面板中启用或禁用模块
 
 
 
