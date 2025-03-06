@@ -146,16 +146,22 @@ namespace PluginHub.Runtime
                                     continue;
                             }
 
-                            //绘制这个日志
-                            if (GUILayout.Toggle(_selectedNode == i, GetLogString(i.Value)))
+                            GUILayout.BeginHorizontal();
                             {
-                                selected = true;
-                                if (_selectedNode != i)
+                                //前面的开关
+                                if (GUILayout.Toggle(_selectedNode == i,"",GUILayout.ExpandWidth(false),GUILayout.Height(30f)))
                                 {
-                                    _selectedNode = i;
-                                    _stackScrollPosition = Vector2.zero;
+                                    selected = true;
+                                    if (_selectedNode != i)
+                                    {
+                                        _selectedNode = i;
+                                        _stackScrollPosition = Vector2.zero;
+                                    }
                                 }
+                                //绘制这个日志
+                                GUILayout.Label(GetLogString(i.Value));
                             }
+                            GUILayout.EndHorizontal();
                         }
 
                         if (!selected)
@@ -170,6 +176,8 @@ namespace PluginHub.Runtime
 
             private void DrawLogDetail(float height)
             {
+                if(_selectedNode == null)
+                    return;
                 if(height == 0)
                     GUILayout.BeginVertical("box");
                 else
@@ -216,13 +224,8 @@ namespace PluginHub.Runtime
             private string GetLogString(LogNode logNode)
             {
                 Color32 color = GetLogStringColor(logNode.LogType);
-                //很多行时只显示第一行
-                string[] splitResult = logNode.LogMessage.Split('\n');
-                string logShow = splitResult[0];
-                if (splitResult.Length > 1)
-                    logShow = logShow + "<color=#00ff00ff>该条日志有多行，点击展开</color>";
                 return string.Format("<color=#{0:x2}{1:x2}{2:x2}{3:x2}>{4:[HH点mm分ss秒fff]}:{5}</color>",
-                    color.r, color.g, color.b, color.a, logNode.LogTime, logShow);
+                    color.r, color.g, color.b, color.a, logNode.LogTime, logNode.LogMessage);
             }
 
             private Color32 GetLogStringColor(LogType logType)
