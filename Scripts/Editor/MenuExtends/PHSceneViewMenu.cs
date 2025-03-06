@@ -11,6 +11,12 @@ namespace PluginHub.Editor
         public static Vector3 sceneViewCursor { get; private set; }
         public static Vector3 lastSceneViewCursor { get; private set; }
 
+        public static bool UseNewMethodGetSceneViewMouseRay
+        {
+            get=>EditorPrefs.GetBool("PHSceneViewMenu_UseNewMethodGetSceneViewMouseRay",false);
+            set=>EditorPrefs.SetBool("PHSceneViewMenu_UseNewMethodGetSceneViewMouseRay",value);
+        }
+
         // 显示右键上下文菜单
         public static void ShowContextMenu(Event e, Vector2 mouseDownPosition)
         {
@@ -116,7 +122,8 @@ namespace PluginHub.Editor
         private static void TheMaterialHere(out Renderer renderer,out Material material,out int indexOfMaterialInMesh,Vector2 mouseDownPosition)
         {
             renderer = null; material = null; indexOfMaterialInMesh = -1;
-            Ray ray = HandleUtility.GUIPointToWorldRay(mouseDownPosition);
+            Ray ray = GetSceneViewMouseRay(mouseDownPosition);
+            // DebugEx.DebugRay(ray, 100f, Color.red, 10f);
             if (RaycastWithoutCollider.Raycast(ray.origin, ray.direction,out RaycastWithoutCollider.HitResult result))
             {
                 renderer = result.renderer;
@@ -313,13 +320,41 @@ namespace PluginHub.Editor
         //     return ray;
         // }
 
+        public static Ray GetSceneViewMouseRay(Vector2 mouseDownPosition)
+        {
+            if(UseNewMethodGetSceneViewMouseRay){
+                mouseDownPosition.y += 10;
+                // Debug.Log($"GetSceneViewMouseRay: {mouseDownPosition}");
+                //旧方法
+                //
+                // 获取当前活动的SceneView
+                SceneView sceneView = SceneView.lastActiveSceneView;
+                if (sceneView == null) return new Ray();
+
+                // 将鼠标坐标转换为视口坐标 (0-1范围)
+                Rect sceneViewRect = sceneView.position;
+                Vector2 viewPos = new Vector2(
+                    mouseDownPosition.x / sceneViewRect.width,
+                    1 - mouseDownPosition.y / sceneViewRect.height
+                );
+
+                // 使用SceneView相机创建射线
+                Ray ray = sceneView.camera.ViewportPointToRay(viewPos);
+                return ray;
+            }
+            else{
+                Ray ray = HandleUtility.GUIPointToWorldRay(mouseDownPosition);
+                return ray;
+            }
+        }
+
         // 获取场景视图鼠标击中的Mesh的世界坐标
         private static bool MousePosToWorldPos(out Vector3 worldPos, out float distanceOut, Vector2 mouseDownPosition)
         {
             worldPos = Vector3.zero;
             distanceOut = 0;
             // Debug.Log($"MousePosToWorldPos: {mouseDownPosition}");
-            Ray ray = HandleUtility.GUIPointToWorldRay(mouseDownPosition);
+            Ray ray = GetSceneViewMouseRay(mouseDownPosition);
             // DebugEx.DebugRay(ray, 100f, Color.red, 10f);
             bool succeed = RaycastWithoutCollider.Raycast(ray.origin, ray.direction, out RaycastWithoutCollider.HitResult result);
             if (!succeed)

@@ -52,6 +52,14 @@ namespace PluginHub.Editor
                     PHSceneShiftMenu.NoNeedShift = !PHSceneShiftMenu.NoNeedShift;
                 }
                 GUI.color = Color.white;
+
+                GUI.color = PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_PhysicsRaycaster Icon","","使用新的方法获取SceneView中的鼠标射线，当旧方法获取的射线不正确时可以使用"), iconBtnStyle,GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay = !PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay;
+                }
+                GUI.color = Color.white;
+
             }
             GUILayout.EndHorizontal();
         }
