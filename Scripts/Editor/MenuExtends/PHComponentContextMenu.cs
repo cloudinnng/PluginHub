@@ -157,6 +157,7 @@ namespace PluginHub.Editor
                 text = textMeshProUGUI.text;
             if (!string.IsNullOrWhiteSpace(text))
             {
+                text = text.Replace("\n", "").Replace(" ", "");
                 Undo.RecordObject(gameObject, "rename obj");
                 gameObject.name = $"{text.Trim()} Btn";
                 EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene()); //标记场景脏

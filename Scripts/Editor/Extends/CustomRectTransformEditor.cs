@@ -63,6 +63,9 @@
                 rectTransform.anchoredPosition = EditorGUILayout.Vector2Field("Anchored Position", rectTransform.anchoredPosition);
                 rectTransform.sizeDelta = EditorGUILayout.Vector2Field("Size Delta", rectTransform.sizeDelta);
                 EditorGUILayout.RectField("Rect", rectTransform.rect);
+                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+                // Screen.width, Screen.height 不能在编辑器中调用，显示的是不正确的
+                // EditorGUILayout.Vector2Field("Screen.width/height", new Vector2(Screen.width, Screen.height));
             }
         }
 
