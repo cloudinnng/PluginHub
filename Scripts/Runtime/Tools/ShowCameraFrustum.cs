@@ -102,7 +102,7 @@ namespace PluginHub.Runtime
             }
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             //show frustum
             if (base.enabled && (showInRuntime || !Application.isPlaying))
