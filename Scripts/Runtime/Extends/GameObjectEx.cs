@@ -23,7 +23,7 @@ namespace PluginHub.Runtime
             return null;
         }
 
-        private static string GetGameObjectFindPath(Transform transform)
+        public static string GetGameObjectFindPath(Transform transform)
         {
             StringBuilder sb = new StringBuilder();
             while (transform != null)

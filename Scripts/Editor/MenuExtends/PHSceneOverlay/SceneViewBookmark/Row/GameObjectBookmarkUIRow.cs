@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
@@ -114,9 +115,7 @@ namespace PluginHub.Editor
                     GameObject gameObject = Selection.activeGameObject;
                     if (gameObject != null)
                     {
-                        StringBuilder sb = new StringBuilder();
-                        GetFindPath(gameObject.transform, sb);
-                        gameObjectBookmark.text = sb.ToString();
+                        gameObjectBookmark.text = GameObjectEx.GetGameObjectFindPath(gameObject.transform);
                         gameObjectBookmark.componentName = GetPrimaryComponentName(gameObject);
                         BookmarkAssetSO.Instance.Save();
                     }
@@ -132,21 +131,9 @@ namespace PluginHub.Editor
             {
                 if (gameObjectBookmark.hasContentSaved)
                 {
-                    Selection.activeGameObject = GameObject.Find(gameObjectBookmark.text);
+                    Selection.activeGameObject = GameObjectEx.Find(gameObjectBookmark.text);
                 }
             }
-        }
-
-        //使用递归获取一个Transform的查找路径
-        protected void GetFindPath(Transform transform, StringBuilder sb)
-        {
-            if (transform.parent == null)
-            {
-                sb.Insert(0, $"/{transform.name}");
-                return;
-            }
-            sb.Insert(0, $"/{transform.name}");
-            GetFindPath(transform.parent, sb);
         }
 
         private string GetPrimaryComponentName(GameObject gameObject)
@@ -206,41 +193,41 @@ namespace PluginHub.Editor
         private static void LoadObject1()
         {
             if (!PHSceneOverlay.instance.isDisplayed) return;
-            Selection.activeGameObject = GameObject.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[0].text);
+            Selection.activeGameObject = GameObjectEx.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[0].text);
         }
 
         [Shortcut("PH/SceneViewBookmark/LoadObject2",typeof(SceneView), KeyCode.Alpha2, ShortcutModifiers.None)]
         private static void LoadObject2()
         {
             if (!PHSceneOverlay.instance.isDisplayed) return;
-            Selection.activeGameObject = GameObject.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[1].text);
+            Selection.activeGameObject = GameObjectEx.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[1].text);
         }
 
         [Shortcut("PH/SceneViewBookmark/LoadObject3",typeof(SceneView), KeyCode.Alpha3, ShortcutModifiers.None)]
         private static void LoadObject3()
         {
             if (!PHSceneOverlay.instance.isDisplayed) return;
-            Selection.activeGameObject = GameObject.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[2].text);
+            Selection.activeGameObject = GameObjectEx.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[2].text);
         }
 
         [Shortcut("PH/SceneViewBookmark/LoadObject4",typeof(SceneView), KeyCode.Alpha4, ShortcutModifiers.None)]
         private static void LoadObject4()
         {
             if (!PHSceneOverlay.instance.isDisplayed) return;
-            Selection.activeGameObject = GameObject.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[3].text);
+            Selection.activeGameObject = GameObjectEx.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[3].text);
         }
 
         [Shortcut("PH/SceneViewBookmark/LoadObject5",typeof(SceneView), KeyCode.Alpha5, ShortcutModifiers.None)]
         private static void LoadObject5()
         {
             if (!PHSceneOverlay.instance.isDisplayed) return;
-            Selection.activeGameObject = GameObject.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[4].text);
+            Selection.activeGameObject = GameObjectEx.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[4].text);
         }
         [Shortcut("PH/SceneViewBookmark/LoadObject6",typeof(SceneView), KeyCode.Alpha6, ShortcutModifiers.None)]
         private static void LoadObject6()
         {
             if (!PHSceneOverlay.instance.isDisplayed) return;
-            Selection.activeGameObject = GameObject.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[5].text);
+            Selection.activeGameObject = GameObjectEx.Find(BookmarkAssetSO.Instance.GetSceneBookmarkGroup(SceneManager.GetActiveScene().path).gameObjectPaths[5].text);
         }
         #endregion
     }
