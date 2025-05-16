@@ -37,7 +37,7 @@ namespace PluginHub.Editor
                     // GUIContent icon = EditorGUIUtility.IconContent($"d_{assetBookmark.iconName} Icon");
 
                     string name = Path.GetFileNameWithoutExtension(assetBookmark.text);
-                    string showName = name.Substring(0, 3);
+                    string showName = name.Length > 3 ? name.Substring(0, 3) : name;
                     click = GUILayout.Button(showName, BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
                 }
                 else

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using PluginHub.Runtime;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -113,6 +114,11 @@ namespace PluginHub.Editor
         public string componentName;
 
         public override bool hasContentSaved => string.IsNullOrWhiteSpace(text) == false;
+
+        public override bool IsActivated()
+        {
+            return text.Equals(GameObjectEx.GetGameObjectFindPath(Selection.activeGameObject?.transform));
+        }
     }
     
     [System.Serializable]

@@ -25,14 +25,31 @@ namespace PluginHub.Runtime
 
         public static string GetGameObjectFindPath(Transform transform)
         {
-            StringBuilder sb = new StringBuilder();
+            if (transform == null)
+                return string.Empty;
+            
+            // 预估路径长度，避免StringBuilder频繁扩容
+            StringBuilder sb = new StringBuilder(128);
+            
+            // 使用栈来存储名称，避免重复的Insert(0)操作
+            Stack<string> pathParts = new Stack<string>();
+            
             while (transform != null)
             {
-                sb.Insert(0, transform.name);
-                if (transform.parent != null)
-                    sb.Insert(0, "/");
+                pathParts.Push(transform.name);
                 transform = transform.parent;
             }
+            
+            // 构建最终路径
+            bool isFirst = true;
+            foreach (string part in pathParts)
+            {
+                if (!isFirst)
+                    sb.Append('/');
+                sb.Append(part);
+                isFirst = false;
+            }
+            
             return sb.ToString();
         }
 
