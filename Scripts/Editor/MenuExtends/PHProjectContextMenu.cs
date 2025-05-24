@@ -258,19 +258,22 @@ namespace PluginHub.Editor
         #region PH Find References
 
         // 这个方法比Unity的查找方法还好用，可以找到项目中哪个场景或者预制体挂载了这个脚本
-        [MenuItem("Assets/PH Find References", false)]
-        private static void PHFindReferences()
+        // 当你想清理项目时，可以先使用这个方法查找资源是否被引用，避免误删
+        //
+        [MenuItem("Assets/PH Find References In Project", false)]
+        private static void PHFindReferencesInProject()
         {
             EditorSettings.serializationMode = SerializationMode.ForceText;
             string path = AssetDatabase.GetAssetPath(Selection.activeObject);
             if (!string.IsNullOrEmpty(path))
             {
                 string guid = AssetDatabase.AssetPathToGUID(path);
-                string withoutExtensions = "*.prefab*.unity*.mat*.asset";
+                string[] extensions = { ".prefab", ".unity", ".mat", ".asset", ".controller" };
                 string[] files = Directory.GetFiles(Application.dataPath, "*.*", SearchOption.AllDirectories)
-                    .Where(s => withoutExtensions.Contains(Path.GetExtension(s).ToLower())).ToArray();
+                    .Where(s => extensions.Contains(Path.GetExtension(s).ToLower())).ToArray();
                 int startIndex = 0;
 
+                int counter = 0;
                 EditorApplication.update = delegate()
                 {
                     string file = files[startIndex];
@@ -279,7 +282,6 @@ namespace PluginHub.Editor
                         EditorUtility.DisplayCancelableProgressBar("匹配资源中", file,
                             (float)startIndex / (float)files.Length);
 
-                    int counter = 0;
                     if (Regex.IsMatch(File.ReadAllText(file), guid))
                     {
                         Debug.Log(file, AssetDatabase.LoadAssetAtPath<Object>(GetRelativeAssetsPath(file)));
