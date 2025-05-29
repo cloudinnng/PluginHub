@@ -77,6 +77,8 @@ namespace PluginHub.Runtime
         // [重要方法] GUI程序开发依赖的屏幕尺寸
         public Vector2 ScreenSize(float localGUIScale) => new Vector2(_realScreenSize.x / globalGUIScale / localGUIScale, _realScreenSize.y / globalGUIScale / localGUIScale);
 
+        public GUISkin guiskin;
+
         // 客户端列表
         public List<IIMGUI> clientList = new List<IIMGUI>();
 
@@ -140,6 +142,8 @@ namespace PluginHub.Runtime
         {
             if (!showGUI)
                 return;
+            if (guiskin != null)
+                GUI.skin = guiskin;
 
             Matrix4x4 originalMatrix = GUI.matrix;
 

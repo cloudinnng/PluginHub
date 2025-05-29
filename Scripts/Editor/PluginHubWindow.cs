@@ -347,7 +347,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    showPluginHubOnExitPlayMode = GUILayout.Toggle(showPluginHubOnExitPlayMode, "退出编辑模式时显示PluginHubWindow窗口");
+                    showPluginHubOnExitPlayMode = GUILayout.Toggle(showPluginHubOnExitPlayMode, "退出播放模式时显示PluginHubWindow窗口");
                     if (GUILayout.Button("打开配置文件所在文件夹"))
                         EditorUtility.RevealInFinder(PluginHubConfig.configPath);
                 }

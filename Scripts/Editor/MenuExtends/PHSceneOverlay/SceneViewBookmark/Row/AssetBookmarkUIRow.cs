@@ -1,18 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace PluginHub.Editor
 {
     //资产书签
     public class AssetBookmarkUIRow : IBookmarkUIRow
     {
+        private GUIStyle bottomLabel;
         protected override void DrawHorizontalInnerGUI(SceneBookmarkGroup group)
         {
-            GUI.color = (Selection.activeObject != null && Selection.activeObject as GameObject == null) 
+            if (bottomLabel == null)
+            {
+                bottomLabel = new GUIStyle(GUI.skin.label);
+                bottomLabel.fontSize = 12;
+            }
+            GUI.color = (Selection.activeObject != null && AssetDatabase.Contains(Selection.activeObject))
                 ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE
                 : Color.white;
             //画行首的图标
@@ -37,8 +45,16 @@ namespace PluginHub.Editor
                     // GUIContent icon = EditorGUIUtility.IconContent($"d_{assetBookmark.iconName} Icon");
 
                     string name = Path.GetFileNameWithoutExtension(assetBookmark.text);
-                    string showName = name.Length > 3 ? name.Substring(0, 3) : name;
-                    click = GUILayout.Button(showName, BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
+                    // string showName = name.Length > 3 ? name.Substring(0, 3) : name;
+                    string showName = name;
+                    click = GUILayout.Button("", BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
+                    Rect lastRect = GUILayoutUtility.GetLastRect();
+                    // texture
+                    Rect textureRect = new Rect(lastRect.x + 13, lastRect.y+2,16,16);
+                    GUI.DrawTexture(textureRect, EditorGUIUtility.IconContent(assetBookmark.iconName).image, ScaleMode.ScaleToFit);
+                    // label
+                    Rect labelRect = new Rect(lastRect.x, lastRect.y + 15, BookmarkSettings.BUTTON_SIZE.x, 15);
+                    GUI.Label(labelRect, showName,bottomLabel);
                 }
                 else
                 {
@@ -79,7 +95,7 @@ namespace PluginHub.Editor
                     if (assetObject != null)
                     {
                         assetBookmark.text = AssetDatabase.GetAssetPath(assetObject);
-                        assetBookmark.iconName = GetIconName(assetObject);
+                        assetBookmark.iconName = GetIconName(assetObject,assetBookmark.text);
                         BookmarkAssetSO.Instance.Save();
                     }
                 }
@@ -99,32 +115,33 @@ namespace PluginHub.Editor
             }
         }
 
-        private string GetIconName(Object obj)
+        private string GetIconName(Object obj, string path)
         {
             // Debug.Log(obj.GetType());
-            if (obj is ScriptableObject)
-                return "ScriptableObject";
-            if(obj is MonoScript)
-                return "cs Script";
-            if(obj is SceneAsset)
-                return "SceneAsset";
-            if(obj is GameObject)
-                return "GameObject";
-            if (obj is Material)
-                return "Material";
-            if (obj is Shader)
-                return "Shader";
-            if (obj is Texture)
-                return "Texture";
-            if (obj is Mesh)
-                return "Mesh";
-            if (obj is AnimationClip)
-                return "AnimationClip";
-            if (obj is AudioClip)
-                return "AudioClip";
-            if (obj is DefaultAsset)
-                return "Folder";
-            return null;
+            path = path.ToLower();
+            if (path.EndsWith(".prefab"))
+                return "Prefab Icon";
+            if (path.EndsWith(".fbx"))
+                return "PrefabModel Icon";
+            if (path.EndsWith(".mat"))
+                return "Material Icon";
+            if (path.EndsWith(".png") || path.EndsWith(".jpg") || path.EndsWith(".jpeg"))
+                return "RawImage Icon";
+            if (path.EndsWith(".shader"))
+                return "Shader Icon";
+            if (path.EndsWith(".controller") || path.EndsWith(".animator"))
+                return "AnimatorController Icon";
+            if (path.EndsWith(".anim"))
+                return "Animation Icon";
+            if (path.EndsWith(".unity"))
+                return "SceneAsset Icon";
+            if (path.EndsWith(".asset"))
+                return "ScriptableObject Icon";
+            if (path.EndsWith(".cs"))
+                return "CSharpScript Icon";
+            if (path.EndsWith(".txt") || path.EndsWith(".json") || path.EndsWith(".xml"))
+                return "TextAsset Icon";
+            return "FolderEmpty On Icon";
         }
     }
 }

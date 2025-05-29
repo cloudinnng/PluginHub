@@ -401,14 +401,13 @@ namespace PluginHub.Editor
         }
 
 
-        /// TODO
-        /// 例如:
-        /// ▼GameObject
-        ///    ▶Child1
-        ///    ▶Child2
-        /// ▼GameObject1
-        ///    ▶Child1
-        ///    ▶Child2
+        /// <summary>
+        /// 将选中对象的层级结构用字符串表达出来
+        /// 使用以下字符表示层级：
+        /// │ : 竖线，用于连接兄弟节点
+        /// ├ : 左分支，用于非最后一个子节点
+        /// └ : 左下角，用于最后一个子节点
+        /// ─ : 横线，用于连接父子关系
         /// </summary>
         [MenuItem("GameObject/PH 拷贝选中对象层级的字符串表达形式", false, -50)]
         public static void CopyHierarchyStringRepresentation()
@@ -416,31 +415,53 @@ namespace PluginHub.Editor
             GameObject[] selectedGameObjects = Selection.gameObjects;
             if (selectedGameObjects.Length == 0)
                 return;
+
             StringBuilder sb = new StringBuilder();
+            
+            // 为每个选中的根对象生成层级结构
             for (int i = 0; i < selectedGameObjects.Length; i++)
             {
-                sb.Append("▼");
-                sb.Append(selectedGameObjects[i].name);
-                sb.Append("\n");
-                Transform[] children = selectedGameObjects[i].GetComponentsInChildren<Transform>();
-                for (int j = 0; j < children.Length; j++)
-                {
-                    if (children[j].parent == selectedGameObjects[i].transform)
-                    {
-                        sb.Append("    ▶");
-                        sb.Append(children[j].name);
-                        sb.Append("\n");
-                    }
-                }
+                if (i > 0) sb.AppendLine();
+                BuildHierarchyString(selectedGameObjects[i].transform, "", true, sb);
             }
 
             EditorGUIUtility.systemCopyBuffer = sb.ToString();
+            Debug.Log($"[PH] 已拷贝层级结构:\n{sb}");
+        }
+
+        /// <summary>
+        /// 递归构建层级结构字符串
+        /// </summary>
+        /// <param name="transform">当前处理的Transform</param>
+        /// <param name="prefix">当前行的前缀（用于显示层级关系）</param>
+        /// <param name="isLastChild">是否是父节点的最后一个子节点</param>
+        /// <param name="sb">StringBuilder用于构建最终字符串</param>
+        private static void BuildHierarchyString(Transform transform, string prefix, bool isLastChild, StringBuilder sb)
+        {
+            // 添加当前节点
+            sb.AppendLine($"{prefix}{(isLastChild ? "└─" : "├─")}{transform.name}");
+
+            // 获取直接子节点
+            List<Transform> children = new List<Transform>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                children.Add(transform.GetChild(i));
+            }
+
+            // 处理所有子节点
+            for (int i = 0; i < children.Count; i++)
+            {
+                // 计算新的前缀：如果当前节点是最后一个子节点，则其子节点前面用空格；否则用竖线
+                string newPrefix = prefix + (isLastChild ? "  " : "│ ");
+                // 递归处理子节点
+                BuildHierarchyString(children[i], newPrefix, i == children.Count - 1, sb);
+            }
         }
 
         [MenuItem("GameObject/PH 拷贝选中对象层级的字符串表达形式", true, -50)]
         public static bool CopyHierarchyStringRepresentationValidate()
         {
-            return Selection.gameObjects.Length > 1;
+            return Selection.gameObjects.Length > 0;
         }
 
         [MenuItem("GameObject/PH 拷贝 GameObject.Find 查找路径", false, -49)]
