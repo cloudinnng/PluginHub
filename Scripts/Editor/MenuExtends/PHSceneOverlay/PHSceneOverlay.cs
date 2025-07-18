@@ -21,9 +21,10 @@ namespace PluginHub.Editor
             base.OnCreated();
             instance = this;
             SceneView.duringSceneGui += OnSceneGUIHoverTip;
-
+#if UNITY_6000_0_OR_NEWER
             // 移除 Unity Overlay 自带的 Hover 提示，以免遮挡我们的Hover提示
             rootVisualElement.tooltip = "";
+#endif
         }
         public override void OnWillBeDestroyed()
         {
@@ -41,8 +42,11 @@ namespace PluginHub.Editor
             if (tempTipContent == null || (tempTipContent.image == null && string.IsNullOrEmpty(tempTipContent.text))) return;
 
             // 计算显示原点
+#if UNITY_6000_0_OR_NEWER        
             Vector2 originPosition = floating ? floatingPosition : rootVisualElement.worldBound.position;
-            // Vector2 originPosition = floatingPosition;
+#else
+            Vector2 originPosition = floatingPosition;
+#endif
             Vector2 overlaySize = this.size;
             originPosition.x += 2;
             originPosition.y += overlaySize.y - 20;
