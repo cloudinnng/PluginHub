@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -95,7 +97,7 @@ namespace PluginHub.Editor
                     if (assetObject != null)
                     {
                         assetBookmark.text = AssetDatabase.GetAssetPath(assetObject);
-                        assetBookmark.iconName = GetIconName(assetObject,assetBookmark.text);
+                        assetBookmark.iconName = GetIconName(assetObject, assetBookmark.text);
                         BookmarkAssetSO.Instance.Save();
                     }
                 }
@@ -105,12 +107,26 @@ namespace PluginHub.Editor
                     assetBookmark.iconName = "";
                     BookmarkAssetSO.Instance.Save();
                 }
+                
             }
             else//没按ctrl
             {
                 if (assetBookmark.hasContentSaved)
                 {
-                    Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(assetBookmark.text);
+                    if (Event.current.button == 0)// 左键选中
+                    {
+                        Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(assetBookmark.text);
+                    }else if (Event.current.button == 2)//中键进入
+                    {
+                        if (assetBookmark.text.EndsWith(".prefab"))
+                        {
+                            PrefabStageUtility.OpenPrefab(assetBookmark.text);
+                        }
+                        else
+                        {
+                            Debug.Log("[PH] 只能打开预制体");
+                        }
+                    }
                 }
             }
         }
