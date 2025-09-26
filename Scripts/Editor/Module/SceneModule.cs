@@ -92,7 +92,25 @@ namespace PluginHub.Editor
                     DrawSceneRow(i, path, sceneAsset, true);
                 }
 
-                GUILayout.Label($"Recent Scene ({recentScene.Count}): ");
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label($"Recent Scene ({recentScene.Count}): ");
+                    GUILayout.FlexibleSpace();
+
+                    // 切换到上一个场景
+                    if (GUILayout.Button("Switch Recent"))
+                    {
+                        if (recentScene.Count > 1)
+                        {
+                            SceneAsset lastScene = recentScene[recentScene.Count - 2];
+                            string lastScenePath = AssetDatabase.GetAssetPath(lastScene);
+
+                            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                                EditorSceneManager.OpenScene(lastScenePath);
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
 
                 
                 //画出最近场景

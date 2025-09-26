@@ -128,7 +128,9 @@ namespace PluginHub.Editor
             {
                 renderer = result.renderer;
 
-                Mesh mesh = result.renderer.GetComponent<MeshFilter>().sharedMesh;
+                MeshFilter meshFilter = result.renderer.GetComponent<MeshFilter>();
+                SkinnedMeshRenderer skinnedMeshRenderer = result.renderer as SkinnedMeshRenderer;
+                Mesh mesh = meshFilter ? meshFilter.sharedMesh : skinnedMeshRenderer.sharedMesh;
                 indexOfMaterialInMesh = GetSubMeshIndex(mesh, result.triangleIndex);
                 if (indexOfMaterialInMesh == -1)
                     return;
