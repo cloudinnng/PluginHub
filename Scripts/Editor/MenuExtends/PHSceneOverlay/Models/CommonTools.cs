@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace PluginHub.Editor
@@ -23,6 +24,12 @@ namespace PluginHub.Editor
             }
         }
 
+        public static string lastScenePath
+        {
+            set => EditorPrefs.SetString("PH_SceneOverlayLastScene", value);
+            get => EditorPrefs.GetString("PH_SceneOverlayLastScene", "");
+        }
+
         public static void DrawTools()
         {
             GUILayout.BeginHorizontal();
@@ -33,32 +40,41 @@ namespace PluginHub.Editor
                     var selectedObject = Selection.activeGameObject;
                     if (selectedObject.GetComponent<MeshRenderer>())
                     {
-                        if (GUILayout.Button(PluginHubFunc.GuiContent("↓","放到地上"),iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                        if (GUILayout.Button(PluginHubFunc.GuiContent("↓", "放到地上"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                         {
                             SelectionObjToGround(false);
                         }
                     }
                 }
 
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera","","移动到Main相机视图"), iconBtnStyle,GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera", "", "移动到Main相机视图"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    if(SceneView.lastActiveSceneView != null && Camera.main != null)
+                    if (SceneView.lastActiveSceneView != null && Camera.main != null)
                         ViewTweenInitializeOnLoad.GotoCamera(Camera.main, SceneView.lastActiveSceneView);
                 }
 
                 GUI.color = PHSceneShiftMenu.NoNeedShift ? PluginHubFunc.SelectedColor : Color.white;
-                if (GUILayout.Button(PluginHubFunc.IconContent("Button Icon","","右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle,GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("Button Icon", "", "右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     PHSceneShiftMenu.NoNeedShift = !PHSceneShiftMenu.NoNeedShift;
                 }
                 GUI.color = Color.white;
 
                 GUI.color = PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay ? PluginHubFunc.SelectedColor : Color.white;
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_PhysicsRaycaster Icon","","使用新的方法获取SceneView中的鼠标射线，当旧方法获取的射线不正确时可以使用"), iconBtnStyle,GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_PhysicsRaycaster Icon", "", "使用新的方法获取SceneView中的鼠标射线，当旧方法获取的射线不正确时可以使用"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay = !PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay;
                 }
                 GUI.color = Color.white;
+
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneAsset Icon", "", $"切换到最近打开的场景 ({lastScenePath})"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    if(lastScenePath != null)
+                    {
+                        if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                            EditorSceneManager.OpenScene(lastScenePath);
+                    }
+                }
 
             }
             GUILayout.EndHorizontal();
