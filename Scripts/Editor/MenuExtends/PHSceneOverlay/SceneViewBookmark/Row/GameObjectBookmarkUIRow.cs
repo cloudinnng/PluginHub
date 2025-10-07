@@ -24,6 +24,7 @@ namespace PluginHub.Editor
             {
                 bottomLabel = new GUIStyle(GUI.skin.label);
                 bottomLabel.fontSize = 12;
+                bottomLabel.wordWrap = false;
             }
 
             // Debug.Log("GameObjectBookmarkUIRow DrawHorizontalInnerGUI");
@@ -46,7 +47,7 @@ namespace PluginHub.Editor
 
                 string showName = (i + 1).ToString();
                 string name = Path.GetFileNameWithoutExtension(gameObjectBookmark.text);
-                // string showName2 = name.Length > 3 ? name.Substring(0, 7) : name;
+                // string showName2 = name.Length > 3 ? name.Substring(0, 3) : name;
                 string showName2 = name;
 
                 if (gameObjectBookmark.hasContentSaved)
@@ -79,7 +80,7 @@ namespace PluginHub.Editor
                     // texture
                     Rect textureRect = new Rect(lastRect.x + 13, lastRect.y+2,16,16);
                     GUI.DrawTexture(textureRect, icon.image, ScaleMode.ScaleToFit);
-                    // label
+                    // 文字提示label
                     Rect labelRect = new Rect(lastRect.x, lastRect.y + 15, BookmarkSettings.BUTTON_SIZE.x, 15);
                     GUI.Label(labelRect, showName2,bottomLabel);
                 }
@@ -100,8 +101,8 @@ namespace PluginHub.Editor
                     Rect rect1 = rect;
                     rect1.x += 1;
                     rect1.y += 2;
-                    rect1.width = 10;
-                    rect1.height = 10;
+                    rect1.width = 15;
+                    rect1.height = 15;
                     GUI.Label(rect1, (i + 1).ToString());
                 }
 
@@ -133,7 +134,8 @@ namespace PluginHub.Editor
                     GameObject gameObject = Selection.activeGameObject;
                     if (gameObject != null && !AssetDatabase.Contains(gameObject))// 只能存游戏对象，而非资产对象
                     {
-                        gameObjectBookmark.text = GameObjectEx.GetGameObjectFindPath(gameObject.transform);
+                        string fullName = GameObjectEx.GetGameObjectFindPath(gameObject.transform);
+                        gameObjectBookmark.text = fullName;
                         gameObjectBookmark.componentName = GetPrimaryComponentName(gameObject);
                         BookmarkAssetSO.Instance.Save();
                     }
