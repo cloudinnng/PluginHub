@@ -112,6 +112,10 @@ namespace PluginHub.Editor
                     // 功能点： 按下Alt + 鼠标中键可以选中所有相似名字的兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
                         SelectSimilarNamSilbing(go);
+                }else if (currEvent.modifiers == EventModifiers.Shift){
+                    // 功能点： 按下Shift + 鼠标中键可以选中父亲节点
+                    if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
+                        Selection.activeGameObject = go.transform.parent != null ? go.transform.parent.gameObject : go;
                 }
             }
         }
