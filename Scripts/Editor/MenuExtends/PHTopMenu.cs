@@ -94,44 +94,44 @@ namespace PluginHub.Editor
             EditorUtility.RevealInFinder(path);
         }
 
-        [MenuItem("PluginHub/Open/Folder ProjectRoot", false, -320)]
+        [MenuItem("PluginHub/Folder ProjectRoot", false, -320)]
         public static void OpenFolderProjectRoot()
         {
             OpenFolder(_projectRootPath + "/");
         }
 
-        [MenuItem("PluginHub/Open/Folder StreamingAssets", false, -300)]
+        [MenuItem("PluginHub/Folder StreamingAssets", false, -300)]
         public static void OpenFolderStreamingAssets()
         {
             OpenFolder(Application.streamingAssetsPath + "/");
         }
 
-        [MenuItem("PluginHub/Open/Folder PersistentDataPath", false, -299)]
+        [MenuItem("PluginHub/Folder PersistentDataPath", false, -299)]
         public static void OpenFolderPersistentDataPath()
         {
             OpenFolder(Application.persistentDataPath + "/");
         }
 
-        [MenuItem("PluginHub/Open/Folder DataPath", false, -298)]
+        [MenuItem("PluginHub/Folder DataPath", false, -298)]
         public static void OpenFolderDataPath()
         {
             OpenFolder(Application.dataPath + "/");
         }
 
         //--------------------------
-        [MenuItem("PluginHub/Open/Folder Build", false, -281)]
+        [MenuItem("PluginHub/Folder Build", false, -281)]
         public static void OpenFolderBuild()
         {
             OpenFolder(_projectRootPath + "/Build/");
         }
 
-        [MenuItem("PluginHub/Open/Folder Recordings", false, -280)]
+        [MenuItem("PluginHub/Folder Recordings", false, -280)]
         public static void OpenFolderRecordings()
         {
             OpenFolder(_projectRootPath + "/Recordings/");
         }
 
-        [MenuItem("PluginHub/Open/Folder ExternalAssets", false, -279)]
+        [MenuItem("PluginHub/Folder ExternalAssets", false, -279)]
         public static void OpenFolderExternalAssets()
         {
             // 这个文件夹非标准Unity文件夹，是个人习惯用于放置项目相关的外部资源，例如参考图，策划文档等。
@@ -140,58 +140,58 @@ namespace PluginHub.Editor
 
         //--------------------------
         //--------------------------
-        [MenuItem("PluginHub/Open/Window Project Settings...", false, -260)]
+        [MenuItem("PluginHub/Window Project Settings...", false, -260)]
         public static void OpenWindowProjectSettings()
         {
             EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
         }
 
-        [MenuItem("PluginHub/Open/Window Package Manager", false, -259)]
+        [MenuItem("PluginHub/Window Package Manager", false, -259)]
         public static void OpenWindowPackageManager()
         {
             EditorApplication.ExecuteMenuItem("Window/Package Manager");
         }
 
-        [MenuItem("PluginHub/Open/Window Preferences...", false, -258)]
+        [MenuItem("PluginHub/Window Preferences...", false, -258)]
         public static void OpenWindowPreferences()
         {
             EditorApplication.ExecuteMenuItem("Edit/Preferences...");
         }
 
         //--------------------------
-        [MenuItem("PluginHub/Open/Window Animation", false, -240)]
+        [MenuItem("PluginHub/Window Animation", false, -240)]
         public static void OpenWindowAnimation()
         {
             EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
         }
 
-        [MenuItem("PluginHub/Open/Window Timeline", false, -239)]
+        [MenuItem("PluginHub/Window Timeline", false, -239)]
         public static void OpenWindowTimeline()
         {
             EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
         }
 
         //--------------------------
-        [MenuItem("PluginHub/Open/Window Lighting", false, -227)]
+        [MenuItem("PluginHub/Window Lighting", false, -227)]
         public static void OpenWindowLighting()
         {
             EditorApplication.ExecuteMenuItem("Window/Rendering/Lighting");
         }
 
-        [MenuItem("PluginHub/Open/Window Light Explorer", false, -226)]
+        [MenuItem("PluginHub/Window Light Explorer", false, -226)]
         public static void OpenWindowLightExplorer()
         {
             EditorApplication.ExecuteMenuItem("Window/Rendering/Light Explorer");
         }
 
-        [MenuItem("PluginHub/Open/Window UV Inspector", false, -225)]
+        [MenuItem("PluginHub/Window UV Inspector", false, -225)]
         public static void OpenWindowUVInspector()
         {
             EditorApplication.ExecuteMenuItem("Window/nTools/UV Inspector");
         }
 
         //--------------------------
-        [MenuItem("PluginHub/Open/Window Test Runner", false, -213)]
+        [MenuItem("PluginHub/Window Test Runner", false, -213)]
         public static void OpenWindowTestRunner()
         {
             EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
