@@ -184,7 +184,10 @@ namespace PluginHub.Editor
         {
             TheMaterialHere(out Renderer renderer, out Material material,out _, mouseDownPosition);
             if (material == null)
+            {
+                Debug.LogWarning("没有选中材质", material);
                 return;
+            }
 
             // 复制材质引用
             GUIUtility.systemCopyBuffer = AssetDatabase.GetAssetPath(material);

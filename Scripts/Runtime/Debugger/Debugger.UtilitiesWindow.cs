@@ -26,12 +26,12 @@ namespace PluginHub.Runtime
 
             private string tempText = "";
             // 存储飞书云文件的<文件token,文件名>
-            private Dictionary<string,string> feiShuCloudFiles = new Dictionary<string, string>();
+            private Dictionary<string, string> feiShuCloudFiles = new Dictionary<string, string>();
             // private float resolutionScale = 1;
 
             private bool exchangeWidthHeight
             {
-                get { return PlayerPrefs.GetInt("PH_portrait", 1) == 1; }
+                get { return PlayerPrefs.GetInt("PH_portrait", 0) == 1; }
                 set { PlayerPrefs.SetInt("PH_portrait", value ? 1 : 0); }
             }
 
@@ -66,7 +66,7 @@ namespace PluginHub.Runtime
                             break;
                         case 2:
                             DrawPersistentDataModule();
-                        break;
+                            break;
                     }
                 }
                 GUILayout.EndVertical();
@@ -112,6 +112,7 @@ namespace PluginHub.Runtime
                         bool newValue = GUILayout.Toggle(Screen.fullScreen, "FullScreen");
                         if (newValue != Screen.fullScreen)
                             Screen.fullScreen = newValue;
+                        exchangeWidthHeight = GUILayout.Toggle(exchangeWidthHeight, "交换宽高");
                     }
                     GUILayout.EndHorizontal();
 
@@ -120,16 +121,26 @@ namespace PluginHub.Runtime
                     string[] names16by9 = resolution16by9.Select(v => $"{v.x} x {v.y}").ToArray();
                     int selected = GUILayout.SelectionGrid(-1, names4by3, 6);
                     if (selected != -1)
-                        Screen.SetResolution(resolution4by3[selected].x, resolution4by3[selected].y, Screen.fullScreen);
+                    {
+                        if (exchangeWidthHeight)
+                            Screen.SetResolution(resolution4by3[selected].y, resolution4by3[selected].x, Screen.fullScreen);
+                        else
+                            Screen.SetResolution(resolution4by3[selected].x, resolution4by3[selected].y, Screen.fullScreen);
+                    }
                     selected = GUILayout.SelectionGrid(-1, names16by9, 6);
                     if (selected != -1)
-                        Screen.SetResolution(resolution16by9[selected].x, resolution16by9[selected].y, Screen.fullScreen);
+                    {
+                        if (exchangeWidthHeight)
+                            Screen.SetResolution(resolution16by9[selected].y, resolution16by9[selected].x, Screen.fullScreen);
+                        else
+                            Screen.SetResolution(resolution16by9[selected].x, resolution16by9[selected].y, Screen.fullScreen);
+                    }
 
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Label("移动设备预览快选:");
                         GUILayout.FlexibleSpace();
-                        exchangeWidthHeight = GUILayout.Toggle(exchangeWidthHeight, "交换宽高");
+
                     }
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
@@ -148,7 +159,7 @@ namespace PluginHub.Runtime
             // 将游戏分辨率设置成以给定分辨率尽可能大的分辨率保持宽高比的窗口模式。（给任务栏留出空间）
             // 这在PC端快速预览移动设备的屏幕比例时非常有用
             // 使用 exchangeWidthHeight 可以很容易的切换横屏和竖屏
-            private void TryResolutionWindowed(int tryWidth, int tryHeight,bool exchangeWidthHeight = false)
+            private void TryResolutionWindowed(int tryWidth, int tryHeight, bool exchangeWidthHeight = false)
             {
                 if (exchangeWidthHeight)
                 {
@@ -158,7 +169,7 @@ namespace PluginHub.Runtime
                 }
 
                 float factorForTaskBar = 0.88f;// 一个比例用于给任务栏留出空间
-                float windowedRatio =(float)tryWidth / tryHeight;
+                float windowedRatio = (float)tryWidth / tryHeight;
                 bool windowIsHorizontal = tryWidth > tryHeight;
 
                 int monitorWidth = Screen.currentResolution.width;
@@ -166,14 +177,14 @@ namespace PluginHub.Runtime
                 float screenRatio = (float)monitorWidth / monitorHeight;
                 if (windowedRatio > screenRatio)
                 {
-                    int useWidth = (int) (monitorWidth * factorForTaskBar);
-                    int useHeight = (int) (useWidth / windowedRatio);
+                    int useWidth = (int)(monitorWidth * factorForTaskBar);
+                    int useHeight = (int)(useWidth / windowedRatio);
                     Screen.SetResolution(useWidth, useHeight, false);
                 }
                 else
                 {
-                    int useHeight = (int) (monitorHeight * factorForTaskBar);
-                    int useWidth = (int) (useHeight * windowedRatio);
+                    int useHeight = (int)(monitorHeight * factorForTaskBar);
+                    int useWidth = (int)(useHeight * windowedRatio);
                     Screen.SetResolution(useWidth, useHeight, false);
                 }
             }
@@ -242,6 +253,10 @@ namespace PluginHub.Runtime
                                 {
                                     Application.Quit();
                                 }
+                                if (Application.platform == RuntimePlatform.WindowsPlayer && GUILayout.Button("重启应用程序"))
+                                {
+                                    RestartApplication();
+                                }
                             }
                             GUILayout.EndVertical();
 
@@ -277,6 +292,13 @@ namespace PluginHub.Runtime
                     }
                 }
                 GUILayout.EndVertical();
+            }
+
+            public static void RestartApplication()
+            {
+                string exePath = Application.dataPath.Replace("_Data", ".exe");
+                System.Diagnostics.Process.Start(exePath);
+                Application.Quit();
             }
 
             private void DrawFrameRateModule()
@@ -438,7 +460,8 @@ namespace PluginHub.Runtime
                                         string targetPath = Path.Combine(currentPath, zipNameWithoutExtension);
                                         new FastZip().ExtractZip(file, targetPath, null);
                                     }
-                                }else
+                                }
+                                else
                                 {
                                     GUILayout.Label("", GUILayout.Width(buttonWidth));
                                 }
@@ -461,7 +484,7 @@ namespace PluginHub.Runtime
                         if (GUILayout.Button("显示云端内容"))
                         {
                             Debugger.Instance.StartCoroutine(
-                                FeiShuFileBackup.ListFiles(FeiShuFileBackup.rootFolderToken,feiShuCloudFiles));
+                                FeiShuFileBackup.ListFiles(FeiShuFileBackup.rootFolderToken, feiShuCloudFiles));
                         }
                         GUILayout.FlexibleSpace();
                     }
@@ -482,7 +505,7 @@ namespace PluginHub.Runtime
 
                             if (GUILayout.Button("下载", GUILayout.Width(buttonWidth)))
                             {
-                                string savePath =Path.Combine(currentPath,fileName);
+                                string savePath = Path.Combine(currentPath, fileName);
                                 Debugger.Instance.StartCoroutine(FeiShuFileBackup.DownloadFile(fileToken, savePath));
                             }
                         }

@@ -62,6 +62,7 @@ namespace PluginHub.Runtime
         // 侧边栏
         public bool fullScreenWidth = false; // 是否占满屏幕宽度
         public float leftSideScrollWidth = 400;
+        public float leftSideScrollHeight = 200;
         private Vector2 leftScrollPos;
 
         // 客户端列表
@@ -164,7 +165,7 @@ namespace PluginHub.Runtime
                     leftSideScrollWidth = screenSize.x;
 
                 // 侧边栏
-                GUILayout.BeginVertical("Box", GUILayout.Height(screenSize.y), GUILayout.Width(leftSideScrollWidth));
+                GUILayout.BeginVertical("Box", GUILayout.Width(leftSideScrollWidth), GUILayout.Height(leftSideScrollHeight));
                 {
                     // 滚动视图
                     // 8是 Box Style 的 padding left + padding right
