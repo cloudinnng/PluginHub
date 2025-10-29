@@ -201,8 +201,6 @@ namespace PluginHub.Editor
         private static void PasteMaterialReferenceHere(Vector2 mouseDownPosition)
         {
             TheMaterialHere(out Renderer renderer, out Material material,out int indexOfMaterialInMesh, mouseDownPosition);
-            if (material == null)
-                return;
 
             // 粘贴材质引用
             string path = GUIUtility.systemCopyBuffer;

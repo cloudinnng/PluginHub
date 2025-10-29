@@ -274,7 +274,7 @@ namespace PluginHub.Editor
                 int startIndex = 0;
 
                 int counter = 0;
-                EditorApplication.update = delegate()
+                EditorApplication.update = delegate ()
                 {
                     string file = files[startIndex];
 
@@ -401,6 +401,25 @@ namespace PluginHub.Editor
             }
         }
 
+        #endregion
+
+        #region Materials
+
+        // 将选中的嵌入式材质提取为独立材质，目录在当前目录下的Materials文件夹中
+        [MenuItem("Assets/PH 提取该材质", false)]
+        private static void ExtractMaterials()
+        {
+            Material material = Selection.objects[0] as Material;
+            Material extractedMaterial = MaterialToolsModule.ExtractMaterial(material);
+            Debug.Log($"材质已提取到：{AssetDatabase.GetAssetPath(extractedMaterial)}");
+            Selection.activeObject = extractedMaterial;
+        }
+        
+        [MenuItem("Assets/PH 提取该材质", true)]
+        private static bool ValidateExtractMaterials()
+        {
+            return Selection.objects != null && Selection.objects.Length == 1 && Selection.objects[0] as Material != null && MaterialToolsModule.IsEmbeddedMaterial(Selection.objects[0] as Material);
+        }
 
         #endregion
     }
