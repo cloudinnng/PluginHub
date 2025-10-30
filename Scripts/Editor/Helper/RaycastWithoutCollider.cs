@@ -22,14 +22,14 @@ namespace PluginHub.Editor
         // 通用射线检测
         // 大多使用 HandleUtility.GUIPointToWorldRay(Event.current.mousePosition) 获取到的射线作为参数
         // Event.current需要是场景视图中的事件，不然坐标会有误差
-        public static bool Raycast(Vector3 origin, Vector3 direction, out HitResult result)
+        public static bool Raycast(Vector3 origin, Vector3 direction, out HitResult result, bool ignoreBackFace = true)
         {
             bool returnValue = false;
             result = null;
             PerformanceTest.Start();
             {
-                if (!returnValue && RaycastSkinnedMeshRenderer(origin,direction,out result)) returnValue = true;
-                if (!returnValue && RaycastMeshRenderer(origin,direction,out result)) returnValue = true;
+                if (!returnValue && RaycastSkinnedMeshRenderer(origin,direction,out result, ignoreBackFace)) returnValue = true;
+                if (!returnValue && RaycastMeshRenderer(origin,direction,out result, ignoreBackFace)) returnValue = true;
                 if (!returnValue && RaycastTerrain(origin, direction, out result)) returnValue = true;
 
                 //画出这个位置
@@ -46,7 +46,7 @@ namespace PluginHub.Editor
             return returnValue;
         }
 
-        public static bool RaycastSkinnedMeshRenderer(Vector3 origin, Vector3 direction, out HitResult result)
+        public static bool RaycastSkinnedMeshRenderer(Vector3 origin, Vector3 direction, out HitResult result, bool ignoreBackFace)
         {
             result = null;
             List<HitResult> hitResults = new List<HitResult>();
@@ -56,7 +56,7 @@ namespace PluginHub.Editor
             {
                 SkinnedMeshRenderer skinnedMeshRenderer = skinnedMeshRenderers[i];
                 skinnedMeshRenderer.BakeMesh(tempMesh);
-                if (RaycastMesh(origin, direction, tempMesh, skinnedMeshRenderer.transform, out List<HitResult> meshHitResults))
+                if (RaycastMesh(origin, direction, tempMesh, skinnedMeshRenderer.transform, out List<HitResult> meshHitResults, ignoreBackFace))
                     hitResults.AddRange(meshHitResults);
             }
             if(hitResults.Count == 0)
@@ -88,7 +88,7 @@ namespace PluginHub.Editor
 
         // 检查射线是否与场景中的MeshRenderer相交
         // 并返回: 是否发生相交,交点坐标、交点法线、MeshRenderer、碰撞点到射线起点的距离
-        public static bool RaycastMeshRenderer(Vector3 origin,Vector3 direction,out HitResult result)
+        public static bool RaycastMeshRenderer(Vector3 origin,Vector3 direction,out HitResult result, bool ignoreBackFace)
         {
             //默认值
             result = null;
@@ -114,7 +114,7 @@ namespace PluginHub.Editor
                 if (meshFilter == null)
                     continue;
                 Mesh mesh = meshFilter.sharedMesh;
-                if (RaycastMesh(origin, direction, mesh, meshRenderer.transform, out List<HitResult> meshHitResults))
+                if (RaycastMesh(origin, direction, mesh, meshRenderer.transform, out List<HitResult> meshHitResults, ignoreBackFace))
                     hitResults.AddRange(meshHitResults);
 
             }
@@ -128,7 +128,7 @@ namespace PluginHub.Editor
 
         // 检查射线是否与Mesh相交,返回所有相交结果
         public static bool RaycastMesh(Vector3 origin, Vector3 direction, Mesh mesh, Transform meshHolder,
-            out List<HitResult> result, bool ignoreBackFace = true)
+            out List<HitResult> result, bool ignoreBackFace)
         {
             result = new List<HitResult>();
 
@@ -165,7 +165,7 @@ namespace PluginHub.Editor
         // 核心算法
         // 检查[射线]与[三角形]是否相交
         public static bool RaycastTriangle(Vector3 origin, Vector3 direction, Vector3 v0, Vector3 v1, Vector3 v2,
-            out Vector3 hitPoint, out Vector3 normal, bool ignoreBackFace = true)
+            out Vector3 hitPoint, out Vector3 normal, bool ignoreBackFace)
         {
             hitPoint = new Vector3(0, 0, 0);
             normal = new Vector3(0, 0, 0);

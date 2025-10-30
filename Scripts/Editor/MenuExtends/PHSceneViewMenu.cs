@@ -124,7 +124,7 @@ namespace PluginHub.Editor
             renderer = null; material = null; indexOfMaterialInMesh = -1;
             Ray ray = GetSceneViewMouseRay(mouseDownPosition);
             // DebugEx.DebugRay(ray, 100f, Color.red, 10f);
-            if (RaycastWithoutCollider.Raycast(ray.origin, ray.direction,out RaycastWithoutCollider.HitResult result))
+            if (RaycastWithoutCollider.Raycast(ray.origin, ray.direction,out RaycastWithoutCollider.HitResult result, false))
             {
                 renderer = result.renderer;
 
