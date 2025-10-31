@@ -134,7 +134,7 @@ namespace PluginHub.Editor
         //构建预处理
         public void OnPreprocessBuild(BuildReport report)
         {
-            if(!Directory.Exists(Application.streamingAssetsPath))
+            if (!Directory.Exists(Application.streamingAssetsPath))
                 Directory.CreateDirectory(Application.streamingAssetsPath);
             //写 BuildInfo.txt
             INIParser iniParser = new INIParser();
@@ -145,7 +145,7 @@ namespace PluginHub.Editor
 
             if (clearStreamingAssetsBeforeBuild)
             {
-                if(EditorUtility.DisplayDialog("清空StreamingAssets", "您选择了 clearStreamingAssetsBeforeBuild 是否删除 StreamingAssets 文件夹下的所有文件？", "是", "否"))
+                if (EditorUtility.DisplayDialog("清空StreamingAssets", "您选择了 clearStreamingAssetsBeforeBuild 是否删除 StreamingAssets 文件夹下的所有文件？", "是", "否"))
                 {
                     string path = Application.streamingAssetsPath;
                     string[] files = System.IO.Directory.GetFiles(path);
@@ -264,7 +264,7 @@ namespace PluginHub.Editor
                         string path = CurrProjectBuildFullPath();
                         if (GUILayout.Button(PluginHubFunc.GuiContent("构建项目", $"将构建到{path}")))
                         {
-                            BuildProject();
+                            BuildStandaloneProject();
                             GUIUtility.ExitGUI();
                         }
 
@@ -294,7 +294,7 @@ namespace PluginHub.Editor
                         string path = CurrSceneBuildFullPath();
                         if (GUILayout.Button(PluginHubFunc.GuiContent("构建当前场景", $"将会直接构建到{path}。")))
                         {
-                            BuildCurrScene(false);
+                            BuildStandaloneCurrScene(false);
                             GUIUtility.ExitGUI();
                         }
 
@@ -302,7 +302,7 @@ namespace PluginHub.Editor
                                 PluginHubFunc.GuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
                                 GUILayout.ExpandWidth(false)))
                         {
-                            BuildCurrScene(true);
+                            BuildStandaloneCurrScene(true);
                             GUIUtility.ExitGUI();
                         }
 
@@ -372,7 +372,7 @@ namespace PluginHub.Editor
                     if (Application.platform == RuntimePlatform.OSXEditor)
                         path = $"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode";
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 IOS 项目", $"将构建到{path}"),GUILayout.Height(PluginHubFunc.NormalBtnHeight)))
+                    if (GUILayout.Button(PluginHubFunc.GuiContent("构建 IOS 项目", $"将构建到{path}"), GUILayout.Height(PluginHubFunc.NormalBtnHeight)))
                     {
                         //执行构建
                         BuildIOS(path);
@@ -380,7 +380,8 @@ namespace PluginHub.Editor
                     }
 
                     // 快捷打开xCode项目的icon按钮
-                    if (Application.platform == RuntimePlatform.OSXEditor){
+                    if (Application.platform == RuntimePlatform.OSXEditor)
+                    {
                         string xCodePath = Path.Combine(fullPath, $"Unity-iPhone.xcodeproj");
                         xCodePath = xCodePath.Replace('\\', '/');
                         bool exist = Directory.Exists(xCodePath);
@@ -649,7 +650,7 @@ namespace PluginHub.Editor
             return GetBuildFullPath(currProjectName, currProjectName);
         }
 
-        private static void BuildProject()
+        private static void BuildStandaloneProject()
         {
             string buildName = projectBuildName;
             AddCurrSceneToBuildSetting();
@@ -657,10 +658,11 @@ namespace PluginHub.Editor
             BuildStandalone(buildName, buildName);
         }
 
-        private static void BuildCurrScene(bool uncheckOtherScene)
+        private static void BuildStandaloneCurrScene(bool uncheckOtherScene)
         {
             AddCurrSceneToBuildSetting();
-            SetBuildSceneEnable(uncheckOtherScene);
+            if (uncheckOtherScene)
+                SetBuildSceneEnable(true);
             BuildStandalone(sceneBuildName, sceneBuildName);
         }
 
@@ -689,12 +691,6 @@ namespace PluginHub.Editor
         }
 
         #region final build
-
-
-        // private static void PreBuild(BuildTarget buildTarget)
-        // {
-        //
-        // }
 
         private static void BuildStandalone(string folderName, string exeName)
         {
@@ -853,21 +849,20 @@ namespace PluginHub.Editor
             EditorBuildSettings.scenes = scenes;
         }
 
-        private static void SetBuildSceneEnable(bool uncheckOtherScene)
+
+        // 设置构建设置中各场景的启用状态
+        // 如果 onlyCurrentScene 为 true，则只启用当前活动场景，其余场景禁用
+        // 如果 onlyCurrentScene 为 false，则启用所有场景
+        private static void SetBuildSceneEnable(bool onlyCurrentScene)
         {
-            //设置构建场景为启用状态，其他禁用
             List<EditorBuildSettingsScene> scenes = EditorBuildSettings.scenes.ToList();
             foreach (var scene in scenes)
             {
-                if (scene.path == EditorSceneManager.GetActiveScene().path)
-                    scene.enabled = true;
+                if (onlyCurrentScene)
+                    scene.enabled = scene.path == EditorSceneManager.GetActiveScene().path;
                 else
-                {
-                    if (uncheckOtherScene)
-                        scene.enabled = false;
-                }
+                    scene.enabled = true;
             }
-
             EditorBuildSettings.scenes = scenes.ToArray();
         }
 

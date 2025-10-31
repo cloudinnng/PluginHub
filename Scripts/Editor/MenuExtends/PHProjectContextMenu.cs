@@ -422,6 +422,71 @@ namespace PluginHub.Editor
         }
 
         #endregion
+
+        #region 选择工具
+
+        [MenuItem("Assets/PH 选择场景中所有该Mesh对象", false)]
+        private static void SelectAllMeshObjects()
+        {
+            Mesh mesh = Selection.objects[0] as Mesh;
+            List<GameObject> gameObjects = new List<GameObject>();
+            GameObject[] allObjects = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            foreach (var obj in allObjects)
+            {
+                MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
+                // 这里使用顶点数量判断相同mesh，因为大多情况下没那么多实例复制，所以顶点数量相同则认为相同mesh
+                if (meshFilter != null && meshFilter.sharedMesh.vertexCount == mesh.vertexCount)
+                {
+                    gameObjects.Add(obj);
+                }
+            }
+            Selection.objects = gameObjects.ToArray();
+            Debug.Log($"选择了: {gameObjects.Count}");
+        }
+        [MenuItem("Assets/PH 选择场景中所有该Mesh对象", true)]
+        private static bool ValidateSelectAllMeshObjects()
+        {
+            return Selection.objects!=null && Selection.objects.Length>0 && Selection.objects[0] as Mesh != null;
+        }
+
+        [MenuItem("Assets/PH 选择场景中所有引用该Material的对象", false)]
+        private static void SelectAllObjectsWithMaterial()
+        {
+            Material selectedMaterial = Selection.objects[0] as Material;
+            if (selectedMaterial == null)
+            {
+                Debug.LogWarning("请选择一个材质球！");
+                return;
+            }
+
+            List<GameObject> gameObjects = new List<GameObject>();
+            GameObject[] allObjects = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            foreach (var obj in allObjects)
+            {
+                Renderer renderer = obj.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    foreach (var mat in renderer.sharedMaterials)
+                    {
+                        if (mat == selectedMaterial)
+                        {
+                            gameObjects.Add(obj);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            Selection.objects = gameObjects.ToArray();
+            Debug.Log($"找到引用所选材质球的对象数量: {gameObjects.Count}");
+        }
+
+        [MenuItem("Assets/PH 选择场景中所有引用该Material的对象", true)]
+        private static bool ValidateSelectAllObjectsWithMaterial()
+        {
+            return Selection.objects != null && Selection.objects.Length == 1 && Selection.objects[0] as Material != null;
+        }
+        #endregion
     }
 
 }
