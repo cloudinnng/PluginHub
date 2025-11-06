@@ -2,6 +2,10 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using PluginHub.Runtime;
+using System.Text;
+using System.IO;
 
 namespace PluginHub.Editor
 {
@@ -30,8 +34,152 @@ namespace PluginHub.Editor
             get => EditorPrefs.GetString("PH_SceneOverlayLastScene", "");
         }
 
+        private static string _lastSelectedGameObjectPath
+        {
+            set => EditorPrefs.SetString("PH_SceneOverlayLastSelectedGameObjectPath", value);
+            get => EditorPrefs.GetString("PH_SceneOverlayLastSelectedGameObjectPath", "");
+        }
+
+        private static string _lastSelectedAssetPath
+        {
+            set => EditorPrefs.SetString("PH_SceneOverlayLastSelectedAssetPath", value);
+            get => EditorPrefs.GetString("PH_SceneOverlayLastSelectedAssetPath", "");
+        }
+
         public static void DrawTools()
         {
+            // PerformanceTest.Start();
+            // PerformanceTest.End();
+            GUILayout.BeginHorizontal();
+            {
+                if (Selection.activeGameObject != null)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    Selection.activeGameObject.transform.GetFindPath(sb);
+                    _lastSelectedGameObjectPath = sb.ToString();
+                }else{
+                    if (Selection.activeObject != null)
+                    {
+                        _lastSelectedAssetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+                    }
+                }
+
+
+                // 按钮，以选择上次选中的游戏对象
+                GUI.color = Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("tab_prev", "", $"选择上次选中的游戏对象\n{_lastSelectedGameObjectPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    string lastPath = _lastSelectedGameObjectPath;
+                    if (!string.IsNullOrEmpty(lastPath))
+                    {
+                        // 尝试通过路径查找对象
+                        GameObject found = GameObject.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(g =>
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            g.transform.GetFindPath(sb);
+                            return sb.ToString() == lastPath;
+                        });
+                        if (found != null)
+                        {
+                            Selection.activeGameObject = found;
+                        }
+                        else
+                        {
+                            Debug.LogWarning("未找到上次选中的对象: " + lastPath);
+                        }
+                    }
+                }
+                // 选择上次选中的资产文件
+                GUI.color = Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("Folder Icon", "", $"选择上次选中的资产文件\n{_lastSelectedAssetPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    string lastAssetPath = _lastSelectedAssetPath;
+                    if (!string.IsNullOrEmpty(lastAssetPath))
+                    {
+                        var obj = AssetDatabase.LoadAssetAtPath<Object>(lastAssetPath);
+                        if (obj != null)
+                        {
+                            Selection.activeObject = obj;
+                        }
+                        else
+                        {
+                            Debug.LogWarning("未找到上次选中的资产文件: " + lastAssetPath);
+                        }
+                    }
+                }
+
+                // 选择主相机
+                GUI.color = (Camera.main != null && Selection.activeGameObject == Camera.main.gameObject) ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("Camera Gizmo", "", "选择Main相机"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    if (Camera.main != null)
+                        Selection.activeGameObject = Camera.main.gameObject;
+                }
+                // 选择主光源
+                GUI.color = (RenderSettings.sun != null && Selection.activeGameObject == RenderSettings.sun.gameObject) ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("DirectionalLight Gizmo", "", "选择主光源"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    if (RenderSettings.sun != null)
+                        Selection.activeGameObject = RenderSettings.sun.gameObject;
+                }
+                // 选择主天空盒
+                GUI.color = (RenderSettings.skybox != null && Selection.objects.Contains(RenderSettings.skybox)) ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_Skybox Icon", "", "选择天空盒材质"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    if (RenderSettings.skybox != null)
+                        Selection.objects = new Object[] { RenderSettings.skybox };
+                }
+                // 选择Global Volume
+                GUI.color = (Selection.gameObjects != null && Selection.gameObjects.Length == 1 && Selection.gameObjects[0].name.Contains("Volume")) ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_ToolHandleGlobal", "", "选择名为Global Volume的对象"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    var globalVolume = Resources.FindObjectsOfTypeAll<Transform>().FirstOrDefault(t => t.name == "Global Volume");
+                    if (globalVolume != null)
+                    {
+                        Selection.objects = new Object[] { globalVolume.gameObject };
+                    }
+                }
+                // 选择地形
+                GUI.color = (Selection.gameObjects != null && Selection.gameObjects.Length == 1 && Selection.gameObjects[0].GetComponent<Terrain>() != null) ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_Terrain Icon", "", "选择地形"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    var terrain = GameObject.FindObjectsByType<Terrain>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault();
+                    if (terrain != null)
+                    {
+                        Selection.objects = new Object[] { terrain.gameObject };
+                    }
+                }
+                // 选择UICanvas
+                GUI.color = (Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<Canvas>() != null) ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("Canvas Icon", "", "选择UICanvas"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    var allCanvases = GameObject.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    if (allCanvases != null && allCanvases.Length > 0)
+                    {
+                        Selection.activeGameObject = allCanvases[0].gameObject;
+                    }
+                }
+                GUI.color = Color.white;
+
+                // 复制Recording目录中最新的文件
+                string recordingDir = Path.Combine(Application.dataPath, "../Recordings");
+                if(GUILayout.Button(PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    string[] files = Directory.GetFiles(recordingDir);
+                    if(files.Length > 0)
+                    {
+                        string latestFile = files.OrderByDescending(f => File.GetCreationTime(f)).First();
+                        WinClipboard.CopyFiles(new string[] { latestFile });
+                        Debug.Log($"复制Recording目录中最新的文件: {latestFile}");
+                    }
+                }
+        
+
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(3);
+
             GUILayout.BeginHorizontal();
             {
                 // 检查选中物体
@@ -69,7 +217,7 @@ namespace PluginHub.Editor
 
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneAsset Icon", "", $"切换到最近打开的场景 ({lastScenePath})"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    if(lastScenePath != null)
+                    if (lastScenePath != null)
                     {
                         if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                             EditorSceneManager.OpenScene(lastScenePath);
@@ -92,13 +240,14 @@ namespace PluginHub.Editor
 
         private static void MoveGameObjectToGround(GameObject obj, bool detectFromTop)
         {
-            Vector3 origin = detectFromTop? obj.transform.position + Vector3.up * 1000 : obj.transform.position;
+            Vector3 origin = detectFromTop ? obj.transform.position + Vector3.up * 1000 : obj.transform.position;
             bool raycastResult = RaycastWithoutCollider.Raycast(origin, Vector3.down, out RaycastWithoutCollider.HitResult result);
             if (raycastResult)
             {
                 Undo.RecordObject(obj.transform, "Move Selection To Ground");
                 obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y, obj.transform.position.z);
-            }else
+            }
+            else
             {
                 Debug.LogError("未检测到地面");
             }

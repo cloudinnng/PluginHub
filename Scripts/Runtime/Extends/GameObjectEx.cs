@@ -86,7 +86,7 @@ namespace PluginHub.Runtime
         //partialMatch:是否对name采用部分匹配
         public static Transform[] FindAllByName(string name, bool partialMatch = false)
         {
-            Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>() as Transform[];
+            Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>();
             List<Transform> returnList = new List<Transform>();
             for (int i = 0; i < objs.Length; i++)
             {

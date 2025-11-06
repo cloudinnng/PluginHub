@@ -1,12 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using UnityEngine;
 
 namespace PluginHub.Editor
 {
     using UnityEditor;
 
+    // 这个类其实可以删，先留着
     // 内置组件的编辑器类扩展，包含Inspector扩展和SceneGUI扩展
     // 继承这个类，可以方便的扩展Unity内置组件的Inspector面板
     // 该类由 《Unity编辑器开发与拓展》 P70页提到，保持原有Inspector的同时，为系统组件添加新的Inspector功能

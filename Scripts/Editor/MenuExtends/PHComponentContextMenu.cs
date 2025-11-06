@@ -14,7 +14,7 @@ namespace PluginHub.Editor
     public static class PHComponentContextMenu
     {
         #region BoxCollider
-        [MenuItem("CONTEXT/BoxCollider/PH 自动为BoxCollider计算Size")]
+        [MenuItem("CONTEXT/BoxCollider/PH BoxCollider 自动为BoxCollider计算Size")]
         public static void ComputeBoxColliderSize(MenuCommand command)
         {
             //自动检查所有子物体中的网格渲染器计算size
@@ -66,7 +66,7 @@ namespace PluginHub.Editor
 
         #region Transform
         //Transform 组件的右键菜单
-        [MenuItem("CONTEXT/Transform/PH 拷贝Scene相机的位置和旋转")]
+        [MenuItem("CONTEXT/Transform/PH Transform 拷贝Scene相机的位置和旋转")]
         public static void CopySceneCameraTransform(MenuCommand command)
         {
             SceneView sceneView = SceneView.lastActiveSceneView;
@@ -80,7 +80,7 @@ namespace PluginHub.Editor
         #endregion
 
         #region Component
-        [MenuItem("CONTEXT/Component/PH 使用 [组件名] 命名游戏对象")]
+        [MenuItem("CONTEXT/Component/PH Component 使用 [组件名] 命名游戏对象")]
         public static void CustomContextMenuRename(MenuCommand command)
         {
             Component component = (Component)command.context;
@@ -93,7 +93,7 @@ namespace PluginHub.Editor
         }
 
         //换句话说就是，找到这个组件的mono脚本位置
-        [MenuItem("CONTEXT/Component/PH Ping这个Mono组件")]
+        [MenuItem("CONTEXT/Component/PH Component Ping这个Mono组件")]
         public static void CustomContextComponentPing(MenuCommand command)
         {
             Component component = (Component)command.context;
@@ -104,7 +104,7 @@ namespace PluginHub.Editor
             EditorGUIUtility.PingObject(script);
         }
 
-        [MenuItem("CONTEXT/Component/PH 复制 [组件名]")]
+        [MenuItem("CONTEXT/Component/PH Component 复制 [组件名]")]
         public static void CopyComponentName(MenuCommand command)
         {
             Component component = (Component)command.context;
@@ -115,7 +115,7 @@ namespace PluginHub.Editor
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene()); //标记场景脏
         }
 
-        [MenuItem("CONTEXT/Component/PH 智能赋值(TODO)")]
+        [MenuItem("CONTEXT/Component/PH Component 智能赋值(TODO)")]
         public static void SmartAssign(MenuCommand command)
         {
             Debug.Log("Method TODO");
@@ -143,7 +143,7 @@ namespace PluginHub.Editor
         #endregion
 
         #region TextMeshPro
-        [MenuItem("CONTEXT/Button/PH 使用按钮文本命名游戏对象")]
+        [MenuItem("CONTEXT/Button/PH Button 使用按钮文本命名游戏对象")]
         public static void CustomContextMenuRenameBtn(MenuCommand command)
         {
             Component component = (Component)command.context;
@@ -168,7 +168,7 @@ namespace PluginHub.Editor
             }
         }
 
-        [MenuItem("CONTEXT/Toggle/PH 使用开关文本命名游戏对象")]
+        [MenuItem("CONTEXT/Toggle/PH Toggle 使用开关文本命名游戏对象")]
         public static void CustomContextMenuRenameToggle(MenuCommand command)
         {
             Component component = (Toggle)command.context;
@@ -193,7 +193,7 @@ namespace PluginHub.Editor
             }
         }
 
-        [MenuItem("CONTEXT/Image/PH 使用 [Sprite名] 命名游戏对象", false)]
+        [MenuItem("CONTEXT/Image/PH Image 使用 [Sprite名] 命名游戏对象", false)]
         public static void CustomContextMenuRenameImageUseSpriteName(MenuCommand command)
         {
             Image component = (Image)command.context;
@@ -204,14 +204,14 @@ namespace PluginHub.Editor
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene()); //标记场景脏
         }
 
-        [MenuItem("CONTEXT/Image/PH 使用Sprite名命名游戏对象", true)] //验证函数，返回假会导致该按钮灰色不能点击。
+        [MenuItem("CONTEXT/Image/PH Image 使用Sprite名命名游戏对象", true)] //验证函数，返回假会导致该按钮灰色不能点击。
         public static bool CustomContextMenuRenameImageUseSpriteNameValidata(MenuCommand command)
         {
             Image component = (Image)command.context;
             return component.sprite != null;
         }
 
-        [MenuItem("CONTEXT/SpriteRenderer/PH 使用Sprite名命名游戏对象", false)]
+        [MenuItem("CONTEXT/SpriteRenderer/PH SpriteRenderer 使用Sprite名命名游戏对象", false)]
         public static void CustomContextMenuRenameSpriteRendererUseSpriteName(MenuCommand command)
         {
             SpriteRenderer component = (SpriteRenderer)command.context;
@@ -222,14 +222,14 @@ namespace PluginHub.Editor
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene()); //标记场景脏
         }
 
-        [MenuItem("CONTEXT/SpriteRenderer/PH 使用Sprite名命名游戏对象", true)] //验证函数，返回假会导致该按钮灰色不能点击。
+        [MenuItem("CONTEXT/SpriteRenderer/PH SpriteRenderer 使用Sprite名命名游戏对象", true)] //验证函数，返回假会导致该按钮灰色不能点击。
         public static bool CustomContextMenuRenameSpriteRendererUseSpriteNameValidata(MenuCommand command)
         {
             SpriteRenderer component = (SpriteRenderer)command.context;
             return component.sprite != null;
         }
 
-        [MenuItem("CONTEXT/Text/PH 替换文本：所有英文添加透明标签")]
+        [MenuItem("CONTEXT/Text/PH Text 替换文本：所有英文添加透明标签")]
         public static void CustomUGUITextMenuAddAlphaTag(MenuCommand command)
         {
             Text textComponent = (Text)command.context;
@@ -250,7 +250,7 @@ namespace PluginHub.Editor
             textComponent.text = newText;
         }
 
-        [MenuItem("CONTEXT/TextMeshProUGUI/PH 使用TextMeshProUGUI文本命名游戏对象")]
+        [MenuItem("CONTEXT/TextMeshProUGUI/PH TextMeshProUGUI 使用TextMeshProUGUI文本命名游戏对象")]
         public static void changeText(MenuCommand command)
         {
             TextMeshProUGUI textComponent = (TextMeshProUGUI)command.context;
@@ -260,7 +260,7 @@ namespace PluginHub.Editor
         }
 
 
-        [MenuItem("CONTEXT/Text/PH 替换为TextMeshProUGUI")]
+        [MenuItem("CONTEXT/Text/PH Text 替换为TextMeshProUGUI")]
         public static void CustomUGUITextMenu(MenuCommand command)
         {
             Text oldText = (Text)command.context;
@@ -282,7 +282,7 @@ namespace PluginHub.Editor
             // }
         }
 
-        [MenuItem("CONTEXT/TextMeshProUGUI/PH 替换为UGUIText")]
+        [MenuItem("CONTEXT/TextMeshProUGUI/PH TextMeshProUGUI 替换为UGUIText")]
         public static void CustomTextMeshProUGUIMenu(MenuCommand command)
         {
             TextMeshProUGUI oldText = (TextMeshProUGUI)command.context;
@@ -297,7 +297,7 @@ namespace PluginHub.Editor
 
         #region TerrainCollider
         //地形上的TerrainCollider组件命名
-        [MenuItem("CONTEXT/TerrainCollider/PH 使用 [TerrainData名称] 命名游戏对象")]
+        [MenuItem("CONTEXT/TerrainCollider/PH TerrainCollider 使用 [TerrainData名称] 命名游戏对象")]
         public static void RenameObjectTerrainCollider(MenuCommand command)
         {
             TerrainCollider terrainCollider = (TerrainCollider)command.context;
@@ -308,7 +308,7 @@ namespace PluginHub.Editor
         #endregion
 
         #region MeshRenderer
-        [MenuItem("CONTEXT/MeshRenderer/PH 使用 [Mesh名称] 命名材质资产")]
+        [MenuItem("CONTEXT/MeshRenderer/PH MeshRenderer 使用 [Mesh名称] 命名材质资产")]
         public static void RenameMatUseMeshName(MenuCommand command)
         {
             MeshRenderer meshRenderer = (MeshRenderer)command.context;
@@ -361,7 +361,7 @@ namespace PluginHub.Editor
         #endregion
 
         #region MeshFilter
-        [MenuItem("CONTEXT/MeshFilter/PH 复制Mesh路径")]
+        [MenuItem("CONTEXT/MeshFilter/PH MeshFilter 复制Mesh路径")]
         public static void CopyMeshPath(MenuCommand command)
         {
             MeshFilter meshFilter = (MeshFilter)command.context;

@@ -49,13 +49,13 @@ namespace PluginHub.Editor
             Debug.Log($"{sb}   已复制到剪切板");
         }
 
-        [MenuItem("Assets/PH Copy Directory Name", true)]
+        [MenuItem("Assets/PH Copy Absolute Directory Name", true)]
         public static bool CopyDirectoryNameValidate()
         {
             return !string.IsNullOrWhiteSpace(GetSelectionAssetAbsolutePath());
         }
 
-        [MenuItem("Assets/PH Copy Directory Name")]
+        [MenuItem("Assets/PH Copy Absolute Directory Name")]
         public static void CopyDirectoryName()
         {
             string path = GetSelectionAssetAbsolutePath();

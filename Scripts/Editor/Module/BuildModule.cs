@@ -517,6 +517,7 @@ namespace PluginHub.Editor
                 string buildPath = Path.Combine(Application.dataPath, "../Build");
                 if (Directory.Exists(buildPath))
                 {
+                    GUILayout.Label("构建：");
                     string[] directories = Directory.GetDirectories(buildPath);
                     for (int i = 0; i < directories.Length; i++)
                     {
@@ -557,6 +558,38 @@ namespace PluginHub.Editor
                         }
                         GUILayout.EndHorizontal();
                     }
+
+
+                    GUILayout.Label("压缩文件：");
+                    string[] zipFiles = Directory.GetFiles(buildPath, "*.zip");
+                    for (int i = 0; i < zipFiles.Length; i++)
+                    {
+                        string zipFile = zipFiles[i];
+                        string zipFileName = Path.GetFileName(zipFile);
+                        GUILayout.BeginHorizontal();
+                        {
+                            GUILayout.Label($"{i}. {zipFileName}");
+                            if (DrawIconBtn("P4_DeletedLocal", $"删除文件"))
+                            {
+                                if (EditorUtility.DisplayDialog("提示", $"是否删除文件: {zipFile}", "是", "否"))
+                                {
+                                    if (File.Exists(zipFile))
+                                    {
+                                        File.Delete(zipFile);
+                                    }
+                                }
+                                GUIUtility.ExitGUI();
+                            }
+                            DrawIconBtnOpenFolder(zipFile, true);
+                            if (DrawIconBtn("d_TreeEditor.Duplicate", $"复制文件到剪贴板，方便粘贴到微信等其他软件"))
+                            {
+                                WinClipboard.CopyFiles(new[] { zipFile });
+                                Debug.Log($"已复制: {zipFile}");
+                            }
+                        }
+                        GUILayout.EndHorizontal();
+                    }
+
                 }
             }
             GUILayout.EndVertical();
