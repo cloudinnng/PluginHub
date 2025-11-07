@@ -163,7 +163,7 @@ namespace PluginHub.Editor
 
                 // 复制Recording目录中最新的文件
                 string recordingDir = Path.Combine(Application.dataPath, "../Recordings");
-                if(GUILayout.Button(PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if(GUILayout.Button(PluginHubFunc.IconContent("Animation.Record", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     string[] files = Directory.GetFiles(recordingDir);
                     if(files.Length > 0)

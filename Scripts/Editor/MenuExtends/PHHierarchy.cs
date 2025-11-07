@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using PluginHub.Editor;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -55,7 +54,7 @@ namespace PluginHub.Editor
             }
         }
 
-        static Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.8f);
+        private static readonly Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.8f);
 
         private static void hierarchyMonoIconItemHandler(int instanceId, Rect selectionRect)
         {
@@ -70,6 +69,7 @@ namespace PluginHub.Editor
                 Component component = components[i];
                 if (component == null) continue;
                 string name = component.GetType().FullName;
+                if (string.IsNullOrEmpty(name)) continue;
                 // Debug.Log(name,gameObject);
                 
                 if (!name.Contains("UnityEngine") && !name.Contains("TextMeshPro") && !name.Contains("TMPro"))
@@ -99,19 +99,19 @@ namespace PluginHub.Editor
                 {
                     // 功能点： 按下鼠标中键可以选中所有兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
-                        SelectAllSilbing(go);
+                        SelectAllSibling(go);
                 }
                 else if (currEvent.modifiers == EventModifiers.Control)
                 {
                     // 功能点： 按下Ctrl + 鼠标中键可以选中所有同名兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
-                        SelectSameNameSilbing(go);
+                        SelectSameNameSibling(go);
                 }
                 else if (currEvent.modifiers == EventModifiers.Alt)
                 {
                     // 功能点： 按下Alt + 鼠标中键可以选中所有相似名字的兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
-                        SelectSimilarNamSilbing(go);
+                        SelectSimilarNamSibling(go);
                 }else if (currEvent.modifiers == EventModifiers.Shift){
                     // 功能点： 按下Shift + 鼠标中键可以选中父亲节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
@@ -227,15 +227,15 @@ namespace PluginHub.Editor
                 }
             }
         }
-
+        
         // 选中同层级中名称相同的游戏对象
-        [MenuItem("GameObject/PH SelectSameNameSilbing", false, -50)]
-        private static void SelectSameNameSilbingMenuItem()
+        [MenuItem("GameObject/PH SelectSameNameSibling", false, -50)]
+        private static void SelectSameNameSiblingMenuItem()
         {
-            SelectSameNameSilbing(Selection.activeGameObject);
+            SelectSameNameSibling(Selection.activeGameObject);
         }
 
-        private static void SelectSameNameSilbing(GameObject gameObject)
+        private static void SelectSameNameSibling(GameObject gameObject)
         {
             Transform parent = gameObject.transform.parent;
             if (parent == null)
@@ -254,10 +254,10 @@ namespace PluginHub.Editor
 
             // Select
             Selection.objects = gameObjects.ToArray();
-            Debug.Log($"[PH] Selected {gameObjects.Count} Same Name Silbing");
+            Debug.Log($"[PH] Selected {gameObjects.Count} Same Name Sibling");
         }
 
-        private static void SelectSimilarNamSilbing(GameObject gameObject)
+        private static void SelectSimilarNamSibling(GameObject gameObject)
         {
             Transform parent = gameObject.transform.parent;
             if (parent == null)
@@ -277,10 +277,10 @@ namespace PluginHub.Editor
 
             // Select
             Selection.objects = gameObjects.ToArray();
-            Debug.Log($"[PH] Selected {gameObjects.Count} Similar Name Silbing");
+            Debug.Log($"[PH] Selected {gameObjects.Count} Similar Name Sibling");
         }
 
-        private static void SelectAllSilbing(GameObject gameObject)
+        private static void SelectAllSibling(GameObject gameObject)
         {
             Transform parent = gameObject.transform.parent;
             if (parent == null)
@@ -297,7 +297,7 @@ namespace PluginHub.Editor
 
             // Select
             Selection.objects = gameObjects.ToArray();
-            Debug.Log($"[PH] Selected {gameObjects.Count} All Silbing");
+            Debug.Log($"[PH] Selected {gameObjects.Count} All Sibling");
         }
 
 
@@ -378,24 +378,24 @@ namespace PluginHub.Editor
             return sb.ToString();
         }
 
-        // [MenuItem("GameObject/PH 批量重命名", false, -52)]
-        // public static void BatchRename()
-        // {
-        //     if (Selection.gameObjects.Length == 0)
-        //         return;
-        //
-        //     GameObject[] gameObjects = Selection.gameObjects;
-        //
-        //     //input popup window
-        //     CFCustomWindows.InputTextPopup.Init("输入前缀",gameObjects[0].name,(namePrefix)=>
-        //     {
-        //         for (int i = 0; i < gameObjects.Length; i++)
-        //             gameObjects[i].name = $"{namePrefix}_{gameObjects[i].transform.GetSiblingIndex()}";
-        //
-        //        //make scene dirty
-        //        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-        //     });
-        // }
+        [MenuItem("GameObject/PH GameObject 批量重命名(检查空格用SiblingIndex)", false, -52)]
+        public static void BatchRename()
+        {
+            if (Selection.gameObjects.Length == 0)
+                return;
+        
+            GameObject[] gameObjects = Selection.gameObjects;
+            Undo.RecordObjects(gameObjects, "BatchRename");
+             
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
+                string[] split = gameObjects[i].name.Split(" ");
+                string prefix = split[0];
+                gameObjects[i].name = $"{prefix} {siblingIndex}";
+            }
+        
+        }
 
         //创建一个分隔符游戏对象
         [MenuItem("GameObject/PH --------------------", false, -50)]
