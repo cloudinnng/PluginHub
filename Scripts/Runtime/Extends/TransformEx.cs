@@ -278,6 +278,13 @@ namespace PluginHub.Runtime
                 GetFindPath(transform.parent, sb);
             }
         }
+        // GetFindPath 无StringBuilder简单版
+        public static string GetFindPath(this Transform transform)
+        {
+            if (transform.parent == null)
+                return "/" + transform.name;
+            return transform.parent.GetFindPath() + "/" + transform.name;
+        }
 
         //返回一系列Transform是否具有相同的父亲
         public static bool SameParent(Transform[] transforms)

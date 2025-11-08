@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using PluginHub.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,7 +14,6 @@ namespace PluginHub.Editor
         {
             get { return "内置图标库"; }
         }
-
         public override string moduleDescription => "用于查看Unity内置的所有图标，方便编写插件时使用";
 
         //Unity所有内置icon的名称字符串  来源：https://unitylist.com/p/5c3/Unity-editor-icons
@@ -639,6 +636,30 @@ namespace PluginHub.Editor
 
             }
             GUILayout.EndScrollView();
+
+
+            return;
+            string pkg = "Packages/com.unity.render-pipelines.universal";
+            string[] exts = new[] { ".png", ".jpg", ".asset" };
+            foreach (var dir in Directory.GetDirectories(pkg, "*", SearchOption.AllDirectories))
+            {
+                foreach (var ext in exts)
+                {
+                    foreach (var file in Directory.GetFiles(dir, "*" + ext))
+                    {
+                        
+                        // Debug.Log("Found: " + file);
+                        Texture2D texture2D = EditorGUIUtility.Load(file) as Texture2D;
+                        if (texture2D != null)
+                        {
+                            GUIContent guiContent = new GUIContent(texture2D, $"{file} ({texture2D.width}x{texture2D.height})");
+                            GUILayout.Button(guiContent, GUILayout.Width(texture2D.width), GUILayout.Height(texture2D.height),
+                                GUILayout.MaxWidth(iconBtnMaxSize.x), GUILayout.MaxHeight(iconBtnMaxSize.y),
+                                GUILayout.MinWidth(iconBtnMinSize.x), GUILayout.MinHeight(iconBtnMinSize.y));
+                        }
+                    }
+                }
+            }
         }
     }
 }
