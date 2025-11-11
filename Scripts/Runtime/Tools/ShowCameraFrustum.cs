@@ -1,14 +1,12 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 namespace PluginHub.Runtime
 {
     [CustomEditor(typeof(ShowCameraFrustum))]
-    public class CameraHelperScriptEditor : Editor
+    public class CameraHelperScriptEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

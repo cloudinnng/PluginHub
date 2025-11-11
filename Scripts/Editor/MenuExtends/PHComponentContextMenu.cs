@@ -11,6 +11,7 @@ using UnityEngine.UI;
 
 namespace PluginHub.Editor
 {
+    // 为组件添加右键菜单
     public static class PHComponentContextMenu
     {
         #region BoxCollider
@@ -367,6 +368,41 @@ namespace PluginHub.Editor
             MeshFilter meshFilter = (MeshFilter)command.context;
             string assetPath = AssetDatabase.GetAssetPath(meshFilter.sharedMesh);
             EditorGUIUtility.systemCopyBuffer = assetPath;
+        }
+        #endregion
+
+        #region Animation
+        [MenuItem("CONTEXT/Animation/PH Animation Play()")]
+        public static void PlayAnimation(MenuCommand command)
+        {
+            Animation animation = (Animation)command.context;
+            animation.Play();
+        }
+        [MenuItem("CONTEXT/Animation/PH Animation Stop()")]
+        public static void StopAnimation(MenuCommand command)
+        {
+            Animation animation = (Animation)command.context;
+            animation.Stop();
+        }
+        [MenuItem("CONTEXT/Animation/PH Animation Rewind()")]
+        public static void RewindAnimation(MenuCommand command)
+        {
+            Animation animation = (Animation)command.context;
+            animation.Rewind();
+        }
+
+        [MenuItem("CONTEXT/Animation/PH Animation 回到起始状态")]
+        public static void ToStartStateAnimation(MenuCommand command)
+        {
+            Animation animation = (Animation)command.context;
+            animation.Stop();
+            Debug.Log(animation.clip.name);
+            animation[animation.clip.name].time = 0;
+            animation[animation.clip.name].weight = 1;
+            animation[animation.clip.name].enabled = true;
+            animation.Sample();
+            animation[animation.clip.name].enabled = false;
+
         }
         #endregion
 
