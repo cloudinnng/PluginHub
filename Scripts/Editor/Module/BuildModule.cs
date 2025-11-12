@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -123,12 +124,6 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_updateInfo", value); }
         }
 
-        private static string lastBuildTime
-        {
-            get { return EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_lastBuildTime", ""); }
-            set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_lastBuildTime", value); }
-        }
-
         #region 构建预处理/后处理
 
         //构建预处理
@@ -181,7 +176,6 @@ namespace PluginHub.Editor
                 PlayerSettings.bundleVersion = $"{majorVersion}.{minorVersion}";
                 Debug.Log($"版本号从{oldVersion}自增到{PlayerSettings.bundleVersion}");
             }
-            lastBuildTime = DateTime.Now.ToString("yyyy - MM - dd  HH: mm: ss");
         }
 
         #endregion
@@ -213,13 +207,6 @@ namespace PluginHub.Editor
 
 
             DrawSplitLine("快捷构建");
-
-            GUILayout.BeginHorizontal();
-            {
-                GUILayout.Label("最近构建:", GUILayout.Width(titleWidth));
-                GUILayout.Label(lastBuildTime == "" ? "无" : lastBuildTime);
-            }
-            GUILayout.EndHorizontal();
 
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
@@ -527,9 +514,46 @@ namespace PluginHub.Editor
 
                         GUILayout.BeginHorizontal();
                         {
-                            GUILayout.Label($"{i}. {folderName}");
-
                             string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
+                            string buildInfoFilePath = Path.Combine(streamingAssetsPath, "BuildInfo.txt");
+                            string buildTime = "2099-12-31 18:28:28";
+                            if (File.Exists(buildInfoFilePath))
+                            {
+                                string buildInfo = File.ReadAllText(buildInfoFilePath);
+                                // 解析 BuildInfo.txt 中的 BuildTime 字段
+
+                                INIParser iniParser = new INIParser();
+                                iniParser.Open(buildInfoFilePath);
+                                //将updateInfo中的换行符替换为\n保存
+                                buildTime = iniParser.ReadValue("BuildInfo", "BuildTime","2099-12-31 18:28:28");
+                                iniParser.Close();
+                            }
+                            // Debug.Log(buildTime);
+
+                            TimeSpan spendTime = DateTime.Now - DateTime.ParseExact(buildTime,"yyyy-MM-dd HH-mm-ss",CultureInfo.InvariantCulture);
+                            string spendTimeStr;
+                            if (spendTime.TotalDays >= 1)
+                            {
+                                int days = (int)spendTime.TotalDays;
+                                spendTimeStr = $"{days}天前";
+                            }
+                            else if (spendTime.TotalHours >= 1)
+                            {
+                                int hours = (int)spendTime.TotalHours;
+                                spendTimeStr = $"{hours}小时前";
+                            }
+                            else if (spendTime.TotalMinutes >= 1)
+                            {
+                                int minutes = (int)spendTime.TotalMinutes;
+                                spendTimeStr = $"{minutes}分钟前";
+                            }
+                            else
+                            {
+                                int seconds = (int)spendTime.TotalSeconds;
+                                spendTimeStr = $"{seconds}秒前";
+                            }
+                            GUILayout.Label($"{i}. {folderName} ({spendTimeStr})");
+
                             //打开StreamingAssets文件夹按钮
                             DrawIconBtnOpenFolder(streamingAssetsPath, true, "StrmAs");
 

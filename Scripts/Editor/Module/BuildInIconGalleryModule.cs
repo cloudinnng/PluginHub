@@ -638,28 +638,27 @@ namespace PluginHub.Editor
             GUILayout.EndScrollView();
 
 
-            return;
-            string pkg = "Packages/com.unity.render-pipelines.universal";
-            string[] exts = new[] { ".png", ".jpg", ".asset" };
-            foreach (var dir in Directory.GetDirectories(pkg, "*", SearchOption.AllDirectories))
-            {
-                foreach (var ext in exts)
-                {
-                    foreach (var file in Directory.GetFiles(dir, "*" + ext))
-                    {
-                        
-                        // Debug.Log("Found: " + file);
-                        Texture2D texture2D = EditorGUIUtility.Load(file) as Texture2D;
-                        if (texture2D != null)
-                        {
-                            GUIContent guiContent = new GUIContent(texture2D, $"{file} ({texture2D.width}x{texture2D.height})");
-                            GUILayout.Button(guiContent, GUILayout.Width(texture2D.width), GUILayout.Height(texture2D.height),
-                                GUILayout.MaxWidth(iconBtnMaxSize.x), GUILayout.MaxHeight(iconBtnMaxSize.y),
-                                GUILayout.MinWidth(iconBtnMinSize.x), GUILayout.MinHeight(iconBtnMinSize.y));
-                        }
-                    }
-                }
-            }
+            // string pkg = "Packages/com.unity.render-pipelines.universal";
+            // string[] exts = new[] { ".png", ".jpg", ".asset" };
+            // foreach (var dir in Directory.GetDirectories(pkg, "*", SearchOption.AllDirectories))
+            // {
+            //     foreach (var ext in exts)
+            //     {
+            //         foreach (var file in Directory.GetFiles(dir, "*" + ext))
+            //         {
+            //             
+            //             // Debug.Log("Found: " + file);
+            //             Texture2D texture2D = EditorGUIUtility.Load(file) as Texture2D;
+            //             if (texture2D != null)
+            //             {
+            //                 GUIContent guiContent = new GUIContent(texture2D, $"{file} ({texture2D.width}x{texture2D.height})");
+            //                 GUILayout.Button(guiContent, GUILayout.Width(texture2D.width), GUILayout.Height(texture2D.height),
+            //                     GUILayout.MaxWidth(iconBtnMaxSize.x), GUILayout.MaxHeight(iconBtnMaxSize.y),
+            //                     GUILayout.MinWidth(iconBtnMinSize.x), GUILayout.MinHeight(iconBtnMinSize.y));
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
 }

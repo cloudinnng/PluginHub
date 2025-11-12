@@ -45,5 +45,10 @@ namespace PluginHub.Editor
         {
             activeTweens.Add(new ViewTween(camera, sceneView));
         }
+        
+        internal static void GotoTransform(Transform target, SceneView sceneView)
+        {
+            activeTweens.Add(new ViewTween(target, sceneView));
+        }
     }
 }

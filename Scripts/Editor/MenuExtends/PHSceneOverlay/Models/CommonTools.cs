@@ -62,7 +62,7 @@ namespace PluginHub.Editor
                 Object findResult = findFunc.Invoke();
                 // Debug.Log(findResult + "" + Selection.activeGameObject);
                 if (findResult != null)
-                    return Selection.activeObject == findResult ? PluginHubFunc.SelectedColor : Color.white;
+                    return (Selection.activeGameObject == findResult || Selection.activeObject == findResult) ? PluginHubFunc.SelectedColor : Color.white;
                 else
                     return PluginHubFunc.Red;
             }
@@ -91,9 +91,9 @@ namespace PluginHub.Editor
                 {
                     return AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 }
-                Object FindFirstComponent<T>() where T : Component
+                GameObject FindFirstGameObject<T>() where T : Component
                 {
-                    return Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault();
+                    return Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault()?.gameObject;
                 }
                 
                 // 选择上次选中的游戏对象
@@ -151,16 +151,16 @@ namespace PluginHub.Editor
                     Selection.activeObject = FindGlobalVolumeFunc();
                 }
                 // 选择地形
-                GUI.color = GetShortcutBtnColor(FindFirstComponent<Terrain>);
+                GUI.color = GetShortcutBtnColor(FindFirstGameObject<Terrain>);
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_Terrain Icon", "", "选择地形"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    Selection.activeObject = FindFirstComponent<Terrain>();
+                    Selection.activeObject = FindFirstGameObject<Terrain>();
                 }
                 // 选择UICanvas
-                GUI.color = GetShortcutBtnColor(FindFirstComponent<Canvas>);
+                GUI.color = GetShortcutBtnColor(()=>FindFirstGameObject<Canvas>());
                 if (GUILayout.Button(PluginHubFunc.IconContent("Canvas Icon", "", "选择UICanvas"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    Selection.activeObject = FindFirstComponent<Canvas>();
+                    Selection.activeObject = FindFirstGameObject<Canvas>();
                 }
                 // 渲染管线资产
                 GUI.color = GetShortcutBtnColor(() => GraphicsSettings.defaultRenderPipeline);
@@ -189,14 +189,20 @@ namespace PluginHub.Editor
                     }
                 }
 
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera", "", "移动到Main相机视图"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera", "", "场景相机移动到Main相机视图"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (SceneView.lastActiveSceneView != null && Camera.main != null)
                         ViewTweenInitializeOnLoad.GotoCamera(Camera.main, SceneView.lastActiveSceneView);
                 }
+                
+                if (GUILayout.Button(PluginHubFunc.IconContent("ClothInspector.ViewValue", "", "场景相机移动到选中的对象(GameObject -> Align View To Selected)"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    if (SceneView.lastActiveSceneView != null && Selection.activeGameObject != null)
+                        ViewTweenInitializeOnLoad.GotoTransform(Selection.activeGameObject.transform, SceneView.lastActiveSceneView);
+                }
 
                 GUI.color = PHSceneShiftMenu.NoNeedShift ? PluginHubFunc.SelectedColor : Color.white;
-                if (GUILayout.Button(PluginHubFunc.IconContent("Button Icon", "", "右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("d__Menu", "", "右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     PHSceneShiftMenu.NoNeedShift = !PHSceneShiftMenu.NoNeedShift;
                 }

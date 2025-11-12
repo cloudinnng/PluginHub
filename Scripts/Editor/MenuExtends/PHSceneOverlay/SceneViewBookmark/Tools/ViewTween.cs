@@ -78,6 +78,35 @@ namespace PluginHub.Editor
             startTime = EditorApplication.timeSinceStartup;
 
         }
+        
+        // 使用此方法让场景相机移动到指定Transform位置
+        public ViewTween(Transform targetTransform, SceneView sceneView)
+        {
+            if (targetTransform == null || sceneView == null)
+                return;
+
+            Complete = false;
+
+            view = sceneView;
+            target = new CameraBookmark()
+            {
+                is2DMode = false,
+                Orthographic = sceneView.orthographic,
+                pivot = targetTransform.position,
+                rotation = targetTransform.rotation,
+                size = 0.01f
+            };
+
+            initPosition = sceneView.pivot;
+            initRotation = sceneView.rotation;
+            initSize = sceneView.size;
+
+            view.in2DMode = target.is2DMode;
+            view.orthographic = target.Orthographic;
+
+            startTime = EditorApplication.timeSinceStartup;
+
+        }
 
         /// <summary>
         /// Updates the tween, lerping between the previous camera state, and the desired bookmark.

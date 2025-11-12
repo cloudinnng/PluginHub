@@ -10,6 +10,8 @@ namespace PluginHub.Runtime
     using UnityEditor.Build;
 
     using UnityEditor.Build.Reporting;
+    using static PluginHub.Runtime.ApplicationExpire;
+
 
     [CustomEditor(typeof(ApplicationExpire))]
     public class ApplicationExpireEditor : Editor
@@ -25,17 +27,20 @@ namespace PluginHub.Runtime
 
             DateTime lastRunTime = new DateTime(appExpire.lastRunTime);
             GUILayout.Label($"Last Run Time: {lastRunTime}");
-            GUILayout.Label($"Build DateTime: {new DateTime(ApplicationExpire.buildDateTime)}");
+            GUILayout.Label($"Build DateTime: {new DateTime(ApplicationExpire.buildTimeTicks)}");
 
-            GUILayout.Label($"Status: {(appExpire.IsExpired() ? "Expired" : "Not Expired")}");
+            bool isExpired = appExpire.expireStatus != ApplicationExpireStatus.NotExpired;
+            string statusEmoji = isExpired ? "❌" : "✅";
+            GUILayout.Label($"Status: {statusEmoji} {(isExpired ? "Expired" : "Not Expired")} ({appExpire.expireStatus})");
+            GUILayout.Label($"Expired Date: {appExpire.expireDate}");
 
             if (GUILayout.Button("Clear Last Run Time"))
             {
                 PlayerPrefs.DeleteKey(appExpire.key);
             }
-            if(GUILayout.Button("生成构建时间文件"))
+            if (GUILayout.Button("生成构建时间文件"))
             {
-                appExpire.GenerateBuildDateTimeFile();
+                appExpire.GenerateBuildDataFile();
             }
         }
     }
@@ -45,10 +50,20 @@ namespace PluginHub.Runtime
     // 在检视面板中设置程序到期时间，到期后程序无法运行
     // 使用简单的方式，记录上次运行时间。防止用户修改系统时间继续使用
     public class ApplicationExpire : MonoBehaviour, Debugger.CustomWindow.ICustomWindowGUI
-    #if UNITY_EDITOR
-    ,IPreprocessBuildWithReport 
-    #endif
+#if UNITY_EDITOR
+    , IPreprocessBuildWithReport
+#endif
     {
+
+        public enum ApplicationExpireStatus
+        {
+            NotExpired,// 只有该状态允许进入程序
+            Expired,
+            BuildTimeError,
+            SystemTimeError
+        }
+
+
         public string expireDate = "2099-12-31";
 
         public string key => $"{Application.productName}_{Application.version}_ApplicationExpire_LastRunTime";
@@ -59,82 +74,20 @@ namespace PluginHub.Runtime
             private set => PlayerPrefs.SetString(key, value.ToString());
         }
 
-        // 存储构建时间的文件
-        private static string buildDateTimeFilePath => Path.Combine(Application.streamingAssetsPath, "ApplicationExpire.data");
-        
-        // 混淆密钥（可以自定义修改，增加安全性）
-        private const long XOR_KEY = 0x5A7E9C3F1B2D4E8A;
-        
-        public static long buildDateTime
-        {
-            get
-            {
-                if (!File.Exists(buildDateTimeFilePath))
-                    return new DateTime(2099, 12, 31).Ticks;
-                return ReadBuildDateTimeFromFile();
-            }
-        }
-        
-        /// <summary>
-        /// 从二进制文件读取构建时间（带异或解密）
-        /// </summary>
-        private static long ReadBuildDateTimeFromFile()
-        {
-            try
-            {
-                byte[] encryptedBytes = File.ReadAllBytes(buildDateTimeFilePath);
-                if (encryptedBytes.Length != 8)
-                {
-                    Debug.LogError($"构建时间文件格式错误，长度应为8字节，实际为{encryptedBytes.Length}字节");
-                    return new DateTime(2099, 12, 31).Ticks;
-                }
-                
-                // 将字节数组转换为long
-                long encryptedTicks = BitConverter.ToInt64(encryptedBytes, 0);
-                // 异或解密
-                long ticks = encryptedTicks ^ XOR_KEY;
-                return ticks;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"读取构建时间文件失败: {e.Message}");
-                return new DateTime(2099, 12, 31).Ticks;
-            }
-        }
-        
-        /// <summary>
-        /// 将构建时间以二进制方式写入文件（带异或加密）
-        /// </summary>
-        private static void WriteBuildDateTimeToFile(long ticks)
-        {
-            try
-            {
-                // 异或加密
-                long encryptedTicks = ticks ^ XOR_KEY;
-                // 转换为字节数组
-                byte[] bytes = BitConverter.GetBytes(encryptedTicks);
-                // 写入文件
-                File.WriteAllBytes(buildDateTimeFilePath, bytes);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"写入构建时间文件失败: {e.Message}");
-            }
-        }
+
 
 #if UNITY_EDITOR
-
-        public void GenerateBuildDateTimeFile()
+        public void GenerateBuildDataFile()
         {
             long ticks = DateTime.Now.Ticks;
-            WriteBuildDateTimeToFile(ticks);
-            Debug.Log($"Build DateTime: {new DateTime(ticks)} ({ticks} Ticks) 已以二进制加密格式保存到 {buildDateTimeFilePath}");
+            WriteDataToFile(ticks);
+            Debug.Log($"ApplicationExpire: 构建数据已保存到 {dataFilePath}");
         }
 
         // 构建预处理
         public void OnPreprocessBuild(BuildReport report)
         {
-            GenerateBuildDateTimeFile();
+            GenerateBuildDataFile();
         }
 #endif
 
@@ -155,7 +108,7 @@ namespace PluginHub.Runtime
 
         void Start()
         {
-            if (IsExpired())
+            if (expireStatus != ApplicationExpireStatus.NotExpired)
             {
                 StartCoroutine(DelayQuit());
             }
@@ -166,19 +119,26 @@ namespace PluginHub.Runtime
         }
 
         // 是否已经过期
-        public bool IsExpired()
+        public ApplicationExpireStatus expireStatus
         {
-            try
+            get
             {
-                long nowTicks = DateTime.Now.Ticks;
-                return nowTicks > DateTime.Parse(expireDate).Ticks // 常规过期
-                 || nowTicks < buildDateTime // 用户在一个早于真实时间的系统上运行
-                 || nowTicks < lastRunTime; // 用户手动修改了系统时间
-            }
-            catch (FormatException e)
-            {
-                Debug.LogError($"{e}: {e.Message}");
-                return true;
+                try
+                {
+                    long nowTicks = DateTime.Now.Ticks;
+                    if (nowTicks > DateTime.Parse(expireDate).Ticks) // 常规过期
+                        return ApplicationExpireStatus.Expired;
+                    if (nowTicks < buildTimeTicks) // 用户在一个早于真实时间的系统上运行
+                        return ApplicationExpireStatus.BuildTimeError;
+                    if (nowTicks < lastRunTime) // 用户手动修改了系统时间
+                        return ApplicationExpireStatus.SystemTimeError;
+                    return ApplicationExpireStatus.NotExpired;
+                }
+                catch (FormatException e)
+                {
+                    Debug.LogError($"{e}: {e.Message}");
+                    return ApplicationExpireStatus.BuildTimeError;
+                }
             }
         }
 
@@ -195,10 +155,10 @@ namespace PluginHub.Runtime
 
         private void OnGUI()
         {
-            if (IsExpired())
+            if (expireStatus != ApplicationExpireStatus.NotExpired)
             {
                 for (int i = 0; i < 10; i++)
-                    GUI.Box(new Rect(0, 0, Screen.width, Screen.height), "程序已到期，请联系供应商", style);
+                    GUI.Box(new Rect(0, 0, Screen.width, Screen.height), $"程序已到期({expireStatus})，请联系供应商", style);
             }
         }
 
@@ -214,5 +174,61 @@ namespace PluginHub.Runtime
             if (Input.GetKey(KeyCode.K) && GUILayout.Button("Clear Last Run Time"))
                 PlayerPrefs.DeleteKey(key);
         }
+
+
+        #region save and load data
+
+        // 存储构建时间的文件
+        private static string dataFilePath => Path.Combine(Application.streamingAssetsPath, "ApplicationExpire.data");
+
+        public static long buildTimeTicks => ReadDataFromFile();
+
+        /// <summary>
+        /// 从二进制文件读取构建时间
+        /// </summary>
+        private static long ReadDataFromFile()
+        {
+            try
+            {
+                if (!File.Exists(dataFilePath))
+                    return new DateTime(2099, 12, 31).Ticks;
+                byte[] encryptedBytes = File.ReadAllBytes(dataFilePath);
+                if (encryptedBytes.Length != 8)
+                {
+                    Debug.LogError($"构建时间文件格式错误，长度应为8字节，实际为{encryptedBytes.Length}字节");
+                    return new DateTime(2099, 12, 31).Ticks;
+                }
+
+                // 将字节数组转换为long
+                long ticks = BitConverter.ToInt64(encryptedBytes, 0);
+                return ticks;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"读取构建时间文件失败: {e.Message}");
+                return new DateTime(2099, 12, 31).Ticks;
+            }
+        }
+
+        /// <summary>
+        /// 将构建时间以二进制方式写入文件
+        /// </summary>
+        private static void WriteDataToFile(long ticks)
+        {
+            try
+            {
+                // 转换为字节数组
+                byte[] bytes = BitConverter.GetBytes(ticks);
+                // 写入文件
+                File.WriteAllBytes(dataFilePath, bytes);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"写入构建时间文件失败: {e.Message}");
+            }
+        }
+
+        #endregion
     }
+
 }
