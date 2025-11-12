@@ -378,7 +378,7 @@ namespace PluginHub.Editor
             return sb.ToString();
         }
 
-        [MenuItem("GameObject/PH GameObject 批量重命名(检查空格用SiblingIndex)", false, -52)]
+        [MenuItem("GameObject/PH GameObject 批量重命名(检查空格追加SiblingIndex)", false, -52)]
         public static void BatchRename()
         {
             if (Selection.gameObjects.Length == 0)
@@ -393,6 +393,23 @@ namespace PluginHub.Editor
                 string[] split = gameObjects[i].name.Split(" ");
                 string prefix = split[0];
                 gameObjects[i].name = $"{prefix} {siblingIndex}";
+            }
+        
+        }
+        
+        [MenuItem("GameObject/PH GameObject 批量重命名(直接用SiblingIndex)", false, -53)]
+        public static void BatchRenameSiblingIndex()
+        {
+            if (Selection.gameObjects.Length == 0)
+                return;
+        
+            GameObject[] gameObjects = Selection.gameObjects;
+            Undo.RecordObjects(gameObjects, "BatchRename");
+             
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
+                gameObjects[i].name = $"{siblingIndex}";
             }
         
         }

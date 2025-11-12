@@ -92,9 +92,9 @@ namespace PluginHub.Editor
             {
                 is2DMode = false,
                 Orthographic = sceneView.orthographic,
-                pivot = targetTransform.position,
+                pivot = targetTransform.position + targetTransform.forward * 20,
                 rotation = targetTransform.rotation,
-                size = 0.01f
+                size = 10f
             };
 
             initPosition = sceneView.pivot;
