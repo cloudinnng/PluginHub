@@ -94,8 +94,8 @@ namespace PluginHub.Editor
             string dir = Path.GetDirectoryName(path);
 
             //打开截图文件夹
-            if (Application.platform == RuntimePlatform.WindowsEditor)
-                EditorUtility.RevealInFinder(path);
+            // if (Application.platform == RuntimePlatform.WindowsEditor)
+            //     EditorUtility.RevealInFinder(path);
         }
 
 
