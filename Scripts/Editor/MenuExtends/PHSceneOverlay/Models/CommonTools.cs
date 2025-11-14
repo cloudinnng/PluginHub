@@ -8,6 +8,7 @@ using System.Text;
 using System.IO;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
+using Unity.CodeEditor;
 
 namespace PluginHub.Editor
 {
@@ -234,6 +235,27 @@ namespace PluginHub.Editor
                         WinClipboard.CopyFiles(new string[] { latestFile });
                         Debug.Log($"复制Recording目录中最新的文件: {latestFile}");
                     }
+                }
+
+                string currentEditor = Path.GetFileNameWithoutExtension(CodeEditor.CurrentEditorPath);
+                if(currentEditor == "Code")currentEditor = "VS Code";
+                if(GUILayout.Button(PluginHubFunc.GuiContent(currentEditor.Substring(0, 1).ToUpper(),$"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    var newEditorPath = "";
+                    switch (currentEditor)
+                    {
+                        case "VS Code":
+                            newEditorPath = @"C:\Program Files\cursor\Cursor.exe";
+                            break;
+                        case "Cursor":
+                            newEditorPath = @"C:\Program Files\JetBrains\JetBrains Rider 2025.2.4\bin\rider64.exe";
+                            break;
+                        case "rider64":
+                            newEditorPath = @"C:\Program Files\Microsoft VS Code\Code.exe";
+                            break;
+                    }
+                    CodeEditor.SetExternalScriptEditor(newEditorPath);
+                    Debug.Log("CurrentEditorPath: " + CodeEditor.CurrentEditorPath);
                 }
             }
             GUILayout.EndHorizontal();
