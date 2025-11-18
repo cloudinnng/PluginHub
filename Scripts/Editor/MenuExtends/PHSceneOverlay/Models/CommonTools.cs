@@ -9,6 +9,7 @@ using System.IO;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 using Unity.CodeEditor;
+using UnityEngine.UIElements;
 
 namespace PluginHub.Editor
 {
@@ -51,12 +52,21 @@ namespace PluginHub.Editor
             get => EditorPrefs.GetString("PH_SceneOverlayLastSelectedAssetPath", "");
         }
 
+        private static bool _enableRealtimeBtnColor
+        {
+            set => EditorPrefs.SetBool("PH_SceneOverlayEnableRealtimeBtnColor", value);
+            get => EditorPrefs.GetBool("PH_SceneOverlayEnableRealtimeBtnColor", false);
+        } 
+
         public static void DrawTools()
         {
             // PerformanceTest.Start();
             // PerformanceTest.End();
+            
             Color GetShortcutBtnColor(Func<Object> findFunc)
             {
+                if(!_enableRealtimeBtnColor)// 关闭实时按钮颜色提醒，不然会卡死
+                    return Color.white;
                 if (findFunc == null)
                     return PluginHubFunc.Red;
                 
@@ -85,8 +95,7 @@ namespace PluginHub.Editor
 
                 Object FindGameObjectFunc(string findStr)
                 {
-                    return Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                        .FirstOrDefault(g => g.transform.GetFindPath() == findStr);
+                    return Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(g => g.transform.GetFindPath() == findStr);
                 }
                 Object FindAssetFunc(string assetPath)
                 {
@@ -158,7 +167,7 @@ namespace PluginHub.Editor
                     Selection.activeObject = FindFirstGameObject<Terrain>();
                 }
                 // 选择UICanvas
-                GUI.color = GetShortcutBtnColor(()=>FindFirstGameObject<Canvas>());
+                GUI.color = GetShortcutBtnColor(FindFirstGameObject<Canvas>);
                 if (GUILayout.Button(PluginHubFunc.IconContent("Canvas Icon", "", "选择UICanvas"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeObject = FindFirstGameObject<Canvas>();
@@ -189,6 +198,13 @@ namespace PluginHub.Editor
                         }
                     }
                 }
+
+                GUI.color = _enableRealtimeBtnColor ? PluginHubFunc.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubFunc.IconContent("ColorPicker.CycleColor", "", "是否开启场景常用对象的实时按钮颜色提醒"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                {
+                    _enableRealtimeBtnColor = !_enableRealtimeBtnColor;
+                }
+                GUI.color = Color.white;
 
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera", "", "场景相机移动到Main相机视图"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {

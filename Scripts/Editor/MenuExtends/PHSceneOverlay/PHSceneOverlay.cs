@@ -1,3 +1,4 @@
+using System.Drawing;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEditor.SceneManagement;
@@ -56,10 +57,11 @@ namespace PluginHub.Editor
             // 计算显示原点
 #if UNITY_6000_0_OR_NEWER        
             Vector2 originPosition = floating ? floatingPosition : rootVisualElement.worldBound.position;
+            Vector2 overlaySize = this.size;
 #else
             Vector2 originPosition = floatingPosition;
+            Vector2 overlaySize = new Vector2(300,150);
 #endif
-            Vector2 overlaySize = this.size;
             originPosition.x += 2;
             originPosition.y += overlaySize.y - 20;
             if (!floating)
@@ -90,10 +92,10 @@ namespace PluginHub.Editor
 
         public override void OnGUI()
         {
+            SceneViewBookmark.DrawSceneBookmark();
+            // GUILayout.Space(5);
             // PerformanceTest.Start();
             {
-                SceneViewBookmark.DrawSceneBookmark();
-                // GUILayout.Space(5);
                 CommonTools.DrawTools();
             }
             // PerformanceTest.End();
