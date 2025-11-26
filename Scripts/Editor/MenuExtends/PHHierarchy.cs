@@ -26,7 +26,7 @@ namespace PluginHub.Editor
 
             hierarchySceneItemHandler(instanceId, selectionRect);
 
-            hierarchyActiveObjItemHandler(instanceId, currEvent);
+            hierarchySelectObjItemHandler(instanceId, currEvent);
 
             // 为挂有mono脚本的游戏对象添加图标
             hierarchyMonoIconItemHandler(instanceId, selectionRect);
@@ -71,7 +71,7 @@ namespace PluginHub.Editor
                 string name = component.GetType().FullName;
                 if (string.IsNullOrEmpty(name)) continue;
                 // Debug.Log(name,gameObject);
-                
+
                 if (!name.Contains("UnityEngine") && !name.Contains("TextMeshPro") && !name.Contains("TMPro"))
                     hasUserScript = true;
             }
@@ -86,7 +86,7 @@ namespace PluginHub.Editor
 
         #endregion
 
-        private static void hierarchyActiveObjItemHandler(int instanceId, Event currEvent)
+        private static void hierarchySelectObjItemHandler(int instanceId, Event currEvent)
         {
             if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
                 return;
@@ -112,7 +112,9 @@ namespace PluginHub.Editor
                     // 功能点： 按下Alt + 鼠标中键可以选中所有相似名字的兄弟节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
                         SelectSimilarNamSibling(go);
-                }else if (currEvent.modifiers == EventModifiers.Shift){
+                }
+                else if (currEvent.modifiers == EventModifiers.Shift)
+                {
                     // 功能点： 按下Shift + 鼠标中键可以选中父亲节点
                     if (currEvent.button == 2 && currEvent.type == EventType.MouseUp)
                         Selection.activeGameObject = go.transform.parent != null ? go.transform.parent.gameObject : go;
@@ -120,8 +122,11 @@ namespace PluginHub.Editor
             }
         }
 
-        private static void hierarchySceneItemHandler(int instanceId, Rect selectionRect)
+        // itemRect: 层级视图中每一项的矩形区域
+        private static void hierarchySceneItemHandler(int instanceId, Rect itemRect)
         {
+            // GUI.DrawTexture(itemRect, monoBehaviourIconTexture);
+
             // 在层级视图场景GUI"条"上绘制几个快捷按钮
             int count = SceneManager.sceneCount; //目前拖入到层级视图的场景个数
             int loadedCount = 0; //目前已经加载的场景个数
@@ -140,25 +145,27 @@ namespace PluginHub.Editor
                 if (instanceId == scene.handle) // 对于场景根节点来说，instanceId 就是 scene.handle
                 {
                     Event currentEvent = Event.current;
+                    // Debug.Log(currentEvent.modifiers);
+
 
                     //ping按钮
                     Vector2 sizePing = EditorStyles.label.CalcSize(new GUIContent("Ping"));
                     sizePing.x += 4;
-                    Rect pingRect = new Rect(selectionRect.x + selectionRect.width - sizePing.x, selectionRect.y,
-                        sizePing.x, sizePing.y);
+                    Rect pingRect = new Rect(itemRect.x + itemRect.width - sizePing.x, itemRect.y, sizePing.x, sizePing.y);
                     GUI.Label(pingRect, "Ping");
 
                     //load/unload按钮
-                    string buttonText = scene.isLoaded ? "Unload" : "Load";
-                    if (currentEvent.shift)
-                        buttonText = "Remove";
+                    string buttonText = "Load";
+                    if (scene.isLoaded)
+                        buttonText = "Unload";
                     if (currentEvent.alt)
-                        buttonText = "Isolate";
+                        buttonText = "Remove";
+
 
                     Vector2 sizeUnload = EditorStyles.label.CalcSize(new GUIContent(buttonText));
                     sizeUnload.x += 4;
-                    Rect loadRect = new Rect(selectionRect.x + selectionRect.width - sizeUnload.x - sizePing.x,
-                        selectionRect.y, sizeUnload.x, sizeUnload.y);
+                    Rect loadRect = new Rect(itemRect.x + itemRect.width - sizeUnload.x - sizePing.x,
+                        itemRect.y, sizeUnload.x, sizeUnload.y);
 
 
                     bool enableLoadBtnEvent = false;
@@ -185,7 +192,8 @@ namespace PluginHub.Editor
                         //load/unload/remove按钮事件
                         if (enableLoadBtnEvent && loadRect.Contains(currentEvent.mousePosition))
                         {
-                            if (currentEvent.shift) //如果按下了Ctrl键，则是remove场景（将场景从Hierarchy中移除）
+                            Debug.Log("Hierarchy Scene Bar Clicked");
+                            if (currentEvent.alt) //如果按下了Alt键，则是remove场景（将场景从Hierarchy中移除）
                             {
                                 //check if scene is dirty
                                 if (scene.isDirty)
@@ -204,30 +212,31 @@ namespace PluginHub.Editor
                                     EditorSceneManager.CloseScene(scene, true);
                                 }
                             }
-                            else if (currentEvent.alt) //如果按下了Alt键，则在加载场景后关闭其他场景
-                            {
-                                EditorSceneManager.OpenScene(scene.path, OpenSceneMode.Additive); //加载场景
-                                //关闭其他场景
-                                for (int j = 0; j < count; j++)
-                                {
-                                    Scene scene1 = SceneManager.GetSceneAt(j);
-                                    if (scene1.isLoaded && scene1.handle != scene.handle)
-                                        EditorSceneManager.CloseScene(scene1, false);
-                                }
-                            }
                             else //啥也没按
                             {
                                 if (scene.isLoaded)
+                                {
+                                    if (scene.isDirty)
+                                    {
+                                        if (EditorUtility.DisplayDialog("场景未保存",
+                                                $"场景 {scene.name} 未保存，是否保存？", "保存", "不保存"))
+                                        {
+                                            EditorSceneManager.SaveScene(scene);
+                                        }
+                                    }
                                     EditorSceneManager.CloseScene(scene, false); //卸载场景
+                                }
                                 else
+                                {
                                     EditorSceneManager.OpenScene(scene.path, OpenSceneMode.Additive); //加载场景
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        
+
         // 选中同层级中名称相同的游戏对象
         [MenuItem("GameObject/PH SelectSameNameSibling", false, -50)]
         private static void SelectSameNameSiblingMenuItem()
@@ -383,10 +392,10 @@ namespace PluginHub.Editor
         {
             if (Selection.gameObjects.Length == 0)
                 return;
-        
+
             GameObject[] gameObjects = Selection.gameObjects;
             Undo.RecordObjects(gameObjects, "BatchRename");
-             
+
             for (int i = 0; i < gameObjects.Length; i++)
             {
                 string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
@@ -394,24 +403,24 @@ namespace PluginHub.Editor
                 string prefix = split[0];
                 gameObjects[i].name = $"{prefix} {siblingIndex}";
             }
-        
+
         }
-        
+
         [MenuItem("GameObject/PH GameObject 批量重命名(直接用SiblingIndex)", false, -53)]
         public static void BatchRenameSiblingIndex()
         {
             if (Selection.gameObjects.Length == 0)
                 return;
-        
+
             GameObject[] gameObjects = Selection.gameObjects;
             Undo.RecordObjects(gameObjects, "BatchRename");
-             
+
             for (int i = 0; i < gameObjects.Length; i++)
             {
                 string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
                 gameObjects[i].name = $"{siblingIndex}";
             }
-        
+
         }
 
         //创建一个分隔符游戏对象
@@ -438,7 +447,7 @@ namespace PluginHub.Editor
                 return;
 
             StringBuilder sb = new StringBuilder();
-            
+
             // 为每个选中的根对象生成层级结构
             for (int i = 0; i < selectedGameObjects.Length; i++)
             {

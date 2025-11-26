@@ -84,7 +84,7 @@ namespace PluginHub.Runtime
         }
 
 
-        public void IMGUIDraw()
+        public void IMGUIDraw(float globalGUIScale)
         {
             for(int i = _toastInstances.Count - 1; i >= 0; i--)
             {

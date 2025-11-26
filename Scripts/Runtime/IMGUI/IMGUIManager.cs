@@ -62,7 +62,7 @@ namespace PluginHub.Runtime
         public interface IIMGUI
         {
             public bool IMGUIEnable => true;// 是否绘制GUI
-            public void IMGUIDraw(); // 绘制GUI
+            public void IMGUIDraw(float globalGUIScale); // 绘制GUI
             public int IMGUIOrder => 0;// 绘制顺序
             public float IMGUILocalGUIScale => 1;// 本地UI缩放因子
         }
@@ -78,6 +78,8 @@ namespace PluginHub.Runtime
         public Vector2 ScreenSize(float localGUIScale) => new Vector2(_realScreenSize.x / globalGUIScale / localGUIScale, _realScreenSize.y / globalGUIScale / localGUIScale);
 
         public GUISkin guiskin;
+        public bool showFPS = true;
+        private FpsCounter fpsCounter = new FpsCounter(0.5f);
 
         // 客户端列表
         public List<IIMGUI> clientList = new List<IIMGUI>();
@@ -133,6 +135,9 @@ namespace PluginHub.Runtime
 
         private void Update()
         {
+            if(showFPS)
+                fpsCounter.Update();
+
             // 更新真实屏幕尺寸
             if(_realScreenSize.x != Screen.width || _realScreenSize.y != Screen.height)
                 _realScreenSize = new Vector2(Screen.width, Screen.height);
@@ -147,6 +152,18 @@ namespace PluginHub.Runtime
 
             Matrix4x4 originalMatrix = GUI.matrix;
 
+            // FPS
+            if (showFPS)
+            {
+                GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(globalGUIScale/2,globalGUIScale/2, 1));
+                GUI.color = Color.green;
+                string text = $"FPS: {fpsCounter.CurrentFps:F1}";
+                Vector2 size = GUI.skin.label.CalcSize(GUIContentEx.Temp(text));
+                Rect rect = new Rect(0, 0, size.x + 4,size.y);
+                GUI.Box(rect,"");
+                GUI.Label(rect, text);
+                GUI.color = Color.white;
+            }
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(globalGUIScale,globalGUIScale, 1));
             {
                 // 普通GUI
@@ -158,12 +175,10 @@ namespace PluginHub.Runtime
                         continue;
 
                     float scale = imGUI.IMGUILocalGUIScale * globalGUIScale;
-                    if(scale<0.1f)
-                        Debug.LogWarning($"[IMGUIManager] {imGUI.GetType().ToString()} 的 IMGUILocalGUIScale 设置过小，可能导致GUI无法显示");
-                    scale = Mathf.Clamp(scale, 0.1f, 2.0f);
+                    scale = Mathf.Clamp(scale, 0.1f, 10.0f);
 
                     GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(scale, scale, 1));
-                    imGUI.IMGUIDraw();
+                    imGUI.IMGUIDraw(globalGUIScale);
                 }
             }
             GUI.matrix = originalMatrix;

@@ -70,15 +70,9 @@ namespace PluginHub.Runtime
         // private Dictionary<string,bool> isFoldoutDic = new Dictionary<string, bool>();
         public List<bool> isFoldoutList = new List<bool>();
 
-        public bool showFPS = true;
-        private FpsCounter fpsCounter = new FpsCounter(0.2f);
-
 
         private void Update()
         {
-            if(showFPS)
-                fpsCounter.Update();
-
             if (Input.GetKeyDown(KeyCode.F4))
                 showSidebarGUI = !showSidebarGUI;
         }
@@ -136,7 +130,6 @@ namespace PluginHub.Runtime
             GUILayout.BeginHorizontal();
             {
                 showSidebarGUI = GUILayout.Toggle(showSidebarGUI, "显示GUI");
-                showFPS = GUILayout.Toggle(showFPS, "显示FPS");
                 showClientTitle = GUILayout.Toggle(showClientTitle, "显示客户端标题");
                 fullScreenWidth = GUILayout.Toggle(fullScreenWidth, "占满屏幕宽度");
             }
@@ -156,7 +149,7 @@ namespace PluginHub.Runtime
             GUILayout.Label($"F4 切换GUI显示");
         }
 
-        public void IMGUIDraw()
+        public void IMGUIDraw(float globalGUIScale)
         {
             if (showSidebarGUI)
             {
@@ -200,17 +193,6 @@ namespace PluginHub.Runtime
                     GUILayout.EndScrollView();
                 }
                 GUILayout.EndVertical();
-            }
-
-            // FPS
-            if (showFPS)
-            {
-                GUI.color = Color.green;
-                string text = $"FPS: {fpsCounter.CurrentFps:F1}";
-                Vector2 size = GUI.skin.label.CalcSize(GUIContentEx.Temp(text));
-                Rect rect = new Rect(0, 0, size.x, size.y);
-                GUI.Label(rect, text);
-                GUI.color = Color.white;
             }
         }
 

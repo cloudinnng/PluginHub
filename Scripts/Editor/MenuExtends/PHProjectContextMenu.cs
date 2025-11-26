@@ -59,11 +59,7 @@ namespace PluginHub.Editor
         public static void CopyDirectoryName()
         {
             string path = GetSelectionAssetAbsolutePath();
-            string subPathStr = path.Substring(path.Length - 10);
-            if (subPathStr.Contains('.')) //有后缀
-            {
-                path = Path.GetDirectoryName(path);
-            }
+            path = Path.GetDirectoryName(path);
 
             EditorGUIUtility.systemCopyBuffer = path; //复制到系统剪切板
             Debug.Log($"{path}   已复制到剪切板");
@@ -294,7 +290,7 @@ namespace PluginHub.Editor
                         EditorUtility.ClearProgressBar();
                         EditorApplication.update = null;
                         startIndex = 0;
-                        Debug.Log($"匹配结束，共找到{counter}个引用");
+                        Debug.Log($"匹配结束，共找到{counter}个引用",Selection.activeObject);
                     }
                 };
             }

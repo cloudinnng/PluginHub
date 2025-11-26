@@ -5,6 +5,7 @@ namespace PluginHub.Runtime
 {
     public partial class Debugger
     {
+        [Header("Gesture")]
         //使用手势呼出控制台需要转的圈数
         public int numOfCircleToShow = 3;
 

@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Threading;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static PluginHub.Runtime.Debugger.CustomWindow;
 
 namespace PluginHub.Runtime
 {
 //https://mp.weixin.qq.com/s?__biz=MzkyMTM5Mjg3NQ==&mid=2247536007&idx=1&sn=a4d1b41637880fce3e932f610e3f4418&source=41#wechat_redirect
-    public class ScreenSetting : MonoBehaviour
+    public class ScreenSetting : MonoBehaviour, ICustomWindowGUI
     {
         public enum FrameRateType
         {
@@ -117,6 +117,14 @@ namespace PluginHub.Runtime
                     Thread.Sleep((int)(sleepTime * 1000));
                 while (t < currentFrameTime)
                     t = Time.realtimeSinceStartup;
+            }
+        }
+
+        public void OnDrawDebuggerGUI()
+        {
+            if(designResolution.x > 0 && designResolution.y > 0 && GUILayout.Button("设置为设计分辨率"))
+            {
+                Screen.SetResolution(designResolution.x,designResolution.y,Screen.fullScreen);
             }
         }
     }

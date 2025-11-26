@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -17,6 +15,7 @@ namespace PluginHub.Runtime
     /// CFramework中的IMGUI调试器，此为最新的Debugger调试器。用partial关键字分模块编写
     /// </summary>
     [DefaultExecutionOrder(-100)]
+    // [ExecuteAlways]
     public partial class Debugger : MonoBehaviour
     {
         #region singleton
@@ -41,6 +40,39 @@ namespace PluginHub.Runtime
 
                 return _instance;
             }
+        }
+
+        #endregion
+
+        #region OnScreenUI
+
+        // 继承此类，以成为客户端
+        public interface IOnScreenUI
+        {
+            public void OnScreenUIDraw(float globalGUIScale); // 绘制GUI
+            public int OnScreenUIOrder => 0;// 绘制顺序
+        }
+        // 客户端列表
+        public List<IOnScreenUI> clientList = new List<IOnScreenUI>();
+
+        public void RefreshOnScreenUIClientList()
+        {
+            // Debug.Log("[IMGUIManager] RefreshClientList");
+            clientList.Clear();
+            MonoBehaviour[] monoInScene = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            // Debug.Log(s.Length);
+            foreach (MonoBehaviour client in monoInScene)
+            {
+                if (client is IOnScreenUI imGUI)
+                    clientList.Add(imGUI);
+            }
+            // Debug.Log(clientList.Count);
+            clientList.Sort((a, b) => a.OnScreenUIOrder.CompareTo(b.OnScreenUIOrder));
+        }
+
+        private void OnValidate()
+        {
+            RefreshOnScreenUIClientList();
         }
 
         #endregion
@@ -86,12 +118,27 @@ namespace PluginHub.Runtime
         public bool deactiveEventSystem = false;
         [Tooltip("存储最多x条日志信息.考虑在移动平台使用较低的该值")]
         public int consoleMaxLine = 300;
+        [Tooltip("是否使用R键重新加载场景")]
+        public bool useRKeyReloadScene = false;
+        [Tooltip("采用全屏模式显示大窗口")]
+        public bool fullScreenMode = true;
+        [Tooltip("全屏模式下是否采用全屏宽度")]
+        public bool fullScreenWidth = false;
+        [Tooltip("使用全屏模式时顶部留白,在刘海屏手机上可能需要设置")]
+        public float fullScreenModeTopSpace = 0;
+
+        [Header("OnScreenUI")]
+        [Tooltip("是否使用屏幕上的调式UI，通过实现IDebuggerOnScreenUI接口来添加该UI")]
+        public bool useOnScreenUI = true;
+        [Tooltip("缩放因子")]
+        public float onScreenUIGUIScale = 1;
+        [Space(10)]
 
         private bool _isShowDebugger = false; //dont call this
         private bool _showFullWindow = false; //dont call this
         private Rect _minWindowRect;
         private Rect _fullWindowRect;
-        private float _guiScale = 1;
+        private float _debuggerWindowGUIScale = 1;
         private int _selectIndex = 0; //选择的tab索引
         private readonly FpsCounter _fps = new FpsCounter(0.5f);
         private bool _showCreditsPage = false; //是否显示关于页面
@@ -110,13 +157,8 @@ namespace PluginHub.Runtime
 
 
         // 返回经过缩放后的屏幕大小
-        private Vector2 realScreenSize => new Vector2(Screen.width / _guiScale, Screen.height / _guiScale);
-        [Tooltip("采用全屏模式显示大窗口")]
-        public bool fullScreenMode = true;
-        [Tooltip("全屏模式下是否采用全屏宽度")]
-        public bool fullScreenWidth = false;
-        [Tooltip("使用全屏模式时顶部留白,在刘海屏手机上可能需要设置")]
-        public float fullScreenModeTopSpace = 0;
+        private Vector2 realScreenSize => new Vector2(Screen.width / _debuggerWindowGUIScale, Screen.height / _debuggerWindowGUIScale);
+
 
         private void Start()
         {
@@ -164,6 +206,7 @@ namespace PluginHub.Runtime
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
             _customWindow.RefreshDebuggerClientRoutine();
+            RefreshOnScreenUIClientList();
         }
 
         public bool isShowDebugger // call this
@@ -175,11 +218,12 @@ namespace PluginHub.Runtime
                 if (_isShowDebugger) //显示的时候自动调整GUI缩放
                 {
                     if (Screen.width > Screen.height) //根据高
-                        _guiScale = Screen.height / (_fullWindowRect.height + 20);
+                        _debuggerWindowGUIScale = Screen.height / (_fullWindowRect.height + 20);
                     else //根据宽
-                        _guiScale = Screen.width / (_fullWindowRect.width + 20);
+                        _debuggerWindowGUIScale = Screen.width / (_fullWindowRect.width + 20);
                     //刷新客户端
                     _customWindow.RefreshDebuggerClientRoutine();
+                    RefreshOnScreenUIClientList();
                 }
                 SetEventSystem();
             }
@@ -233,6 +277,12 @@ namespace PluginHub.Runtime
             {
                 isShowFullWindow = !isShowFullWindow;
             }
+
+            //重新加载场景
+            if (useRKeyReloadScene && Input.GetKeyDown(KeyCode.R))
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
         }
 
 
@@ -273,14 +323,14 @@ namespace PluginHub.Runtime
                 GUIStyle headerStyle = new GUIStyle(GUI.skin.label);
                 headerStyle.fontSize = 20;
 
-                GUILayout.Label("致用户：",headerStyle);
+                GUILayout.Label("致用户：", headerStyle);
                 GUILayout.Label("使用`键（键盘左上角ESC键下面）显示/隐藏调试器，移动设备也可以用旋转手势呼出，只需手指按下在屏幕中画圈即可。");
                 GUILayout.Label("Debugger有两种窗口模式，仅显示FPS信息的小窗口和全功能大窗口。按Tab键切换小窗口/正常窗口，也可以点击FPS文本和右上角的最小化按钮来切换。");
                 GUILayout.Label("通常，您只需要关注 Console 标签页和 Custom 标签页。");
                 GUILayout.Label("当互动软件发生错误和功能异常时，请携带Console标签页中的信息联系开发者。");
                 GUILayout.Label("在Custom标签页中，您可以看到互动软件的自定义界面，这些功能是由开发者为您定制的，每款互动软件各不相同，您可以在这里查看互动软件的状态与管理互动软件的运行。");
                 GUILayout.Space(20);
-                GUILayout.Label("致开发者：",headerStyle);
+                GUILayout.Label("致开发者：", headerStyle);
 
                 GUILayout.Label("您正在使用的 GUI 覆盖层 Debugger 是开源项目 PluginHub 的一部分。");
                 GUILayout.Label("开发者可以在 Custom 页面为每个互动软件添加自定义的 GUI 界面，这在制作系统后台时非常有用。");
@@ -290,14 +340,14 @@ namespace PluginHub.Runtime
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.Label("开源页面：https://github.com/cloudinnng/PluginHub");
-                    if (GUILayout.Button("带我去 PluginHub 开源主页",GUILayout.Width(200)))
+                    if (GUILayout.Button("带我去 PluginHub 开源主页", GUILayout.Width(200)))
                         Application.OpenURL("https://github.com/cloudinnng/PluginHub");
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.FlexibleSpace();
 
-                if (GUILayout.Button("Back to Debugger",GUILayout.Height(50)))
+                if (GUILayout.Button("Back to Debugger", GUILayout.Height(50)))
                     _showCreditsPage = false;
 
             }
@@ -345,25 +395,42 @@ namespace PluginHub.Runtime
 
         private void OnGUI()
         {
+            if (useOnScreenUI)
+            {
+                Matrix4x4 tmp1 = GUI.matrix;
+                GUI.matrix = Matrix4x4.Scale(new Vector3(onScreenUIGUIScale, onScreenUIGUIScale, 1));
+                {
+                    foreach (IOnScreenUI client in clientList)
+                    {
+                        client.OnScreenUIDraw(onScreenUIGUIScale);
+                    }
+                }
+                GUI.matrix = tmp1;
+            }
+
+
             if (!isShowDebugger) return;
 
             //整体缩放绘制
             Matrix4x4 tmp = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(_guiScale, _guiScale, 1));
+            GUI.matrix = Matrix4x4.Scale(new Vector3(_debuggerWindowGUIScale, _debuggerWindowGUIScale, 1));
             {
                 if (isShowFullWindow)
                 {
                     if (fullScreenMode)
                     {
-                        if(fullScreenWidth)
-                            GUILayout.BeginVertical("Box",GUILayout.Height(realScreenSize.y),GUILayout.Width(realScreenSize.x));
-                        else
-                            GUILayout.BeginVertical("Box",GUILayout.Height(realScreenSize.y),GUILayout.Width(_fullWindowRect.width));
+                        GUILayout.BeginArea(new Rect(0, 0, realScreenSize.x, realScreenSize.y));
                         {
-                            DrawBigWindow(1);
+                            if (fullScreenWidth)
+                                GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(realScreenSize.x));
+                            else
+                                GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(_fullWindowRect.width));
+                            {
+                                DrawBigWindow(1);
+                            }
+                            GUILayout.EndVertical();
                         }
-                        GUILayout.EndVertical();
-
+                        GUILayout.EndArea();
                     }
                     else
                     {

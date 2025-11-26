@@ -108,7 +108,7 @@ namespace PluginHub.Runtime
 
         public float IMGUILocalGUIScale => LocalGUIScale;
 
-        public void IMGUIDraw()
+        public void IMGUIDraw(float globalGUIScale)
         {
             Vector2 screenSize = IMGUIManager.Instance.ScreenSize(IMGUILocalGUIScale);
 
