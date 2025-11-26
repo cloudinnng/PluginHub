@@ -59,7 +59,11 @@ namespace PluginHub.Editor
         public static void CopyDirectoryName()
         {
             string path = GetSelectionAssetAbsolutePath();
-            path = Path.GetDirectoryName(path);
+            // 如果有扩展名（即是文件而不是文件夹），则获取其目录，否则直接返回路径
+            if (!string.IsNullOrEmpty(Path.GetExtension(path)))
+            {
+                path = Path.GetDirectoryName(path);
+            }
 
             EditorGUIUtility.systemCopyBuffer = path; //复制到系统剪切板
             Debug.Log($"{path}   已复制到剪切板");

@@ -10,6 +10,7 @@ using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 using Unity.CodeEditor;
 using UnityEngine.UIElements;
+using Codice.Client.Common.Logging;
 
 namespace PluginHub.Editor
 {
@@ -95,15 +96,22 @@ namespace PluginHub.Editor
 
                 Object FindGameObjectFunc(string findStr)
                 {
-                    return Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(g => g.transform.GetFindPath() == findStr);
+                    GameObject[] gameObjects = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    return gameObjects.FirstOrDefault(g => g.transform.GetFindPath() == findStr);
                 }
                 Object FindAssetFunc(string assetPath)
                 {
                     return AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 }
-                GameObject FindFirstGameObject<T>() where T : Component
+                GameObject FindFirstGameObject<T>(bool printLog) where T : Component
                 {
-                    return Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault()?.gameObject;
+                    T[] components = Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    if (printLog){
+                        foreach (var component in components){
+                            Debug.Log(component.gameObject.transform.GetFindPath(), component.gameObject);
+                        }
+                    }
+                    return components.FirstOrDefault()?.gameObject;
                 }
                 
                 // 选择上次选中的游戏对象
@@ -147,12 +155,16 @@ namespace PluginHub.Editor
                 // 选择Global Volume
                 Object FindGlobalVolumeFunc()
                 {
-                    return Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(t =>
+                    Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    transforms = transforms.Where(t =>
                     {
                         Component[] components = t.GetComponents<Component>();
                         return components.Any(c => c.GetType().Name.Contains("Volume"));
+                    }).ToArray();
+                    foreach (var transform in transforms){
+                        Debug.Log(transform.GetFindPath(), transform.gameObject);
                     }
-                    )?.gameObject;
+                    return transforms.FirstOrDefault()?.gameObject;
                 }
                 
                 GUI.color = GetShortcutBtnColor(FindGlobalVolumeFunc); 
@@ -161,16 +173,16 @@ namespace PluginHub.Editor
                     Selection.activeObject = FindGlobalVolumeFunc();
                 }
                 // 选择地形
-                GUI.color = GetShortcutBtnColor(FindFirstGameObject<Terrain>);
+                GUI.color = GetShortcutBtnColor(() => FindFirstGameObject<Terrain>(false));
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_Terrain Icon", "", "选择地形"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    Selection.activeObject = FindFirstGameObject<Terrain>();
+                    Selection.activeObject = FindFirstGameObject<Terrain>(true);
                 }
                 // 选择UICanvas
-                GUI.color = GetShortcutBtnColor(FindFirstGameObject<Canvas>);
+                GUI.color = GetShortcutBtnColor(() => FindFirstGameObject<Canvas>(false));
                 if (GUILayout.Button(PluginHubFunc.IconContent("Canvas Icon", "", "选择UICanvas"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    Selection.activeObject = FindFirstGameObject<Canvas>();
+                    Selection.activeObject = FindFirstGameObject<Canvas>(true);
                 }
                 // 渲染管线资产
                 GUI.color = GetShortcutBtnColor(() => GraphicsSettings.defaultRenderPipeline);
