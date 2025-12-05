@@ -1,11 +1,11 @@
-#if UNITY_EDITOR
 using UnityEngine;
-using UnityEditor;
 
 namespace PluginHub.Runtime
 {
+#if UNITY_EDITOR
+    using UnityEditor;
     [CustomEditor(typeof(PHComment))]
-    public class PHCommentEditor : UnityEditor.Editor
+    public class PHCommentEditor : Editor
     {
         public override void OnInspectorGUI()
         {
@@ -19,10 +19,17 @@ namespace PluginHub.Runtime
             }
         }
     }
+#endif
     // 使用这个组件来为对象添加注释
     public class PHComment : MonoBehaviour
     {
         public string description;
+        void Awake()
+        {
+            if (!Application.isEditor)
+            {
+                Destroy(this);
+            }
+        }
     }
 }
-#endif

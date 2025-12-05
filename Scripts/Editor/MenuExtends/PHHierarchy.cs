@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using PluginHub.Runtime;
 using UnityEditor;
@@ -211,6 +213,7 @@ namespace PluginHub.Editor
                                     //直接remove场景
                                     EditorSceneManager.CloseScene(scene, true);
                                 }
+                                Debug.Log("Remove Scene");
                             }
                             else //啥也没按
                             {
@@ -225,23 +228,18 @@ namespace PluginHub.Editor
                                         }
                                     }
                                     EditorSceneManager.CloseScene(scene, false); //卸载场景
+                                    Debug.Log("Close Scene");
                                 }
                                 else
                                 {
                                     EditorSceneManager.OpenScene(scene.path, OpenSceneMode.Additive); //加载场景
+                                    Debug.Log("Open Scene");
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-
-        // 选中同层级中名称相同的游戏对象
-        [MenuItem("GameObject/PH SelectSameNameSibling", false, -50)]
-        private static void SelectSameNameSiblingMenuItem()
-        {
-            SelectSameNameSibling(Selection.activeGameObject);
         }
 
         private static void SelectSameNameSibling(GameObject gameObject)
@@ -421,6 +419,27 @@ namespace PluginHub.Editor
                 gameObjects[i].name = $"{siblingIndex}";
             }
 
+        }
+
+        [MenuItem("GameObject/PH 按名称排序子节点", false, -50)]
+        public static void SortChildrenByName(){
+            GameObject gameObject = Selection.activeGameObject;
+            Debug.Log("Sort Children By Name",gameObject);
+            if (gameObject != null)
+            {
+                Transform[] children = gameObject.transform.GetComponentsInChildren<Transform>();
+                Undo.RegisterFullObjectHierarchyUndo(gameObject, "Sort Children By Name");
+                Array.Sort(children, (a, b) => a.name.CompareTo(b.name));
+                for (int i = 0; i < children.Length - 1; i++)
+                {
+                    children[i].SetSiblingIndex(i);
+                }
+            }
+        }
+
+        [MenuItem("GameObject/PH 按名称排序子节点", true, -50)]
+        public static bool SortChildrenByNameValidate(){
+            return Selection.gameObjects != null && Selection.gameObjects.Length == 1;
         }
 
         //创建一个分隔符游戏对象

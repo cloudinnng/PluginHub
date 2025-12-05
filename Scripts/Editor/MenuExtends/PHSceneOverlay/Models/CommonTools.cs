@@ -9,8 +9,6 @@ using System.IO;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 using Unity.CodeEditor;
-using UnityEngine.UIElements;
-using Codice.Client.Common.Logging;
 
 namespace PluginHub.Editor
 {
@@ -135,8 +133,10 @@ namespace PluginHub.Editor
                 GUI.color = GetShortcutBtnColor(() => Camera.main == null? null: Camera.main.gameObject);
                 if (GUILayout.Button(PluginHubFunc.IconContent("Camera Gizmo", "", "选择Main相机"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    if (Camera.main != null)
+                    if (Camera.main != null){
                         Selection.activeGameObject = Camera.main.gameObject;
+                        FindFirstGameObject<Camera>(true);// 打印一下
+                    }
                 }
                 // 选择主光源
                 GUI.color = GetShortcutBtnColor( () => RenderSettings.sun == null? null: RenderSettings.sun.gameObject);
@@ -153,24 +153,30 @@ namespace PluginHub.Editor
                         Selection.objects = new Object[] { RenderSettings.skybox };
                 }
                 // 选择Global Volume
-                Object FindGlobalVolumeFunc()
+                Object FindGlobalVolumeFunc(bool printLog)
                 {
                     Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                     transforms = transforms.Where(t =>
                     {
                         Component[] components = t.GetComponents<Component>();
-                        return components.Any(c => c.GetType().Name.Contains("Volume"));
+                        bool AnyPredicate(Component component)
+                        {
+                            return component?.GetType()?.Name.Contains("Volume") ?? false;
+                        }
+                        return components.Any(AnyPredicate);
                     }).ToArray();
-                    foreach (var transform in transforms){
-                        Debug.Log(transform.GetFindPath(), transform.gameObject);
+                    if (printLog){
+                        foreach (var transform in transforms){
+                            Debug.Log(transform.GetFindPath(), transform.gameObject);
+                        }
                     }
                     return transforms.FirstOrDefault()?.gameObject;
                 }
                 
-                GUI.color = GetShortcutBtnColor(FindGlobalVolumeFunc); 
+                GUI.color = GetShortcutBtnColor(() => FindGlobalVolumeFunc(false)); 
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_ToolHandleGlobal", "", "选择Global Volume对象"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    Selection.activeObject = FindGlobalVolumeFunc();
+                    Selection.activeObject = FindGlobalVolumeFunc(true);
                 }
                 // 选择地形
                 GUI.color = GetShortcutBtnColor(() => FindFirstGameObject<Terrain>(false));
