@@ -55,20 +55,20 @@ namespace PluginHub.Editor
         {
             set => EditorPrefs.SetBool("PH_SceneOverlayEnableRealtimeBtnColor", value);
             get => EditorPrefs.GetBool("PH_SceneOverlayEnableRealtimeBtnColor", false);
-        } 
+        }
 
         public static void DrawTools()
         {
             // PerformanceTest.Start();
             // PerformanceTest.End();
-            
+
             Color GetShortcutBtnColor(Func<Object> findFunc)
             {
-                if(!_enableRealtimeBtnColor)// 关闭实时按钮颜色提醒，不然会卡死
+                if (!_enableRealtimeBtnColor)// 关闭实时按钮颜色提醒，不然会卡死
                     return Color.white;
                 if (findFunc == null)
                     return PluginHubFunc.Red;
-                
+
                 Object findResult = findFunc.Invoke();
                 // Debug.Log(findResult + "" + Selection.activeGameObject);
                 if (findResult != null)
@@ -76,7 +76,7 @@ namespace PluginHub.Editor
                 else
                     return PluginHubFunc.Red;
             }
-            
+
             GUILayout.BeginHorizontal();
             {
                 if (Selection.activeGameObject != null)
@@ -84,7 +84,9 @@ namespace PluginHub.Editor
                     StringBuilder sb = new StringBuilder();
                     Selection.activeGameObject.transform.GetFindPath(sb);
                     _lastSelectedGameObjectPath = sb.ToString();
-                }else{
+                }
+                else
+                {
                     if (Selection.activeObject != null)
                     {
                         _lastSelectedAssetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -104,22 +106,24 @@ namespace PluginHub.Editor
                 GameObject FindFirstGameObject<T>(bool printLog) where T : Component
                 {
                     T[] components = Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                    if (printLog){
-                        foreach (var component in components){
+                    if (printLog)
+                    {
+                        foreach (var component in components)
+                        {
                             Debug.Log(component.gameObject.transform.GetFindPath(), component.gameObject);
                         }
                     }
                     return components.FirstOrDefault()?.gameObject;
                 }
-                
+
                 // 选择上次选中的游戏对象
-                GUI.color = GetShortcutBtnColor(()=>FindGameObjectFunc(_lastSelectedGameObjectPath));
+                GUI.color = GetShortcutBtnColor(() => FindGameObjectFunc(_lastSelectedGameObjectPath));
                 if (GUILayout.Button(PluginHubFunc.IconContent("tab_prev", "", $"选择上次选中的游戏对象\n{_lastSelectedGameObjectPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeGameObject = FindGameObjectFunc(_lastSelectedGameObjectPath) as GameObject;
                 }
                 // 选择上次选中的资产文件
-                GUI.color = GetShortcutBtnColor(()=>FindAssetFunc(_lastSelectedAssetPath));
+                GUI.color = GetShortcutBtnColor(() => FindAssetFunc(_lastSelectedAssetPath));
                 if (GUILayout.Button(PluginHubFunc.IconContent("Folder Icon", "", $"选择上次选中的资产文件\n{_lastSelectedAssetPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     string lastAssetPath = _lastSelectedAssetPath;
@@ -130,16 +134,17 @@ namespace PluginHub.Editor
                 }
                 // ------------------------------------------------------------
                 // 选择主相机
-                GUI.color = GetShortcutBtnColor(() => Camera.main == null? null: Camera.main.gameObject);
+                GUI.color = GetShortcutBtnColor(() => Camera.main == null ? null : Camera.main.gameObject);
                 if (GUILayout.Button(PluginHubFunc.IconContent("Camera Gizmo", "", "选择Main相机"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    if (Camera.main != null){
+                    if (Camera.main != null)
+                    {
                         Selection.activeGameObject = Camera.main.gameObject;
                         FindFirstGameObject<Camera>(true);// 打印一下
                     }
                 }
                 // 选择主光源
-                GUI.color = GetShortcutBtnColor( () => RenderSettings.sun == null? null: RenderSettings.sun.gameObject);
+                GUI.color = GetShortcutBtnColor(() => RenderSettings.sun == null ? null : RenderSettings.sun.gameObject);
                 if (GUILayout.Button(PluginHubFunc.IconContent("DirectionalLight Gizmo", "", "选择主光源"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (RenderSettings.sun != null)
@@ -165,15 +170,17 @@ namespace PluginHub.Editor
                         }
                         return components.Any(AnyPredicate);
                     }).ToArray();
-                    if (printLog){
-                        foreach (var transform in transforms){
+                    if (printLog)
+                    {
+                        foreach (var transform in transforms)
+                        {
                             Debug.Log(transform.GetFindPath(), transform.gameObject);
                         }
                     }
                     return transforms.FirstOrDefault()?.gameObject;
                 }
-                
-                GUI.color = GetShortcutBtnColor(() => FindGlobalVolumeFunc(false)); 
+
+                GUI.color = GetShortcutBtnColor(() => FindGlobalVolumeFunc(false));
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_ToolHandleGlobal", "", "选择Global Volume对象"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeObject = FindGlobalVolumeFunc(true);
@@ -204,17 +211,9 @@ namespace PluginHub.Editor
 
             GUILayout.BeginHorizontal();
             {
-                // 检查选中物体
-                if (Selection.activeGameObject != null)
+                if (GUILayout.Button(PluginHubFunc.GuiContent("↓", "放到地上"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    var selectedObject = Selection.activeGameObject;
-                    if (selectedObject.GetComponent<MeshRenderer>())
-                    {
-                        if (GUILayout.Button(PluginHubFunc.GuiContent("↓", "放到地上"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
-                        {
-                            SelectionObjToGround(false);
-                        }
-                    }
+                    SelectionObjToGround();
                 }
 
                 GUI.color = _enableRealtimeBtnColor ? PluginHubFunc.SelectedColor : Color.white;
@@ -229,7 +228,7 @@ namespace PluginHub.Editor
                     if (SceneView.lastActiveSceneView != null && Camera.main != null)
                         ViewTweenInitializeOnLoad.GotoCamera(Camera.main, SceneView.lastActiveSceneView);
                 }
-                
+
                 if (GUILayout.Button(PluginHubFunc.IconContent("ClothInspector.ViewValue", "", "场景相机移动到选中的对象(GameObject -> Align View To Selected)"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (SceneView.lastActiveSceneView != null && Selection.activeGameObject != null)
@@ -260,10 +259,10 @@ namespace PluginHub.Editor
                 }
                 // 复制Recording目录中最新的文件
                 string recordingDir = Path.Combine(Application.dataPath, "../Recordings");
-                if(GUILayout.Button(PluginHubFunc.IconContent("Animation.Record", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubFunc.IconContent("Animation.Record", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     string[] files = Directory.GetFiles(recordingDir);
-                    if(files.Length > 0)
+                    if (files.Length > 0)
                     {
                         string latestFile = files.OrderByDescending(f => File.GetCreationTime(f)).First();
                         WinClipboard.CopyFiles(new string[] { latestFile });
@@ -272,8 +271,8 @@ namespace PluginHub.Editor
                 }
 
                 string currentEditor = Path.GetFileNameWithoutExtension(CodeEditor.CurrentEditorPath);
-                if(currentEditor == "Code")currentEditor = "VS Code";
-                if(GUILayout.Button(PluginHubFunc.GuiContent(currentEditor.Substring(0, 1).ToUpper(),$"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (currentEditor == "Code") currentEditor = "VS Code";
+                if (GUILayout.Button(PluginHubFunc.GuiContent(currentEditor.Substring(0, 1).ToUpper(), $"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     var newEditorPath = "";
                     switch (currentEditor)
@@ -295,24 +294,40 @@ namespace PluginHub.Editor
             GUILayout.EndHorizontal();
         }
 
-        private static void SelectionObjToGround(bool detectFromTop)
+        private static void SelectionObjToGround()
         {
+            Debug.Log("SelectionObjToGround");
             GameObject[] gameObjects = Selection.gameObjects;
             Undo.RecordObjects(gameObjects.Select((o) => o.transform).ToArray(), "SelectionObjToGroundObj");
             for (int i = 0; i < gameObjects.Length; i++)
             {
-                MoveGameObjectToGround(gameObjects[i], detectFromTop);
+                MoveGameObjectToGround(gameObjects[i]);
             }
         }
 
-        private static void MoveGameObjectToGround(GameObject obj, bool detectFromTop)
+        private static void MoveGameObjectToGround(GameObject obj)
         {
-            Vector3 origin = detectFromTop ? obj.transform.position + Vector3.up * 1000 : obj.transform.position;
+            Vector3 origin = obj.transform.position + Vector3.up * 0.5f;
+            // 检测前先禁用，避免检测到自身
+            obj.SetActive(false);
             bool raycastResult = RaycastWithoutCollider.Raycast(origin, Vector3.down, out RaycastWithoutCollider.HitResult result);
+            obj.SetActive(true);
             if (raycastResult)
             {
-                Undo.RecordObject(obj.transform, "Move Selection To Ground");
-                obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y, obj.transform.position.z);
+                // 获得物体所有渲染器的包围盒
+                Bounds bounds = default;
+                Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+                foreach (var renderer in renderers)
+                {
+                    if (bounds == default)
+                        bounds = renderer.bounds;
+                    else
+                        bounds.Encapsulate(renderer.bounds);
+                }
+                // 物体轴点距离渲染框最低位置的距离
+                float yOffset = bounds == default ? 0 : obj.transform.position.y - (bounds.center.y - bounds.extents.y);
+                // 放置到地面
+                obj.transform.position = new Vector3(obj.transform.position.x, result.hitPoint.y + yOffset, obj.transform.position.z);
             }
             else
             {

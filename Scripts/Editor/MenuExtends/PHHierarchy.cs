@@ -385,7 +385,7 @@ namespace PluginHub.Editor
             return sb.ToString();
         }
 
-        [MenuItem("GameObject/PH GameObject 批量重命名(检查空格追加SiblingIndex)", false, -52)]
+        [MenuItem("GameObject/PH 批量重命名(检查空格追加SiblingIndex)", false, -52)]
         public static void BatchRename()
         {
             if (Selection.gameObjects.Length == 0)
@@ -404,7 +404,7 @@ namespace PluginHub.Editor
 
         }
 
-        [MenuItem("GameObject/PH GameObject 批量重命名(直接用SiblingIndex)", false, -53)]
+        [MenuItem("GameObject/PH 批量重命名(直接用SiblingIndex)", false, -53)]
         public static void BatchRenameSiblingIndex()
         {
             if (Selection.gameObjects.Length == 0)
@@ -421,10 +421,13 @@ namespace PluginHub.Editor
 
         }
 
-        [MenuItem("GameObject/PH 按名称排序子节点", false, -50)]
-        public static void SortChildrenByName(){
+        [MenuItem("GameObject/PH 排序子节点 按名称", false, -50)]
+        public static void SortChildrenByName()
+        {
+            if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
+                return;
             GameObject gameObject = Selection.activeGameObject;
-            Debug.Log("Sort Children By Name",gameObject);
+            Debug.Log("Sort Children By Name", gameObject);
             if (gameObject != null)
             {
                 Transform[] children = gameObject.transform.GetComponentsInChildren<Transform>();
@@ -437,9 +440,35 @@ namespace PluginHub.Editor
             }
         }
 
-        [MenuItem("GameObject/PH 按名称排序子节点", true, -50)]
-        public static bool SortChildrenByNameValidate(){
-            return Selection.gameObjects != null && Selection.gameObjects.Length == 1;
+        [MenuItem("GameObject/PH 排序所选对象 按Position.Y", false, -50)]
+        public static void SortSelectionSiblingByPosY()
+        {
+            Debug.Log("Sort Selection Sibling By Pos Y");
+
+            if (Selection.gameObjects.Length <= 1)
+                return;
+            // 排序所选对象 按 Position.y（由高到低），高的放在前面
+            GameObject[] selected = Selection.gameObjects;
+            // 根据Position.y值进行排序（从大到小）
+            Array.Sort(selected, (a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
+            // 统一父节点限制
+            Transform parent = selected[0].transform.parent;
+            foreach (var go in selected)
+            {
+                if (go.transform.parent != parent)
+                {
+                    Debug.LogWarning("所选对象必须有相同的父节点！");
+                    return;
+                }
+            }
+            // 记录undo
+            Undo.RecordObjects(selected.Select(g => g.transform).ToArray(), "Sort Sibling by Pos Y");
+
+            // 依次设置sibling index，最高的y设为最前（index=0）
+            for (int i = 0; i < selected.Length; i++)
+            {
+                selected[i].transform.SetSiblingIndex(i);
+            }
         }
 
         //创建一个分隔符游戏对象
