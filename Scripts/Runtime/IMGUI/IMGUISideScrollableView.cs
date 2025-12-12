@@ -41,8 +41,8 @@ namespace PluginHub.Runtime
     #endif
 
     [ExecuteAlways]
-    // 提供侧边栏滚动视图
-    public class IMGUISideScrollableView : SceneSingleton<IMGUISideScrollableView>, IMGUIManager.IIMGUI, Debugger.CustomWindow.ICustomWindowGUI
+    // 提供IMGUI左侧边栏滚动视图
+    public class IMGUISideScrollableView : SceneSingleton<IMGUISideScrollableView>, IMGUIManager.IIMGUI, Debugger.CustomWindow.IDebuggerCustomWindowGUI
     {
         public interface IIMGUI
         {

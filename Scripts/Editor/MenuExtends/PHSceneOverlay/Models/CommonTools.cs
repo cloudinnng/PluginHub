@@ -275,15 +275,27 @@ namespace PluginHub.Editor
                 if (GUILayout.Button(PluginHubFunc.GuiContent(currentEditor.Substring(0, 1).ToUpper(), $"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     var newEditorPath = "";
+                    // 循环切换三种编辑器
                     switch (currentEditor)
                     {
                         case "VS Code":
+                            // 此路径是为系统安装的Cursor，不是为用户安装的
                             newEditorPath = @"C:\Program Files\cursor\Cursor.exe";
                             break;
                         case "Cursor":
-                            newEditorPath = @"C:\Program Files\JetBrains\JetBrains Rider 2025.2.4\bin\rider64.exe";
+                            // 切换到Rider，为了兼容自动升级后的路径，这里动态查找最新版本的Rider
+                            string[] listDir = Directory.GetDirectories(@"C:\Program Files\JetBrains");
+                            listDir = listDir.Where(dir => dir.Contains("JetBrains Rider")).ToArray();
+                            listDir = listDir.OrderBy(dir => dir).ToArray();
+                            // for (int i = 0; i < listDir.Length; i++)
+                            // {
+                            //     Debug.Log(listDir[i]);
+                            // }
+                            // 取最后一个，即最新版本
+                            newEditorPath = Path.Combine($@"{listDir[^1]}", @"bin\rider64.exe"); 
                             break;
                         case "rider64":
+                            // 此路径是为系统安装的vscode，不是为用户安装的
                             newEditorPath = @"C:\Program Files\Microsoft VS Code\Code.exe";
                             break;
                     }
@@ -307,6 +319,7 @@ namespace PluginHub.Editor
 
         private static void MoveGameObjectToGround(GameObject obj)
         {
+            // 2025年12月8日 优化了此方法，现在可以正确的应用偏移量的将物体“放到地上”，而不是直接将轴点放在地面上
             Vector3 origin = obj.transform.position + Vector3.up * 0.5f;
             // 检测前先禁用，避免检测到自身
             obj.SetActive(false);

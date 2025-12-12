@@ -49,7 +49,7 @@ namespace PluginHub.Runtime
 
     // 在检视面板中设置程序到期时间，到期后程序无法运行
     // 使用简单的方式，记录上次运行时间。防止用户修改系统时间继续使用
-    public class ApplicationExpire : MonoBehaviour, Debugger.CustomWindow.ICustomWindowGUI
+    public class ApplicationExpire : MonoBehaviour, Debugger.CustomWindow.IDebuggerCustomWindowGUI
 #if UNITY_EDITOR
     , IPreprocessBuildWithReport
 #endif

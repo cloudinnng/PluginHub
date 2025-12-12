@@ -8,7 +8,7 @@ using UnityEngine.Playables;
 namespace PluginHub.Runtime
 {
 //这个类用来键盘控制Timeline
-    public class TimelineControl : MonoBehaviour, Debugger.CustomWindow.ICustomWindowGUI
+    public class TimelineControl : MonoBehaviour, Debugger.CustomWindow.IDebuggerCustomWindowGUI
     {
         private PlayableDirector _playableDirector;
 

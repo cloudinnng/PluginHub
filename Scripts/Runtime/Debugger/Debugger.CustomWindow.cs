@@ -14,11 +14,11 @@ namespace PluginHub.Runtime
         /// </summary>
         public class CustomWindow : ScrollableDebuggerWindowBase
         {
-            private readonly Dictionary<string, ICustomWindowGUI> _guiClientsDic =
-                new Dictionary<string, ICustomWindowGUI>();
+            private readonly Dictionary<string, IDebuggerCustomWindowGUI> _guiClientsDic =
+                new Dictionary<string, IDebuggerCustomWindowGUI>();
 
 
-            public interface ICustomWindowGUI
+            public interface IDebuggerCustomWindowGUI
             {
                 ///客户端调试UI在Debugger CustomWindow中的绘制顺序，越小越靠前。可选择性实现
                 ///具体绘制函数，由客户端程序实现
@@ -69,7 +69,7 @@ namespace PluginHub.Runtime
 
             private void InnerDraw()
             {
-                foreach (KeyValuePair<string, ICustomWindowGUI> item in _guiClientsDic)
+                foreach (KeyValuePair<string, IDebuggerCustomWindowGUI> item in _guiClientsDic)
                 {
                     GUILayout.BeginVertical("box");
                     {
@@ -99,11 +99,11 @@ namespace PluginHub.Runtime
                 //重新寻找客户端
                 _guiClientsDic.Clear();
                 MonoBehaviour[] monos = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-                List<ICustomWindowGUI> clients = new List<ICustomWindowGUI>();
+                List<IDebuggerCustomWindowGUI> clients = new List<IDebuggerCustomWindowGUI>();
                 for (int i = 0; i < monos.Length; i++)
                 {
                     MonoBehaviour mono = monos[i];
-                    ICustomWindowGUI client = mono as ICustomWindowGUI;
+                    IDebuggerCustomWindowGUI client = mono as IDebuggerCustomWindowGUI;
                     if (client != null)
                         clients.Add(client);
                 }
@@ -112,7 +112,7 @@ namespace PluginHub.Runtime
                 for (int i = 0; i < clients.Count; i++)
                 {
                     string key = clients[i].GetType().ToString();
-                    ICustomWindowGUI value = clients[i];
+                    IDebuggerCustomWindowGUI value = clients[i];
                     if (_guiClientsDic.ContainsKey(key))//如果有重复的key，加上序号
                         key += i;
                     _guiClientsDic.Add(key, value);

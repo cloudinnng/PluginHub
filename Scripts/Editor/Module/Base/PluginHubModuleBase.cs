@@ -50,9 +50,9 @@ namespace PluginHub.Editor
             get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", false); }
             set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", value); }
         }
-            
-            
-        public bool isDataDirty { get; private set; }= true; //为真，该帧则会刷新数据
+
+
+        public bool isDataDirty { get; private set; } = true; //为真，该帧则会刷新数据
         // protected PluginHubWindow pluginHubWindow;
         private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch(); //秒表对象 用于计算代码执行时间
         private float guiTimeLastFrame;
@@ -184,7 +184,7 @@ namespace PluginHub.Editor
         //RefreshData方法放在Update中调用,但会在OnFocus中通知其去调用一次,以在用户即将查看模块GUI时及时刷新数据
         public virtual void RefreshData()
         {
-            if(moduleDebug)
+            if (moduleDebug)
                 Debug.Log($"{moduleName} mudule : RefreshData");
             isDataDirty = false;
         }
@@ -299,7 +299,8 @@ namespace PluginHub.Editor
 
         //用于存取EditorPrefs的key
         private string _recordableAssetsKey = "";
-        private string RecordableAssetsKey {
+        private string RecordableAssetsKey
+        {
             get
             {
                 if (string.IsNullOrWhiteSpace(_recordableAssetsKey))
@@ -396,9 +397,7 @@ namespace PluginHub.Editor
             GUI.enabled = exist;
             //open folder button
             if (GUILayout.Button(PluginHubFunc.IconContent("FolderEmpty On Icon", buttonTxt, path),
-                    (string.IsNullOrWhiteSpace(buttonTxt))
-                        ? PluginHubFunc.IconBtnLayoutOptions[0]
-                        : GUILayout.ExpandWidth(false),
+                    (string.IsNullOrWhiteSpace(buttonTxt)) ? PluginHubFunc.IconBtnLayoutOptions[0] : GUILayout.ExpandWidth(false),
                     PluginHubFunc.IconBtnLayoutOptions[1]))
             {
                 Debug.Log($"RevealInFinder:{path}");

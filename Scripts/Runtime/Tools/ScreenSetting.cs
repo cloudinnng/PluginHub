@@ -7,7 +7,7 @@ using static PluginHub.Runtime.Debugger.CustomWindow;
 namespace PluginHub.Runtime
 {
 //https://mp.weixin.qq.com/s?__biz=MzkyMTM5Mjg3NQ==&mid=2247536007&idx=1&sn=a4d1b41637880fce3e932f610e3f4418&source=41#wechat_redirect
-    public class ScreenSetting : MonoBehaviour, ICustomWindowGUI
+    public class ScreenSetting : MonoBehaviour, IDebuggerCustomWindowGUI
     {
         public enum FrameRateType
         {

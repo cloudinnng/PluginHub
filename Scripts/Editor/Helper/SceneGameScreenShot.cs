@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,7 +10,7 @@ namespace PluginHub.Editor
     {
         private static int count = 0;
 
-        private static string newPath
+        private static string NewPath
         {
             get{
                 //准备保存路径
@@ -88,7 +87,7 @@ namespace PluginHub.Editor
         {
             //确保打开Game视图,不然会截图失败
             EditorApplication.ExecuteMenuItem("Window/General/Game");
-            string path = newPath;
+            string path = NewPath;
             ScreenCapture.CaptureScreenshot(path); //进行截图
             Debug.Log($"截图已保存到 {path}");
             string dir = Path.GetDirectoryName(path);

@@ -199,12 +199,15 @@ namespace PluginHub.Editor
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label("更多选项:", GUILayout.Width(titleWidth));
-                devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
-                deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
-                clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
+                GUILayout.BeginVertical();
+                {
+                    devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
+                    deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
+                    clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
+                }
+                GUILayout.EndVertical();
             }
             GUILayout.EndHorizontal();
-
 
             DrawSplitLine("快捷构建");
 
@@ -525,12 +528,20 @@ namespace PluginHub.Editor
                                 INIParser iniParser = new INIParser();
                                 iniParser.Open(buildInfoFilePath);
                                 //将updateInfo中的换行符替换为\n保存
-                                buildTime = iniParser.ReadValue("BuildInfo", "BuildTime","2099-12-31 18:28:28");
+                                buildTime = iniParser.ReadValue("BuildInfo", "BuildTime", "2099-12-31 18:28:28");
                                 iniParser.Close();
                             }
                             // Debug.Log(buildTime);
 
-                            TimeSpan spendTime = DateTime.Now - DateTime.ParseExact(buildTime,"yyyy-MM-dd HH-mm-ss",CultureInfo.InvariantCulture);
+                            TimeSpan spendTime;
+                            try
+                            {
+                                spendTime = DateTime.Now - DateTime.ParseExact(buildTime, "yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture);
+                            }
+                            catch
+                            {
+                                spendTime = TimeSpan.MaxValue; // 或者使用 TimeSpan.Zero，根据实际需求
+                            }
                             string spendTimeStr;
                             if (spendTime.TotalDays >= 1)
                             {
@@ -555,7 +566,7 @@ namespace PluginHub.Editor
                             GUILayout.Label($"{i}. {folderName} ({spendTimeStr})");
 
                             //打开StreamingAssets文件夹按钮
-                            DrawIconBtnOpenFolder(streamingAssetsPath, true, "StrmAs");
+                            DrawIconBtnOpenFolder(streamingAssetsPath, true, "SA");
 
                             //打开文件夹按钮
                             DrawIconBtnOpenFolder(directory, true);
@@ -811,8 +822,11 @@ namespace PluginHub.Editor
         //$"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
         private static void BuildAndroid(string locationPathName)
         {
+            Debug.Log($"BuildAndroid: {locationPathName}");
             if (!DeleteOldBuildConfirm(locationPathName))
                 return;
+
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, $"com.{Application.companyName}.{Application.productName}");
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();

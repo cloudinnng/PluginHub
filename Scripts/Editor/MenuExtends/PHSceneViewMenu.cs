@@ -128,21 +128,33 @@ namespace PluginHub.Editor
             {
                 renderer = result.renderer;
 
-                MeshFilter meshFilter = result.renderer.GetComponent<MeshFilter>();
-                SkinnedMeshRenderer skinnedMeshRenderer = result.renderer as SkinnedMeshRenderer;
-                Mesh mesh = meshFilter ? meshFilter.sharedMesh : skinnedMeshRenderer.sharedMesh;
+                MeshFilter meshFilter = renderer?.GetComponent<MeshFilter>();
+                if (meshFilter == null)
+                {
+                    Debug.Log("Hit renderer has no MeshFilter");
+                    return;
+                }
+                SkinnedMeshRenderer skinnedMeshRenderer = renderer as SkinnedMeshRenderer;
+                Mesh mesh = meshFilter ? meshFilter.sharedMesh : skinnedMeshRenderer?.sharedMesh;
+                if (mesh == null)
+                {
+                    Debug.Log("Hit renderer has no mesh");
+                    return;
+                }
                 indexOfMaterialInMesh = GetSubMeshIndex(mesh, result.triangleIndex);
                 if (indexOfMaterialInMesh == -1)
                     return;
 
-                Material targetMaterial = result.renderer.sharedMaterials[indexOfMaterialInMesh];
+                Material targetMaterial = renderer.sharedMaterials[indexOfMaterialInMesh];
 
                 Selection.objects = new Object[] { targetMaterial };
-                Debug.Log($"选择了 {result.renderer.name} 第 {indexOfMaterialInMesh} 个材质。", result.renderer.gameObject);
+                Debug.Log($"选择了 {renderer.name} 第 {indexOfMaterialInMesh} 个材质。", renderer.gameObject);
                 material = targetMaterial;
             }
             else
+            {
                 Debug.Log("No mesh renderer hit");
+            }
         }
 
         // 选中鼠标指针处的材质，如果是无法修改的嵌入式材质，则自动提取后将Meshrenderer中的该材质替换为新的自由材质，并选中新的自由材质以便修改参数。

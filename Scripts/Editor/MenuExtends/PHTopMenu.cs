@@ -1,27 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Win32;
 using UnityEditor;
-using UnityEditor.Build.Reporting;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using Application = UnityEngine.Application;
 using Debug = UnityEngine.Debug;
-using Object = UnityEngine.Object;
 using MenuItem = UnityEditor.MenuItem;
-using Screen = UnityEngine.Screen;
 
 namespace PluginHub.Editor
 {
@@ -35,7 +20,10 @@ namespace PluginHub.Editor
     // 由模块代码添加的菜单  0
     // --------------
     // 带开关的功能 100
-    public class PHTopMenu
+    
+    // 2025年12月12日 
+    // 将不常用的目录和文件夹去掉了
+    public static class PHTopMenu
     {
         #region 用于菜单标题，组织和分类分隔作用
 
@@ -94,11 +82,11 @@ namespace PluginHub.Editor
             EditorUtility.RevealInFinder(path);
         }
 
-        [MenuItem("PluginHub/Folder ProjectRoot", false, -320)]
-        public static void OpenFolderProjectRoot()
-        {
-            OpenFolder(_projectRootPath + "/");
-        }
+        // [MenuItem("PluginHub/Folder ProjectRoot", false, -320)]
+        // public static void OpenFolderProjectRoot()
+        // {
+        //     OpenFolder(_projectRootPath + "/");
+        // }
 
         [MenuItem("PluginHub/Folder StreamingAssets", false, -300)]
         public static void OpenFolderStreamingAssets()
@@ -119,11 +107,11 @@ namespace PluginHub.Editor
         }
 
         //--------------------------
-        [MenuItem("PluginHub/Folder Build", false, -281)]
-        public static void OpenFolderBuild()
-        {
-            OpenFolder(_projectRootPath + "/Build/");
-        }
+        // [MenuItem("PluginHub/Folder Build", false, -281)]
+        // public static void OpenFolderBuild()
+        // {
+        //     OpenFolder(_projectRootPath + "/Build/");
+        // }
 
         [MenuItem("PluginHub/Folder Recordings", false, -280)]
         public static void OpenFolderRecordings()
@@ -140,36 +128,36 @@ namespace PluginHub.Editor
 
         //--------------------------
         //--------------------------
-        [MenuItem("PluginHub/Window Project Settings...", false, -260)]
-        public static void OpenWindowProjectSettings()
-        {
-            EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
-        }
+        // [MenuItem("PluginHub/Window Project Settings...", false, -260)]
+        // public static void OpenWindowProjectSettings()
+        // {
+        //     EditorApplication.ExecuteMenuItem("Edit/Project Settings...");
+        // }
 
-        [MenuItem("PluginHub/Window Package Manager", false, -259)]
-        public static void OpenWindowPackageManager()
-        {
-            EditorApplication.ExecuteMenuItem("Window/Package Manager");
-        }
-
-        [MenuItem("PluginHub/Window Preferences...", false, -258)]
-        public static void OpenWindowPreferences()
-        {
-            EditorApplication.ExecuteMenuItem("Edit/Preferences...");
-        }
+        // [MenuItem("PluginHub/Window Package Manager", false, -259)]
+        // public static void OpenWindowPackageManager()
+        // {
+        //     EditorApplication.ExecuteMenuItem("Window/Package Manager");
+        // }
+        //
+        // [MenuItem("PluginHub/Window Preferences...", false, -258)]
+        // public static void OpenWindowPreferences()
+        // {
+        //     EditorApplication.ExecuteMenuItem("Edit/Preferences...");
+        // }
 
         //--------------------------
-        [MenuItem("PluginHub/Window Animation", false, -240)]
-        public static void OpenWindowAnimation()
-        {
-            EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
-        }
-
-        [MenuItem("PluginHub/Window Timeline", false, -239)]
-        public static void OpenWindowTimeline()
-        {
-            EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
-        }
+        // [MenuItem("PluginHub/Window Animation", false, -240)]
+        // public static void OpenWindowAnimation()
+        // {
+        //     EditorApplication.ExecuteMenuItem("Window/Animation/Animation");
+        // }
+        //
+        // [MenuItem("PluginHub/Window Timeline", false, -239)]
+        // public static void OpenWindowTimeline()
+        // {
+        //     EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+        // }
 
         //--------------------------
         [MenuItem("PluginHub/Window Lighting", false, -227)]
@@ -191,11 +179,11 @@ namespace PluginHub.Editor
         }
 
         //--------------------------
-        [MenuItem("PluginHub/Window Test Runner", false, -213)]
-        public static void OpenWindowTestRunner()
-        {
-            EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
-        }
+        // [MenuItem("PluginHub/Window Test Runner", false, -213)]
+        // public static void OpenWindowTestRunner()
+        // {
+        //     EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
+        // }
 
         #endregion
 
@@ -297,7 +285,7 @@ namespace PluginHub.Editor
             //set smoothness in URP
             if (material.HasProperty("_Smoothness"))
                 material.SetFloat("_Smoothness", 0.0f);
-            //set smoothness in buildin pipeline
+            //set smoothness in build-in pipeline
             if (material.HasProperty("_Glossiness"))
                 material.SetFloat("_Glossiness", 0.0f);
         }

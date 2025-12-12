@@ -47,13 +47,13 @@ namespace PluginHub.Runtime
         #region OnScreenUI
 
         // 继承此类，以成为客户端
-        public interface IOnScreenUI
+        public interface IDebuggerOnScreenUI
         {
             public void OnScreenUIDraw(float globalGUIScale); // 绘制GUI
             public int OnScreenUIOrder => 0;// 绘制顺序
         }
         // 客户端列表
-        public List<IOnScreenUI> clientList = new List<IOnScreenUI>();
+        public List<IDebuggerOnScreenUI> clientList = new List<IDebuggerOnScreenUI>();
 
         public void RefreshOnScreenUIClientList()
         {
@@ -63,7 +63,7 @@ namespace PluginHub.Runtime
             // Debug.Log(s.Length);
             foreach (MonoBehaviour client in monoInScene)
             {
-                if (client is IOnScreenUI imGUI)
+                if (client is IDebuggerOnScreenUI imGUI)
                     clientList.Add(imGUI);
             }
             // Debug.Log(clientList.Count);
@@ -400,7 +400,7 @@ namespace PluginHub.Runtime
                 Matrix4x4 tmp1 = GUI.matrix;
                 GUI.matrix = Matrix4x4.Scale(new Vector3(onScreenUIGUIScale, onScreenUIGUIScale, 1));
                 {
-                    foreach (IOnScreenUI client in clientList)
+                    foreach (IDebuggerOnScreenUI client in clientList)
                     {
                         client.OnScreenUIDraw(onScreenUIGUIScale);
                     }

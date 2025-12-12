@@ -124,6 +124,7 @@ namespace PluginHub.Editor
             }
         }
 
+        #region 场景条
         // itemRect: 层级视图中每一项的矩形区域
         private static void hierarchySceneItemHandler(int instanceId, Rect itemRect)
         {
@@ -241,7 +242,8 @@ namespace PluginHub.Editor
                 }
             }
         }
-
+        #endregion
+        #region 选择
         private static void SelectSameNameSibling(GameObject gameObject)
         {
             Transform parent = gameObject.transform.parent;
@@ -306,8 +308,8 @@ namespace PluginHub.Editor
             Selection.objects = gameObjects.ToArray();
             Debug.Log($"[PH] Selected {gameObjects.Count} All Sibling");
         }
-
-
+        #endregion
+        #region 拷贝
         [MenuItem("GameObject/PH 拷贝游戏对象名称", false, -50)]
         public static void CopyGameObjectName()
         {
@@ -337,7 +339,7 @@ namespace PluginHub.Editor
                 Debug.Log($"[PH] {strCopy} 已拷贝");
             }
         }
-
+        #endregion
         //菜单验证函数
         [MenuItem("GameObject/PH 拷贝两个对象父子相对路径", true, -50)]
         public static bool CopyRelativePathValidate()
@@ -384,101 +386,6 @@ namespace PluginHub.Editor
 
             return sb.ToString();
         }
-
-        [MenuItem("GameObject/PH 批量重命名(检查空格追加SiblingIndex)", false, -52)]
-        public static void BatchRename()
-        {
-            if (Selection.gameObjects.Length == 0)
-                return;
-
-            GameObject[] gameObjects = Selection.gameObjects;
-            Undo.RecordObjects(gameObjects, "BatchRename");
-
-            for (int i = 0; i < gameObjects.Length; i++)
-            {
-                string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
-                string[] split = gameObjects[i].name.Split(" ");
-                string prefix = split[0];
-                gameObjects[i].name = $"{prefix} {siblingIndex}";
-            }
-
-        }
-
-        [MenuItem("GameObject/PH 批量重命名(直接用SiblingIndex)", false, -53)]
-        public static void BatchRenameSiblingIndex()
-        {
-            if (Selection.gameObjects.Length == 0)
-                return;
-
-            GameObject[] gameObjects = Selection.gameObjects;
-            Undo.RecordObjects(gameObjects, "BatchRename");
-
-            for (int i = 0; i < gameObjects.Length; i++)
-            {
-                string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
-                gameObjects[i].name = $"{siblingIndex}";
-            }
-
-        }
-
-        [MenuItem("GameObject/PH 排序子节点 按名称", false, -50)]
-        public static void SortChildrenByName()
-        {
-            if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
-                return;
-            GameObject gameObject = Selection.activeGameObject;
-            Debug.Log("Sort Children By Name", gameObject);
-            if (gameObject != null)
-            {
-                Transform[] children = gameObject.transform.GetComponentsInChildren<Transform>();
-                Undo.RegisterFullObjectHierarchyUndo(gameObject, "Sort Children By Name");
-                Array.Sort(children, (a, b) => a.name.CompareTo(b.name));
-                for (int i = 0; i < children.Length - 1; i++)
-                {
-                    children[i].SetSiblingIndex(i);
-                }
-            }
-        }
-
-        [MenuItem("GameObject/PH 排序所选对象 按Position.Y", false, -50)]
-        public static void SortSelectionSiblingByPosY()
-        {
-            Debug.Log("Sort Selection Sibling By Pos Y");
-
-            if (Selection.gameObjects.Length <= 1)
-                return;
-            // 排序所选对象 按 Position.y（由高到低），高的放在前面
-            GameObject[] selected = Selection.gameObjects;
-            // 根据Position.y值进行排序（从大到小）
-            Array.Sort(selected, (a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
-            // 统一父节点限制
-            Transform parent = selected[0].transform.parent;
-            foreach (var go in selected)
-            {
-                if (go.transform.parent != parent)
-                {
-                    Debug.LogWarning("所选对象必须有相同的父节点！");
-                    return;
-                }
-            }
-            // 记录undo
-            Undo.RecordObjects(selected.Select(g => g.transform).ToArray(), "Sort Sibling by Pos Y");
-
-            // 依次设置sibling index，最高的y设为最前（index=0）
-            for (int i = 0; i < selected.Length; i++)
-            {
-                selected[i].transform.SetSiblingIndex(i);
-            }
-        }
-
-        //创建一个分隔符游戏对象
-        [MenuItem("GameObject/PH --------------------", false, -50)]
-        public static void CreateSeparator()
-        {
-            GameObject go = new GameObject("-----------------------------");
-        }
-
-
         /// <summary>
         /// 将选中对象的层级结构用字符串表达出来
         /// 使用以下字符表示层级：
@@ -553,6 +460,118 @@ namespace PluginHub.Editor
                 Debug.Log($"[PH] {path} 已拷贝");
             }
         }
+        #region 重命名
+        [MenuItem("GameObject/PH 批量重命名(检查空格追加SiblingIndex)", false, -52)]
+        public static void BatchRename()
+        {
+            if (Selection.gameObjects.Length == 0)
+                return;
+
+            GameObject[] gameObjects = Selection.gameObjects;
+            Undo.RecordObjects(gameObjects, "BatchRename");
+
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
+                string[] split = gameObjects[i].name.Split(" ");
+                string prefix = split[0];
+                gameObjects[i].name = $"{prefix} {siblingIndex}";
+            }
+
+        }
+        #endregion
+        [MenuItem("GameObject/PH 批量重命名(直接用SiblingIndex)", false, -53)]
+        public static void BatchRenameSiblingIndex()
+        {
+            if (Selection.gameObjects.Length == 0)
+                return;
+
+            GameObject[] gameObjects = Selection.gameObjects;
+            Undo.RecordObjects(gameObjects, "BatchRename");
+
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                string siblingIndex = gameObjects[i].transform.GetSiblingIndex().ToString();
+                gameObjects[i].name = $"{siblingIndex}";
+            }
+
+        }
+        #region 排序
+        [MenuItem("GameObject/PH 排序子节点 按名称", false, -50)]
+        public static void SortChildrenByName()
+        {
+            if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
+                return;
+            GameObject gameObject = Selection.activeGameObject;
+            Debug.Log("Sort Children By Name", gameObject);
+            if (gameObject != null)
+            {
+                Transform[] children = gameObject.transform.GetComponentsInChildren<Transform>();
+                Undo.RegisterFullObjectHierarchyUndo(gameObject, "Sort Children By Name");
+                Array.Sort(children, (a, b) => a.name.CompareTo(b.name));
+                for (int i = 0; i < children.Length - 1; i++)
+                {
+                    children[i].SetSiblingIndex(i);
+                }
+            }
+        }
+
+        [MenuItem("GameObject/PH 排序所选对象 按Position.Y", false, -50)]
+        public static void SortSelectionSiblingByPosY()
+        {
+            Debug.Log("Sort Selection Sibling By Pos Y");
+
+            if (Selection.gameObjects.Length <= 1)
+                return;
+            // 排序所选对象 按 Position.y（由高到低），高的放在前面
+            GameObject[] selected = Selection.gameObjects;
+            int indexStart = selected.Min(go => go.transform.GetSiblingIndex());
+            // 根据Position.y值进行排序（从大到小）
+            Array.Sort(selected, (a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
+            // 统一父节点限制
+            Transform parent = selected[0].transform.parent;
+            foreach (var go in selected)
+            {
+                if (go.transform.parent != parent)
+                {
+                    Debug.LogWarning("所选对象必须有相同的父节点！");
+                    return;
+                }
+            }
+            // 记录undo
+            Undo.RecordObjects(selected.Select(g => g.transform).ToArray(), "Sort Sibling by Pos Y");
+
+            // 依次设置sibling index，最高的y设为最前（index=0）
+            for (int i = 0; i < selected.Length; i++)
+            {
+                selected[i].transform.SetSiblingIndex(i + indexStart);
+            }
+        }
+        #endregion
+        //创建一个分隔符游戏对象
+        [MenuItem("GameObject/PH --------------------", false, -50)]
+        public static void CreateSeparator()
+        {
+            GameObject go = new GameObject("-----------------------------");
+        }
+
+
+        #region 对齐工具 beta
+        [MenuItem("GameObject/PH Y轴对齐", false, -50)]
+        public static void AlignY()
+        {
+            Debug.Log("Align Y");
+            if (Selection.gameObjects.Length == 0)
+                return;
+            GameObject[] gameObjects = Selection.gameObjects;
+            Undo.RecordObjects(gameObjects, "Align Y");
+            foreach (var go in gameObjects)
+            {
+                go.transform.position = new Vector3(gameObjects[0].transform.position.x, go.transform.position.y, gameObjects[0].transform.position.z);
+            }
+        }
+        #endregion
+
 
         #region Helper Functions
 

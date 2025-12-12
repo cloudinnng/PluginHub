@@ -30,7 +30,7 @@ namespace PluginHub.Editor
             targetTransform = target as Transform;
             if (targetTransform == null)
             {
-                Debug.LogError("Target is not a Transform.");
+                Debug.LogError($"Target is not a Transform. {target.name}", target);
             }
         }
 
