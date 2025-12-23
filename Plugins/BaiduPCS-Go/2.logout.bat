@@ -1,1 +1,0 @@
-echo y | BaiduPCS-Go.exe logout

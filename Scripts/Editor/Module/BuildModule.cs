@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
@@ -13,7 +12,7 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Editor
@@ -156,6 +155,9 @@ namespace PluginHub.Editor
 
         public int callbackOrder => -999999;
 
+        // 获取 BaiduPCS-Go 文件夹在系统中的完整路径
+        private static string baiduPCSGoFolderFullPath => Path.GetFullPath("Packages/com.hellottw.pluginhub/Plugins/BaiduPCS-Go");
+
         //构建后处理
         [PostProcessBuild]
         public static void PostProcessBuild(BuildTarget buildTarget, string pathToBuiltProject)
@@ -231,7 +233,7 @@ namespace PluginHub.Editor
                     DrawMacOSBuildButtons();
                     break;
             }
-            DrawBuildLibary();
+            DrawBuildLibrary();
         }
 
         private void DrawPCBuildButtons()
@@ -490,7 +492,7 @@ namespace PluginHub.Editor
             GUILayout.EndVertical();
         }
 
-        private void DrawBuildLibary()
+        private void DrawBuildLibrary()
         {
             //构建库
             GUILayout.BeginVertical("Box");
@@ -502,6 +504,15 @@ namespace PluginHub.Editor
                     GUILayout.Label(PluginHubFunc.GuiContent("构建库:", "下方显示项目Build目录下的所有打包文件"));
                     GUILayout.FlexibleSpace();
                     DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"), true);
+                    if (GUILayout.Button("生成下载脚本",GUILayout.ExpandWidth(false)))
+                    {
+                        string createFile = Path.Combine(Path.Combine(Application.dataPath, "../Build/"), $"download_{PlayerSettings.productName}.bat");
+                        string loginCommand = File.ReadAllText(Path.Combine(baiduPCSGoFolderFullPath, "login.bat"));
+                        string downloadCommand = $"BaiduPCS-Go.exe download /apps/BaiduPCS-Go/{PlayerSettings.productName} --saveto \"%CD%\"";
+                        string logoutCommand = File.ReadAllText(Path.Combine(baiduPCSGoFolderFullPath, "logout.bat"));
+                        File.WriteAllText(createFile, $"{loginCommand}\r\n{downloadCommand}\r\n{logoutCommand}");
+                        Debug.Log($"已生成下载脚本: {createFile}");
+                    }
                 }
                 GUILayout.EndHorizontal();
 
@@ -603,7 +614,11 @@ namespace PluginHub.Editor
                     for (int i = 0; i < zipFiles.Length; i++)
                     {
                         string zipFile = zipFiles[i];
+                        zipFile = zipFile.Replace("/", "\\");
+                        zipFile = zipFile.Replace(@"Assets\..\", "");
+                        // GUILayout.Label(zipFile);
                         string zipFileName = Path.GetFileName(zipFile);
+                        
                         GUILayout.BeginHorizontal();
                         {
                             GUILayout.Label($"{i}. {zipFileName}");
@@ -625,13 +640,14 @@ namespace PluginHub.Editor
                                 WinClipboard.CopyFiles(new[] { zipFile });
                                 Debug.Log($"已复制: {zipFile}");
                             }
-                            // 上传
-                            if (DrawIconBtn("Update-Available@2x", ""))
+                            // TODO 上传
+                            if (DrawIconBtn("Update-Available@2x", "上传到百度网盘,需要先配置BaiduPCS-Go,登录"))
                             {
-                                Task.Run(() =>
-                                {
-                                    
-                                });
+                                Debug.Log("上传到百度网盘");
+                                
+                                
+
+                                RunCmd(baiduPCSGoFolderFullPath,$"BaiduPCS-Go upload {zipFile} /apps/BaiduPCS-Go/{PlayerSettings.productName}");
                             }
 
                         }
@@ -642,8 +658,22 @@ namespace PluginHub.Editor
             }
             GUILayout.EndVertical();
         }
+        
+        private static void RunCmd(string workingDirectory, string command)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = "/k " + command,   // /k = 执行后不关闭窗口
+                WorkingDirectory = workingDirectory,
+                UseShellExecute = true,        // 关键
+                CreateNoWindow = false         // 关键
+            };
 
-        public static void ExecuteExe(string exeFullPath, bool admin = false)
+            Process.Start(psi);
+        }
+
+        private static void ExecuteExe(string exeFullPath, bool admin = false)
         {
             //Process.Start只支持windows的路径格式（左斜线分隔）
             exeFullPath = exeFullPath.Replace('/', '\\');
@@ -943,7 +973,7 @@ namespace PluginHub.Editor
             foreach (var scene in scenes)
             {
                 if (onlyCurrentScene)
-                    scene.enabled = scene.path == EditorSceneManager.GetActiveScene().path;
+                    scene.enabled = scene.path == SceneManager.GetActiveScene().path;
                 else
                     scene.enabled = true;
             }
@@ -955,7 +985,7 @@ namespace PluginHub.Editor
         /// </summary>
         /// <param name="sourceFolderPath">E:\test\</param>
         /// <param name="destinationZipFilePath">E:\test.zip</param>
-        public static void CreateZip(string sourceFolderPath, string destinationZipFilePath)
+        private static void CreateZip(string sourceFolderPath, string destinationZipFilePath)
         {
             //解决中文乱码
             Encoding gbk = Encoding.GetEncoding("gbk");
