@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using PluginHub.Runtime.Runtime;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,6 +13,10 @@ namespace PluginHub.Editor
         private const float height = 18f;
         private static Rect btnRect = new(0, 0, width, height);
 
+        // <guid, assetPath>
+        private static Dictionary<string, string> guidToAssetPathMap = new();
+        private static GUIContent tmpGUIContent = new();
+
         [InitializeOnLoadMethod]
         private static void Init()
         {
@@ -19,6 +25,11 @@ namespace PluginHub.Editor
         }
         private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
         {
+            if (!guidToAssetPathMap.ContainsKey(guid))
+                guidToAssetPathMap[guid] = AssetDatabase.GUIDToAssetPath(guid);
+            string assetPath = guidToAssetPathMap[guid];
+
+
             // if (Application.isPlaying) return;// 避免影响播放模式性能
 
             btnRect.Set(selectionRect.x + selectionRect.width - width, selectionRect.y, width, height);
@@ -30,17 +41,34 @@ namespace PluginHub.Editor
             {
                 if (GUI.Button(btnRect, PluginHubFunc.IconContent("FolderEmpty On Icon", "", $"使用资源管理器打开"), EditorStyles.label))
                 {
-                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                     Debug.Log("RevealInFinder: " + assetPath);
                     EditorUtility.RevealInFinder(assetPath);
                 }
                 btnRect.x -= width;
                 if (GUI.Button(btnRect, PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"复制路径到剪贴板"), EditorStyles.label))
                 {
-                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                     string fullPath = Path.Combine(Application.dataPath, assetPath.Replace("Assets/", "")).Replace("/", "\\");
-                    Debug.Log("CopyPathToClipboard: " + fullPath);
-                    EditorGUIUtility.systemCopyBuffer = fullPath;
+                    if (PluginHubRuntime.IsCtrlPressed)
+                    {
+                        Debug.Log("CopyPathToClipboard: " + assetPath);
+                        EditorGUIUtility.systemCopyBuffer = assetPath;
+                    }
+                    else
+                    {
+                        Debug.Log("CopyPathToClipboard: " + fullPath);
+                        EditorGUIUtility.systemCopyBuffer = fullPath;
+                    }
+                }
+                // 显示资产扩展名
+                bool isDirectory = AssetDatabase.IsValidFolder(assetPath);
+                if (!isDirectory)
+                {
+                    string extension = Path.GetExtension(assetPath);
+                    tmpGUIContent.text = extension;
+                    float labelWidth = GUI.skin.label.CalcSize(tmpGUIContent).x;
+                    btnRect.width = labelWidth;
+                    btnRect.x -= labelWidth;
+                    GUI.Label(btnRect, extension);
                 }
             }
             GUI.color = Color.white;

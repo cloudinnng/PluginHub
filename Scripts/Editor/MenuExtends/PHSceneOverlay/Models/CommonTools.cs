@@ -9,6 +9,7 @@ using System.IO;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 using Unity.CodeEditor;
+using UnityEngine.SceneManagement;
 
 namespace PluginHub.Editor
 {
@@ -38,6 +39,11 @@ namespace PluginHub.Editor
             set => EditorPrefs.SetString("PH_SceneOverlayLastScene", value);
             get => EditorPrefs.GetString("PH_SceneOverlayLastScene", "");
         }
+        public static string tempScenePath
+        {
+            set => EditorPrefs.SetString("PH_SceneOverlayTempScene", value);
+            get => EditorPrefs.GetString("PH_SceneOverlayTempScene", "");
+        }
 
         private static string _lastSelectedGameObjectPath
         {
@@ -56,6 +62,31 @@ namespace PluginHub.Editor
             set => EditorPrefs.SetBool("PH_SceneOverlayEnableRealtimeBtnColor", value);
             get => EditorPrefs.GetBool("PH_SceneOverlayEnableRealtimeBtnColor", false);
         }
+
+        static CommonTools()
+        {
+            EditorSceneManager.sceneOpened -= OnSceneOpened;
+            EditorSceneManager.sceneOpened += OnSceneOpened;
+            EditorSceneManager.sceneClosed -= OnSceneClosed;
+            EditorSceneManager.sceneClosed += OnSceneClosed;
+        }
+
+        // Unity在打开场景的时候会先触发旧场景的sceneClosed事件，然后触发新场景的sceneOpened事件
+        private static void OnSceneClosed(Scene scene)
+        {
+            // Debug.Log($"Scene closed: {scene.path}");
+            tempScenePath = scene.path;
+        }
+        private static void OnSceneOpened(Scene scene, OpenSceneMode mode)
+        {
+            // Debug.Log($"Scene opened: {scene.path}");
+            //只有打开了一个新的场景时，才更新lastScenePath
+            if (tempScenePath != scene.path)
+            {
+                lastScenePath = tempScenePath;
+            }
+        }
+
 
         public static void DrawTools()
         {
@@ -201,7 +232,7 @@ namespace PluginHub.Editor
                 GUI.color = GetShortcutBtnColor(() => GraphicsSettings.defaultRenderPipeline);
                 if (GUILayout.Button(PluginHubFunc.IconContent("AssemblyDefinitionAsset Icon", "", "选择渲染管线资产"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    Selection.activeObject = GraphicsSettings.defaultRenderPipeline;
+                    Selection.activeObject = QualitySettings.renderPipeline;
                 }
                 GUI.color = Color.white;
             }
@@ -251,6 +282,7 @@ namespace PluginHub.Editor
 
                 if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneAsset Icon", "", $"切换到最近打开的场景 ({lastScenePath})"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
+                    Debug.Log("User click to open last scene: " + lastScenePath);
                     if (lastScenePath != null)
                     {
                         if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -292,7 +324,7 @@ namespace PluginHub.Editor
                             //     Debug.Log(listDir[i]);
                             // }
                             // 取最后一个，即最新版本
-                            newEditorPath = Path.Combine($@"{listDir[^1]}", @"bin\rider64.exe"); 
+                            newEditorPath = Path.Combine($@"{listDir[^1]}", @"bin\rider64.exe");
                             break;
                         case "rider64":
                             // 此路径是为系统安装的vscode，不是为用户安装的

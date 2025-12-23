@@ -132,6 +132,9 @@ namespace PluginHub.Runtime
         public bool useOnScreenUI = true;
         [Tooltip("缩放因子")]
         public float onScreenUIGUIScale = 1;
+        [Tooltip("OnScreenUI的颜色")]
+        public Color onScreenUIColor = Color.white;
+
         [Space(10)]
 
         private bool _isShowDebugger = false; //dont call this
@@ -398,14 +401,18 @@ namespace PluginHub.Runtime
             if (useOnScreenUI)
             {
                 Matrix4x4 tmp1 = GUI.matrix;
-                GUI.matrix = Matrix4x4.Scale(new Vector3(onScreenUIGUIScale, onScreenUIGUIScale, 1));
+                GUI.color = onScreenUIColor;
                 {
-                    foreach (IDebuggerOnScreenUI client in clientList)
+                    GUI.matrix = Matrix4x4.Scale(new Vector3(onScreenUIGUIScale, onScreenUIGUIScale, 1));
                     {
-                        client.OnScreenUIDraw(onScreenUIGUIScale);
+                        foreach (IDebuggerOnScreenUI client in clientList)
+                        {
+                            client.OnScreenUIDraw(onScreenUIGUIScale);
+                        }
                     }
+                    GUI.matrix = tmp1;
                 }
-                GUI.matrix = tmp1;
+                GUI.color = Color.white;
             }
 
 

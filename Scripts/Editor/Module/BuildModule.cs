@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
@@ -12,6 +13,7 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Editor
@@ -605,6 +607,7 @@ namespace PluginHub.Editor
                         GUILayout.BeginHorizontal();
                         {
                             GUILayout.Label($"{i}. {zipFileName}");
+                            // zip 操作按钮
                             if (DrawIconBtn("P4_DeletedLocal", $"删除文件"))
                             {
                                 if (EditorUtility.DisplayDialog("提示", $"是否删除文件: {zipFile}", "是", "否"))
@@ -622,6 +625,15 @@ namespace PluginHub.Editor
                                 WinClipboard.CopyFiles(new[] { zipFile });
                                 Debug.Log($"已复制: {zipFile}");
                             }
+                            // 上传
+                            if (DrawIconBtn("Update-Available@2x", ""))
+                            {
+                                Task.Run(() =>
+                                {
+                                    
+                                });
+                            }
+
                         }
                         GUILayout.EndHorizontal();
                     }

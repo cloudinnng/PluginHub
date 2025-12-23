@@ -120,6 +120,8 @@ namespace PluginHub.Runtime
             }
         }
 
+        public bool IsVisible => designResolution.x > 0 && designResolution.y > 0;
+
         public void OnDrawDebuggerGUI()
         {
             if(designResolution.x > 0 && designResolution.y > 0 && GUILayout.Button("设置为设计分辨率"))

@@ -53,6 +53,8 @@ namespace PluginHub.Editor
             if (instance != null)
                 instance.OnInspectorGUI();
 
+            // 折叠箭头
+            showGlobalInfo = EditorGUILayout.Foldout(showGlobalInfo, "显示全局信息", true);
             if (showGlobalInfo)
             {
                 GUI.enabled = false;

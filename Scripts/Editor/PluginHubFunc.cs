@@ -23,7 +23,7 @@ using System.Windows.Forms;
 
 namespace PluginHub.Editor
 {
-    //TODO 这个类可以整理一下
+    //TODO 这个类可以整理一下,转移到PluginHubEditor类里
     public static class PluginHubFunc
     {
         // static PluginHubFunc() { }

@@ -54,8 +54,7 @@
 
             GUILayout.Space(10);
 
-            foldout = EditorGUILayout.Foldout(foldout, "更多信息");
-            if (foldout)
+            if (foldout = EditorGUILayout.Foldout(foldout, "更多信息", true))
             {
                 RectTransform rectTransform = target as RectTransform;
                 EditorGUILayout.Vector3Field("Position", rectTransform.position);

@@ -103,13 +103,6 @@ namespace PluginHub.Editor
             }
         }
 
-        //退出播放模式时是否显示PluginHubWindow窗口
-        public static bool showPluginHubOnExitPlayMode
-        {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showPluginHubOnExitPlayMode", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showPluginHubOnExitPlayMode", value); }
-        }
-
         //是否显示顶部设置面板
         public static bool showSettingPanel {
             get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showSettingPanel", false); }
@@ -347,7 +340,6 @@ namespace PluginHub.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    showPluginHubOnExitPlayMode = GUILayout.Toggle(showPluginHubOnExitPlayMode, "退出播放模式时显示PluginHubWindow窗口");
                     if (GUILayout.Button("打开配置文件所在文件夹"))
                         EditorUtility.RevealInFinder(PluginHubConfig.configPath);
                 }

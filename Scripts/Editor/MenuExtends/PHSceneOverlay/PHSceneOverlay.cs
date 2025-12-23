@@ -19,10 +19,6 @@ namespace PluginHub.Editor
             base.OnCreated();
             instance = this;
             SceneView.duringSceneGui += OnSceneGUIHoverTip;
-            // EditorSceneManager.sceneOpened -= OnSceneOpened;
-            // EditorSceneManager.sceneOpened += OnSceneOpened;
-            EditorSceneManager.sceneClosed -= OnSceneClosed;
-            EditorSceneManager.sceneClosed += OnSceneClosed;
 #if UNITY_6000_0_OR_NEWER
             // 移除 Unity Overlay 自带的 Hover 提示，以免遮挡我们的Hover提示
             rootVisualElement.tooltip = "";
@@ -33,17 +29,6 @@ namespace PluginHub.Editor
             base.OnWillBeDestroyed();
             instance = null;
             SceneView.duringSceneGui -= OnSceneGUIHoverTip;
-        }
-
-        // private void OnSceneOpened(Scene scene, OpenSceneMode mode)
-        // {
-        //     Debug.Log($"Scene opened: {scene.path}");
-        // }
-
-        private void OnSceneClosed(Scene scene)
-        {
-            // Debug.Log($"Scene closed: {scene.path}");
-            CommonTools.lastScenePath = scene.path;
         }
 
         // 绘制鼠标悬停提示

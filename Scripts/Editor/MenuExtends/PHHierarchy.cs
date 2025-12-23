@@ -548,13 +548,24 @@ namespace PluginHub.Editor
             }
         }
         #endregion
+
+        #region 创建对象
+
         //创建一个分隔符游戏对象
         [MenuItem("GameObject/PH --------------------", false, -50)]
         public static void CreateSeparator()
         {
-            GameObject go = new GameObject("-----------------------------");
+            GameObject go = new("-----------------------------");
         }
 
+        [MenuItem("GameObject/PH PHComment", false, -50)]
+        public static void CreatePHComment()
+        {
+            GameObject go = new("PHComment");
+            go.AddComponent<PHComment>();
+        }
+
+        #endregion
 
         #region 对齐工具 beta
         [MenuItem("GameObject/PH Y轴对齐", false, -50)]

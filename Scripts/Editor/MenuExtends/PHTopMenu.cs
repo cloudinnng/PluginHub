@@ -272,6 +272,8 @@ namespace PluginHub.Editor
                 AssetDatabase.CreateFolder("Assets/03.Art", "Meshes");
             if (!AssetDatabase.IsValidFolder("Assets/04.Scripts"))
                 AssetDatabase.CreateFolder("Assets", "04.Scripts");
+            if (!AssetDatabase.IsValidFolder("Assets/05.Others"))
+                AssetDatabase.CreateFolder("Assets", "05.Others");
         }
 
         private static void CreateMaterial(string path, Color color)

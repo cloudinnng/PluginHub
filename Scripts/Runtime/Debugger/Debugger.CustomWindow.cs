@@ -25,6 +25,7 @@ namespace PluginHub.Runtime
 
 #if UNITY_2021_1_OR_NEWER
                 public int DebuggerDrawOrder => 0;
+                public bool IsVisible => true;// GUI是否可见
 
                 public void OnDrawDebuggerGUI();
 #elif UNITY_2020_1_OR_NEWER
@@ -71,6 +72,8 @@ namespace PluginHub.Runtime
             {
                 foreach (KeyValuePair<string, IDebuggerCustomWindowGUI> item in _guiClientsDic)
                 {
+                    if (!item.Value.IsVisible)
+                        continue;
                     GUILayout.BeginVertical("box");
                     {
                         //绘制客户端名字和优先级
