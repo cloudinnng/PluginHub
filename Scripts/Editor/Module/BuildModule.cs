@@ -506,11 +506,24 @@ namespace PluginHub.Editor
                     DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"), true);
                     if (GUILayout.Button("生成下载脚本",GUILayout.ExpandWidth(false)))
                     {
-                        string createFile = Path.Combine(Path.Combine(Application.dataPath, "../Build/"), $"download_{PlayerSettings.productName}.bat");
+                        string createFile = Path.Combine(Path.Combine(Application.dataPath, $"../Build/DownloadTools/"), $"download_{PlayerSettings.productName}.bat");
                         string loginCommand = File.ReadAllText(Path.Combine(baiduPCSGoFolderFullPath, "login.bat"));
                         string downloadCommand = $"BaiduPCS-Go.exe download /apps/BaiduPCS-Go/{PlayerSettings.productName} --saveto \"%CD%\"";
                         string logoutCommand = File.ReadAllText(Path.Combine(baiduPCSGoFolderFullPath, "logout.bat"));
+
+                        // 创建文件夹
+                        string dir = Path.GetDirectoryName(createFile);
+                        if (!Directory.Exists(dir))
+                            Directory.CreateDirectory(dir);
+                        // 创建脚本文件
                         File.WriteAllText(createFile, $"{loginCommand}\r\n{downloadCommand}\r\n{logoutCommand}");
+                        // 复制BaiduPCS-Go
+                        File.Copy(Path.Combine(baiduPCSGoFolderFullPath, "BaiduPCS-Go.exe"), Path.Combine(dir, "BaiduPCS-Go.exe"));
+                        // 复制cookie.txt
+                        string cookieFilePath = Path.Combine(baiduPCSGoFolderFullPath, "cookies.txt");
+                        if (File.Exists(cookieFilePath))
+                            File.Copy(cookieFilePath, Path.Combine(dir, "cookies.txt"));
+                            
                         Debug.Log($"已生成下载脚本: {createFile}");
                     }
                 }
