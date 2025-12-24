@@ -47,6 +47,7 @@ namespace PluginHub.Editor
                 btnRect.x -= width;
                 if (GUI.Button(btnRect, PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"复制路径到剪贴板"), EditorStyles.label))
                 {
+                    Debug.Log("按下Ctrl可分别拷贝资源路径和完整路径");
                     string fullPath = Path.Combine(Application.dataPath, assetPath.Replace("Assets/", "")).Replace("/", "\\");
                     if (PluginHubRuntime.IsCtrlPressed)
                     {

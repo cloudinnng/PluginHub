@@ -504,6 +504,36 @@ namespace PluginHub.Editor
                     GUILayout.Label(PluginHubFunc.GuiContent("构建库:", "下方显示项目Build目录下的所有打包文件"));
                     GUILayout.FlexibleSpace();
                     DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"), true);
+                    
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label("BaiduPCS-Go:");
+                    if(GUILayout.Button("登录",GUILayout.ExpandWidth(false)))
+                    {
+                        string cookiesFilePath = Path.Combine(baiduPCSGoFolderFullPath, "cookies.txt");
+                        if (!File.Exists(cookiesFilePath))
+                        {
+                            EditorUtility.DisplayDialog("提示", "请先放置cookies.txt文件到BaiduPCS-Go目录下", "确定");
+                            return;
+                        }
+                        string fileContent = File.ReadAllText(cookiesFilePath);
+                        RunCmdRedirectOutputNoWindow(baiduPCSGoFolderFullPath,$"BaiduPCS-Go.exe login -cookies=\"{fileContent}\"");
+                    }
+                    if(GUILayout.Button("登出",GUILayout.ExpandWidth(false)))
+                    {
+                        RunCmdRedirectOutputNoWindow(baiduPCSGoFolderFullPath,"echo y | BaiduPCS-Go.exe logout");
+                    }
+
+                    if(GUILayout.Button("交互模式",GUILayout.ExpandWidth(false)))
+                    {
+                        RunCmd(baiduPCSGoFolderFullPath,"BaiduPCS-Go.exe");
+                        Debug.Log("已复制到剪贴板: cd /apps/BaiduPCS-Go");
+                        GUIUtility.systemCopyBuffer = "cd /apps/BaiduPCS-Go";
+                    }
+
                     if (GUILayout.Button("生成下载脚本",GUILayout.ExpandWidth(false)))
                     {
                         string createFile = Path.Combine(Path.Combine(Application.dataPath, $"../Build/DownloadTools/"), $"download_{PlayerSettings.productName}.bat");
@@ -523,7 +553,9 @@ namespace PluginHub.Editor
                         string cookieFilePath = Path.Combine(baiduPCSGoFolderFullPath, "cookies.txt");
                         if (File.Exists(cookieFilePath))
                             File.Copy(cookieFilePath, Path.Combine(dir, "cookies.txt"));
-                            
+                        // 复制logout.bat
+                        File.Copy(Path.Combine(baiduPCSGoFolderFullPath, "logout.bat"), Path.Combine(dir, "logout.bat"));
+
                         Debug.Log($"已生成下载脚本: {createFile}");
                     }
                 }
@@ -647,20 +679,16 @@ namespace PluginHub.Editor
                                 }
                                 GUIUtility.ExitGUI();
                             }
+                            if (DrawIconBtn("Update-Available@2x", "上传到百度网盘,需要先配置BaiduPCS-Go,登录"))
+                            {
+                                Debug.Log("上传到百度网盘");
+                                RunCmd(baiduPCSGoFolderFullPath,$"BaiduPCS-Go upload {zipFile} /apps/BaiduPCS-Go/{PlayerSettings.productName}");
+                            }
                             DrawIconBtnOpenFolder(zipFile, true);
                             if (DrawIconBtn("d_TreeEditor.Duplicate", $"复制文件到剪贴板，方便粘贴到微信等其他软件"))
                             {
                                 WinClipboard.CopyFiles(new[] { zipFile });
                                 Debug.Log($"已复制: {zipFile}");
-                            }
-                            // TODO 上传
-                            if (DrawIconBtn("Update-Available@2x", "上传到百度网盘,需要先配置BaiduPCS-Go,登录"))
-                            {
-                                Debug.Log("上传到百度网盘");
-                                
-                                
-
-                                RunCmd(baiduPCSGoFolderFullPath,$"BaiduPCS-Go upload {zipFile} /apps/BaiduPCS-Go/{PlayerSettings.productName}");
                             }
 
                         }
@@ -684,6 +712,29 @@ namespace PluginHub.Editor
             };
 
             Process.Start(psi);
+        }
+
+        private static void RunCmdRedirectOutputNoWindow(string workingDirectory, string command)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = "/c " + command,   // /c = 执行后关闭窗口
+                WorkingDirectory = workingDirectory,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            Process process = new Process();
+            process.StartInfo = psi;
+            process.Start();
+            process.WaitForExit();
+            string output = process.StandardOutput.ReadToEnd();
+            string error = process.StandardError.ReadToEnd();
+            Debug.Log(output);
+            Debug.Log(error);
+            process.Close();
         }
 
         private static void ExecuteExe(string exeFullPath, bool admin = false)
