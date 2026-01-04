@@ -48,7 +48,8 @@ namespace PluginHub.Editor
                 if (GUI.Button(btnRect, PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"复制路径到剪贴板"), EditorStyles.label))
                 {
                     Debug.Log("按下Ctrl可分别拷贝资源路径和完整路径");
-                    string fullPath = Path.Combine(Application.dataPath, assetPath.Replace("Assets/", "")).Replace("/", "\\");
+                    // assetPath.Substring(7) 去掉 开头的"Assets/"
+                    string fullPath = Path.Combine(Application.dataPath, assetPath.Substring(7)).Replace("/", "\\");
                     if (PluginHubRuntime.IsCtrlPressed)
                     {
                         Debug.Log("CopyPathToClipboard: " + assetPath);
