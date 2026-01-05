@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PluginHub.Editor
+namespace PluginHub.Runtime
 {
     // 用于代码性能测试
     // 用法:

@@ -18,7 +18,7 @@ namespace PluginHub.Runtime
 
         private void OnDrawGizmos()
         {
-            GizmosEx.DrawString($"{gameObject.name}", transform.position + OffsetY * Vector3.up);
+            GizmosEx.DrawString($"{gameObject.name}", transform.position + OffsetY * Vector3.up,Color.white);
         }
     }
 }
