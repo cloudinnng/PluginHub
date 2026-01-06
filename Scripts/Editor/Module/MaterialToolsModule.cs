@@ -84,12 +84,12 @@ namespace PluginHub.Editor
                 if (GUILayout.Button("提取选中材质（可多选）", GUILayout.ExpandWidth(false)))
                 {
                     Object[] selecteds = Selection.objects;
-                    if(selecteds != null && selecteds.Length > 0)
+                    if (selecteds != null && selecteds.Length > 0)
                     {
                         for (int i = 0; i < selecteds.Length; i++)
                         {
                             Material mat = selecteds[i] as Material;
-                            if(mat != null)
+                            if (mat != null)
                                 ExtractMaterial(mat);
                         }
                     }
@@ -451,7 +451,65 @@ namespace PluginHub.Editor
                     DrawMaterialRow(i.ToString(), material);
                 }
             }
+
+            DrawSplitLine("对象材质赋值");
+
+            objectRootToAssignMat = (GameObject)EditorGUILayout.ObjectField("根对象", objectRootToAssignMat, typeof(GameObject), true);
+            materialToAssignMat = (Material)EditorGUILayout.ObjectField("要赋予的材质", materialToAssignMat, typeof(Material), true);
+            if (GUILayout.Button("为根对象下所有模型赋予材质"))
+            {
+                AssignMatToObject(objectRootToAssignMat, materialToAssignMat);
+            }
         }
+        #region 对象材质赋值
+
+        private GameObject objectRootToAssignMat;
+        private Material materialToAssignMat;
+        private void AssignMatToObject(GameObject objectRootToAssignMat, Material materialToAssignMat)
+        {
+            if (objectRootToAssignMat == null)
+            {
+                Debug.LogWarning("根对象为空，无法赋值材质");
+                return;
+            }
+
+            if (materialToAssignMat == null)
+            {
+                Debug.LogWarning("要赋予的材质为空，无法赋值材质");
+                return;
+            }
+
+            // 获取对象及其所有子对象中的所有 MeshRenderer
+            MeshRenderer[] meshRenderers = objectRootToAssignMat.GetComponentsInChildren<MeshRenderer>();
+
+            int counter = 0;
+
+            foreach (MeshRenderer mr in meshRenderers)
+            {
+                // 获取当前渲染器的材质数组
+                Material[] materials = mr.sharedMaterials;
+
+                // 遍历所有材质槽，替换非空槽位
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    if (materials[i] != null)
+                    {
+                        materials[i] = materialToAssignMat;
+                        counter++;
+                    }
+                }
+
+                // 将修改后的材质数组重新赋值
+                mr.sharedMaterials = materials;
+            }
+
+            Debug.Log($"为 {counter} 个材质槽赋值了材质 {materialToAssignMat.name}");
+
+            // 标记场景为脏
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
+
+        #endregion
 
         #region Query Functions
 
@@ -620,14 +678,14 @@ namespace PluginHub.Editor
                         }
 
                         break;
-                    // case ScanByType.SimilarName:
-                    //     IsSimilarName()
-                    //         
-                    //     if (matDic.ContainsKey(materialRef.name))
-                    //         matDic[materialRef.name].Add(materialRef);
-                    //     else
-                    //         matDic.Add(materialRef.name, new List<Material>() {materialRef});
-                    //     break;
+                        // case ScanByType.SimilarName:
+                        //     IsSimilarName()
+                        //         
+                        //     if (matDic.ContainsKey(materialRef.name))
+                        //         matDic[materialRef.name].Add(materialRef);
+                        //     else
+                        //         matDic.Add(materialRef.name, new List<Material>() {materialRef});
+                        //     break;
                 }
             }
 
@@ -652,7 +710,7 @@ namespace PluginHub.Editor
 
         #region Draw
 
-        public static Material DrawMaterialRow(string text, Material material,float labelWidth = 50)
+        public static Material DrawMaterialRow(string text, Material material, float labelWidth = 50)
         {
             Material returnMat;
             GUILayout.BeginHorizontal();

@@ -26,23 +26,22 @@ namespace PluginHub.Runtime
             _style.font = font;
         }
 
+        private static Color tempColor = Color.black;
+
         /// <summary>
         /// 在场景视图给定世界坐标绘制文字
         /// 该文字是基于Handles.BeginGUI()在场景视图中绘制的，关闭场景视图的Gizmos按钮可关闭其绘制。
         /// 但尽管开启Game视图的Gizmos按钮，该文字也不会在Game视图中绘制。
         /// 如果想要在Game视图中的世界坐标绘制文字，使用GUIEx.DrawString()方法
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="worldPos"></param>
-        /// <param name="color"></param>
-        public static void DrawString(string text, Vector3 worldPos, Color color)
+        public static void DrawString(string text, Vector3 worldPos, Color textColor, float bgAlpha = 0.9f)
         {
 #if UNITY_EDITOR
             UnityEditor.Handles.BeginGUI();
             {
-                GUI.color = color;
+                GUI.color = textColor;
                 {
-                    _style.normal.textColor = color;
+                    _style.normal.textColor = textColor;
 
                     SceneView view = UnityEditor.SceneView.currentDrawingSceneView;
                     if (view != null)
@@ -60,7 +59,10 @@ namespace PluginHub.Runtime
                             Vector2 size = _style.CalcSize(new GUIContent(text));
                             Rect bgRect = new Rect(screenPos.x - (size.x / 2) - 10, +view.position.height - screenPos.y - 5,
                                 size.x + 20, size.y + 10);
-                            GUI.Box(bgRect, "", PHHelper.GetGUISkin().box);
+                            GUI.color = tempColor;
+                            tempColor.a = bgAlpha;
+                            GUI.DrawTexture(bgRect, UnityEditor.EditorGUIUtility.whiteTexture);
+                            GUI.color = Color.white;
                             Rect textRect = new Rect(screenPos.x - (size.x / 2), +view.position.height - screenPos.y,
                                 size.x, size.y);
                             GUI.Label(textRect, text, _style);

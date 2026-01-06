@@ -184,6 +184,12 @@ namespace PluginHub.Editor
 
         #endregion
 
+        // 构建备注
+        private static string buildNote  {
+            get=>EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_BuildNote", "");
+            set=>EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_BuildNote", value);
+        }
+        
         protected override void DrawGuiContent()
         {
             DrawSplitLine("构建信息");
@@ -233,7 +239,23 @@ namespace PluginHub.Editor
                     DrawMacOSBuildButtons();
                     break;
             }
+
+            DrawSplitLine("构建库");
             DrawBuildLibrary();
+
+            DrawSplitLine("构建备注:");
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.FlexibleSpace();
+                if (DrawIconBtn("d_TreeEditor.Duplicate", "复制备注"))
+                {
+                    GUIUtility.systemCopyBuffer = buildNote;
+                    Debug.Log("构建备注已复制到剪贴板");
+                    GUIUtility.ExitGUI();
+                }
+            }
+            GUILayout.EndHorizontal();
+            buildNote = GUILayout.TextArea(buildNote);
         }
 
         private void DrawPCBuildButtons()
@@ -501,16 +523,13 @@ namespace PluginHub.Editor
                 {
                     GUILayout.Label(PluginHubFunc.IconContent("VerticalLayoutGroup Icon"));
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(PluginHubFunc.GuiContent("构建库:", "下方显示项目Build目录下的所有打包文件"));
-                    GUILayout.FlexibleSpace();
                     DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"), true);
-                    
                 }
                 GUILayout.EndHorizontal();
 
+                GUILayout.Label("BaiduPCS-Go:");
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label("BaiduPCS-Go:");
                     if(GUILayout.Button("登录",GUILayout.ExpandWidth(false)))
                     {
                         string cookiesFilePath = Path.Combine(baiduPCSGoFolderFullPath, "cookies.txt");
@@ -520,11 +539,11 @@ namespace PluginHub.Editor
                             return;
                         }
                         string fileContent = File.ReadAllText(cookiesFilePath);
-                        RunCmdRedirectOutputNoWindow(baiduPCSGoFolderFullPath,$"BaiduPCS-Go.exe login -cookies=\"{fileContent}\"");
+                        RunCmd(baiduPCSGoFolderFullPath,$"BaiduPCS-Go.exe login -cookies=\"{fileContent}\"");
                     }
                     if(GUILayout.Button("登出",GUILayout.ExpandWidth(false)))
                     {
-                        RunCmdRedirectOutputNoWindow(baiduPCSGoFolderFullPath,"echo y | BaiduPCS-Go.exe logout");
+                        RunCmd(baiduPCSGoFolderFullPath,"echo y | BaiduPCS-Go.exe logout");
                     }
 
                     if(GUILayout.Button("交互模式",GUILayout.ExpandWidth(false)))
@@ -532,6 +551,16 @@ namespace PluginHub.Editor
                         RunCmd(baiduPCSGoFolderFullPath,"BaiduPCS-Go.exe");
                         Debug.Log("已复制到剪贴板: cd /apps/BaiduPCS-Go");
                         GUIUtility.systemCopyBuffer = "cd /apps/BaiduPCS-Go";
+                    }
+
+                    if(GUILayout.Button("分享",GUILayout.ExpandWidth(false)))
+                    {
+                        RunCmd(baiduPCSGoFolderFullPath,$"BaiduPCS-Go.exe share set /apps/BaiduPCS-Go/{PlayerSettings.productName}");
+                    }
+
+                    if(GUILayout.Button("列出分享",GUILayout.ExpandWidth(false)))
+                    {
+                        RunCmd(baiduPCSGoFolderFullPath,"BaiduPCS-Go.exe share list");
                     }
 
                     if (GUILayout.Button("生成下载脚本",GUILayout.ExpandWidth(false)))
@@ -696,6 +725,7 @@ namespace PluginHub.Editor
                     }
 
                 }
+
             }
             GUILayout.EndVertical();
         }
