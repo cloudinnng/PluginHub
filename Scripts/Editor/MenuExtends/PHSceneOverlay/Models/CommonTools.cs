@@ -98,14 +98,14 @@ namespace PluginHub.Editor
                 if (!_enableRealtimeBtnColor)// 关闭实时按钮颜色提醒，不然会卡死
                     return Color.white;
                 if (findFunc == null)
-                    return PluginHubFunc.Red;
+                    return PluginHubEditor.Red;
 
                 Object findResult = findFunc.Invoke();
                 // Debug.Log(findResult + "" + Selection.activeGameObject);
                 if (findResult != null)
-                    return (Selection.activeGameObject == findResult || Selection.activeObject == findResult) ? PluginHubFunc.SelectedColor : Color.white;
+                    return (Selection.activeGameObject == findResult || Selection.activeObject == findResult) ? PluginHubEditor.SelectedColor : Color.white;
                 else
-                    return PluginHubFunc.Red;
+                    return PluginHubEditor.Red;
             }
 
             GUILayout.BeginHorizontal();
@@ -149,13 +149,13 @@ namespace PluginHub.Editor
 
                 // 选择上次选中的游戏对象
                 GUI.color = GetShortcutBtnColor(() => FindGameObjectFunc(_lastSelectedGameObjectPath));
-                if (GUILayout.Button(PluginHubFunc.IconContent("tab_prev", "", $"选择上次选中的游戏对象\n{_lastSelectedGameObjectPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("tab_prev", "", $"选择上次选中的游戏对象\n{_lastSelectedGameObjectPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeGameObject = FindGameObjectFunc(_lastSelectedGameObjectPath) as GameObject;
                 }
                 // 选择上次选中的资产文件
                 GUI.color = GetShortcutBtnColor(() => FindAssetFunc(_lastSelectedAssetPath));
-                if (GUILayout.Button(PluginHubFunc.IconContent("Folder Icon", "", $"选择上次选中的资产文件\n{_lastSelectedAssetPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("Folder Icon", "", $"选择上次选中的资产文件\n{_lastSelectedAssetPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     string lastAssetPath = _lastSelectedAssetPath;
                     if (!string.IsNullOrEmpty(lastAssetPath))
@@ -166,7 +166,7 @@ namespace PluginHub.Editor
                 // ------------------------------------------------------------
                 // 选择主相机
                 GUI.color = GetShortcutBtnColor(() => Camera.main == null ? null : Camera.main.gameObject);
-                if (GUILayout.Button(PluginHubFunc.IconContent("Camera Gizmo", "", "选择Main相机"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("Camera Gizmo", "", "选择Main相机"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (Camera.main != null)
                     {
@@ -176,14 +176,14 @@ namespace PluginHub.Editor
                 }
                 // 选择主光源
                 GUI.color = GetShortcutBtnColor(() => RenderSettings.sun == null ? null : RenderSettings.sun.gameObject);
-                if (GUILayout.Button(PluginHubFunc.IconContent("DirectionalLight Gizmo", "", "选择主光源"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("DirectionalLight Gizmo", "", "选择主光源"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (RenderSettings.sun != null)
                         Selection.activeGameObject = RenderSettings.sun.gameObject;
                 }
                 // 选择主天空盒
                 GUI.color = GetShortcutBtnColor(() => RenderSettings.skybox);
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_Skybox Icon", "", "选择天空盒材质"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_Skybox Icon", "", "选择天空盒材质"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (RenderSettings.skybox != null)
                         Selection.objects = new Object[] { RenderSettings.skybox };
@@ -212,25 +212,25 @@ namespace PluginHub.Editor
                 }
 
                 GUI.color = GetShortcutBtnColor(() => FindGlobalVolumeFunc(false));
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_ToolHandleGlobal", "", "选择Global Volume对象"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_ToolHandleGlobal", "", "选择Global Volume对象"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeObject = FindGlobalVolumeFunc(true);
                 }
                 // 选择地形
                 GUI.color = GetShortcutBtnColor(() => FindFirstGameObject<Terrain>(false));
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_Terrain Icon", "", "选择地形"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_Terrain Icon", "", "选择地形"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeObject = FindFirstGameObject<Terrain>(true);
                 }
                 // 选择UICanvas
                 GUI.color = GetShortcutBtnColor(() => FindFirstGameObject<Canvas>(false));
-                if (GUILayout.Button(PluginHubFunc.IconContent("Canvas Icon", "", "选择UICanvas"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("Canvas Icon", "", "选择UICanvas"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeObject = FindFirstGameObject<Canvas>(true);
                 }
                 // 渲染管线资产
                 GUI.color = GetShortcutBtnColor(() => GraphicsSettings.defaultRenderPipeline);
-                if (GUILayout.Button(PluginHubFunc.IconContent("AssemblyDefinitionAsset Icon", "", "选择渲染管线资产"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("AssemblyDefinitionAsset Icon", "", "选择渲染管线资产"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Selection.activeObject = QualitySettings.renderPipeline;
                 }
@@ -242,45 +242,45 @@ namespace PluginHub.Editor
 
             GUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(PluginHubFunc.GuiContent("↓", "放到地上"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.GuiContent("↓", "放到地上"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     SelectionObjToGround();
                 }
 
-                GUI.color = _enableRealtimeBtnColor ? PluginHubFunc.SelectedColor : Color.white;
-                if (GUILayout.Button(PluginHubFunc.IconContent("ColorPicker.CycleColor", "", "是否开启场景常用对象的实时按钮颜色提醒"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                GUI.color = _enableRealtimeBtnColor ? PluginHubEditor.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubEditor.IconContent("ColorPicker.CycleColor", "", "是否开启场景常用对象的实时按钮颜色提醒"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     _enableRealtimeBtnColor = !_enableRealtimeBtnColor;
                 }
                 GUI.color = Color.white;
 
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneViewCamera", "", "场景相机移动到Main相机视图"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_SceneViewCamera", "", "场景相机移动到Main相机视图"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (SceneView.lastActiveSceneView != null && Camera.main != null)
                         ViewTweenInitializeOnLoad.GotoCamera(Camera.main, SceneView.lastActiveSceneView);
                 }
 
-                if (GUILayout.Button(PluginHubFunc.IconContent("ClothInspector.ViewValue", "", "场景相机移动到选中的对象(GameObject -> Align View To Selected)"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("ClothInspector.ViewValue", "", "场景相机移动到选中的对象(GameObject -> Align View To Selected)"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     if (SceneView.lastActiveSceneView != null && Selection.activeGameObject != null)
                         ViewTweenInitializeOnLoad.GotoTransform(Selection.activeGameObject.transform, SceneView.lastActiveSceneView);
                 }
 
-                GUI.color = PHSceneShiftMenu.NoNeedShift ? PluginHubFunc.SelectedColor : Color.white;
-                if (GUILayout.Button(PluginHubFunc.IconContent("d__Menu", "", "右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                GUI.color = PHSceneShiftMenu.NoNeedShift ? PluginHubEditor.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubEditor.IconContent("d__Menu", "", "右键菜单不需要shift,这会使得SceneView中的右键单击直接显示PH菜单，而Unity的菜单将不会显示。"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     PHSceneShiftMenu.NoNeedShift = !PHSceneShiftMenu.NoNeedShift;
                 }
                 GUI.color = Color.white;
 
-                GUI.color = PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay ? PluginHubFunc.SelectedColor : Color.white;
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_PhysicsRaycaster Icon", "", "使用新的方法获取SceneView中的鼠标射线，当旧方法获取的射线不正确时可以使用"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                GUI.color = PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay ? PluginHubEditor.SelectedColor : Color.white;
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_PhysicsRaycaster Icon", "", "使用新的方法获取SceneView中的鼠标射线，当旧方法获取的射线不正确时可以使用"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay = !PHSceneViewMenu.UseNewMethodGetSceneViewMouseRay;
                 }
                 GUI.color = Color.white;
 
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_SceneAsset Icon", "", $"切换到最近打开的场景 ({lastScenePath})"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_SceneAsset Icon", "", $"切换到最近打开的场景 ({lastScenePath})"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     Debug.Log("User click to open last scene: " + lastScenePath);
                     if (lastScenePath != null)
@@ -291,7 +291,7 @@ namespace PluginHub.Editor
                 }
                 // 复制Recording目录中最新的文件
                 string recordingDir = Path.Combine(Application.dataPath, "../Recordings");
-                if (GUILayout.Button(PluginHubFunc.IconContent("Animation.Record", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.IconContent("Animation.Record", "", $"复制Recording目录中最新的文件,可直接粘贴到其他软件中\n{recordingDir}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     string[] files = Directory.GetFiles(recordingDir);
                     if (files.Length > 0)
@@ -304,7 +304,7 @@ namespace PluginHub.Editor
 
                 string currentEditor = Path.GetFileNameWithoutExtension(CodeEditor.CurrentEditorPath);
                 if (currentEditor == "Code") currentEditor = "VS Code";
-                if (GUILayout.Button(PluginHubFunc.GuiContent(currentEditor.Substring(0, 1).ToUpper(), $"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                if (GUILayout.Button(PluginHubEditor.GuiContent(currentEditor.Substring(0, 1).ToUpper(), $"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
                     var newEditorPath = "";
                     // 循环切换三种编辑器

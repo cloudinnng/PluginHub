@@ -594,7 +594,7 @@ namespace PluginHub.Editor
                 //绘制所有icon
                 for (int i = 0; i < useNames.Length; i++)
                 {
-                    if (PluginHubFunc.ShouldBeginHorizontal(i, xCount))
+                    if (PluginHubEditor.ShouldBeginHorizontal(i, xCount))
                     {
                         GUILayout.BeginHorizontal();
                         lastStartRowIndex = i;
@@ -624,7 +624,7 @@ namespace PluginHub.Editor
                         }
                     }
 
-                    if (PluginHubFunc.ShouldEndHorizontal(i, xCount))
+                    if (PluginHubEditor.ShouldEndHorizontal(i, xCount))
                     {
                         GUILayout.EndHorizontal();
                         lastStartRowIndex = -1;

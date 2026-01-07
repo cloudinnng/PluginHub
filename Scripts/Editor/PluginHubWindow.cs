@@ -105,21 +105,21 @@ namespace PluginHub.Editor
 
         //是否显示顶部设置面板
         public static bool showSettingPanel {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_showSettingPanel", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_showSettingPanel", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_showSettingPanel", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_showSettingPanel", value); }
         }
 
         //是否启用全局debug模式，在ui上显示一些调试信息，开发目的
         public static bool globalDebugMode
         {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_globalDebugMode", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_globalDebugMode", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_globalDebugMode", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_globalDebugMode", value); }
         }
 
         //是否总是刷新gui，会让鼠标指针不处于窗口内也刷新UI,这在某些耗时模块的gui绘制中会产生一定编辑器性能消耗，但是可以让某些模块功能更新更加及时
         public static bool alwaysRepaintGUI {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_alwaysRepaintGUI", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_alwaysRepaintGUI", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_alwaysRepaintGUI", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_alwaysRepaintGUI", value); }
         }
 
         private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch(); //秒表 用于计算代码执行时间
@@ -130,15 +130,15 @@ namespace PluginHub.Editor
         //用于计算按钮宽度的值
         private float CommonPadding
         {
-            get { return EditorPrefs.GetFloat($"{PluginHubFunc.ProjectUniquePrefix}_CommonPadding", 43); }
-            set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_CommonPadding", value); }
+            get { return EditorPrefs.GetFloat($"{PluginHubEditor.ProjectUniquePrefix}_CommonPadding", 43); }
+            set { EditorPrefs.SetFloat($"{PluginHubEditor.ProjectUniquePrefix}_CommonPadding", value); }
         }
 
         //按钮之间的间距
         private float ButtonPadding
         {
-            get { return EditorPrefs.GetFloat($"{PluginHubFunc.ProjectUniquePrefix}_ButtonPadding", 3); }
-            set { EditorPrefs.SetFloat($"{PluginHubFunc.ProjectUniquePrefix}_ButtonPadding", value); }
+            get { return EditorPrefs.GetFloat($"{PluginHubEditor.ProjectUniquePrefix}_ButtonPadding", 3); }
+            set { EditorPrefs.SetFloat($"{PluginHubEditor.ProjectUniquePrefix}_ButtonPadding", value); }
         }
 
         // private void OnValidate()
@@ -215,10 +215,10 @@ namespace PluginHub.Editor
         //当前选择的tab索引
         private int currSelectTabIndex
         {
-            set { EditorPrefs.SetInt($"{PluginHubFunc.ProjectUniquePrefix}_currSelectTabIndex", value); }
+            set { EditorPrefs.SetInt($"{PluginHubEditor.ProjectUniquePrefix}_currSelectTabIndex", value); }
             get
             {
-                int storedValue = EditorPrefs.GetInt($"{PluginHubFunc.ProjectUniquePrefix}_currSelectTabIndex", 0);
+                int storedValue = EditorPrefs.GetInt($"{PluginHubEditor.ProjectUniquePrefix}_currSelectTabIndex", 0);
                 if(storedValue >= moduleConfigSO.tabConfigs.Count)
                     storedValue = 0;
                 return storedValue;
@@ -290,29 +290,29 @@ namespace PluginHub.Editor
                 GUI.enabled = true;
 
                 //选中模块配置文件按钮
-                if (GUILayout.Button(PluginHubFunc.IconContent("d_ScriptableObject Icon", "", "模块配置文件"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubEditor.IconContent("d_ScriptableObject Icon", "", "模块配置文件"),PluginHubEditor.IconBtnLayoutOptions))
                 {
                     Selection.activeObject = moduleConfigSO;
                 }
                 //绘制PluginHub开源主页按钮
-                if (GUILayout.Button(PluginHubFunc.IconContent("UnityEditor.VersionControl", "", "前往PluginHub开源主页"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubEditor.IconContent("UnityEditor.VersionControl", "", "前往PluginHub开源主页"),PluginHubEditor.IconBtnLayoutOptions))
                 {
                     Application.OpenURL("https://github.com/cloudinnng/PluginHub");
                 }
                 //设置按钮
                 Color oldColor = GUI.color;
                 if (showSettingPanel)
-                    GUI.color = PluginHubFunc.SelectedColor;
-                if (GUILayout.Button(PluginHubFunc.IconContent("SettingsIcon@2x", "", ""),PluginHubFunc.IconBtnLayoutOptions))
+                    GUI.color = PluginHubEditor.SelectedColor;
+                if (GUILayout.Button(PluginHubEditor.IconContent("SettingsIcon@2x", "", ""),PluginHubEditor.IconBtnLayoutOptions))
                     showSettingPanel = !showSettingPanel;
                 GUI.color = oldColor;
 
                 //全局调试按钮
                 oldColor = GUI.color;
                 if (globalDebugMode)
-                    GUI.color = PluginHubFunc.SelectedColor;
+                    GUI.color = PluginHubEditor.SelectedColor;
                 string iconName = "DebuggerDisabled";
-                if (GUILayout.Button(PluginHubFunc.IconContent(iconName, "", "Global Debug Mode"),PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubEditor.IconContent(iconName, "", "Global Debug Mode"),PluginHubEditor.IconBtnLayoutOptions))
                 {
                     globalDebugMode = !globalDebugMode;
                 }
@@ -321,8 +321,8 @@ namespace PluginHub.Editor
                 //总是刷新按钮
                 oldColor = GUI.color;
                 if (alwaysRepaintGUI)
-                    GUI.color = PluginHubFunc.SelectedColor;
-                if (GUILayout.Button(PluginHubFunc.IconContent("Refresh", "", "Always refresh the PluginHubWindow GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubFunc.IconBtnLayoutOptions))
+                    GUI.color = PluginHubEditor.SelectedColor;
+                if (GUILayout.Button(PluginHubEditor.IconContent("Refresh", "", "Always refresh the PluginHubWindow GUI, which makes certain modules that need real-time updates more instantly updated"),PluginHubEditor.IconBtnLayoutOptions))
                 {
                     alwaysRepaintGUI = !alwaysRepaintGUI;
                 }
@@ -336,7 +336,7 @@ namespace PluginHub.Editor
             //绘制设置面板在顶端
             if (!showSettingPanel)return;
 
-            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("SettingPanel"));
+            GUILayout.BeginVertical(PluginHubEditor.GetCustomStyle("SettingPanel"));
             {
                 GUILayout.BeginHorizontal();
                 {
@@ -352,7 +352,7 @@ namespace PluginHub.Editor
         void DrawGlobalDebugUI()
         {
             //红色的背景
-            GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
+            GUILayout.BeginVertical(PluginHubEditor.GetCustomStyle("DebugPanel"));
             {
                 GUILayout.BeginHorizontal();
                 {
@@ -361,11 +361,6 @@ namespace PluginHub.Editor
                     if (GUILayout.Button("打开 IMGUI Debugger"))
                     {
                         EditorApplication.ExecuteMenuItem("Window/Analysis/IMGUI Debugger");
-                    }
-
-                    if (GUILayout.Button("GCCollect"))
-                    {
-                        PluginHubFunc.GC();
                     }
                 }
                 GUILayout.EndHorizontal();

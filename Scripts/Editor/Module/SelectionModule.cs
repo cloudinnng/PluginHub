@@ -146,11 +146,22 @@ namespace PluginHub.Editor
                 _gameObjectBounds = default;
             }
         }
+        //使用递归获取一个Transform的查找路径
+        private void GetFindPath(Transform transform, StringBuilder sb)
+        {
+            if (transform.parent == null)
+            {
+                sb.Insert(0, $"/{transform.name}");
+                return;
+            }
 
+            sb.Insert(0, $"/{transform.name}");
+            GetFindPath(transform.parent, sb);
+        }
         private void DrawGameObjectGUI()
         {
             StringBuilder sb = new StringBuilder();
-            PluginHubFunc.GetFindPath(selectedGameObject.transform, sb);
+            GetFindPath(selectedGameObject.transform, sb);
 
             DrawRow("Name", selectedGameObject.name,true,150);
             DrawRow("Hierarchy Path", sb.ToString(),true,150);
@@ -246,7 +257,7 @@ namespace PluginHub.Editor
             GUILayout.BeginVertical("Box");
             {
                 GUILayout.Label("工具：");
-                if (GUILayout.Button(PluginHubFunc.GuiContent("在可见Mesh边界框中点创建父物体","会先计算物体下Mesh的中点位置，然后在该位置创建一个父物体，最后将初始物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
+                if (GUILayout.Button(PluginHubEditor.GuiContent("在可见Mesh边界框中点创建父物体","会先计算物体下Mesh的中点位置，然后在该位置创建一个父物体，最后将初始物体移动到父物体下。这在不方便使用建模软件修改模型，又想居中对象轴心点的时候很有用。")))
                 {
                     if (selectedGameObjects == null || selectedGameObjects.Length == 0)
                     {
@@ -323,19 +334,19 @@ namespace PluginHub.Editor
 
                 GUILayout.BeginHorizontal();
                 {
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("归零 LocalPosition","归零物体的LocalPosition，但保持子物体Transform不变")))
+                    if (GUILayout.Button(PluginHubEditor.GuiContent("归零 LocalPosition","归零物体的LocalPosition，但保持子物体Transform不变")))
                     {
                         for (int i = 0; i < selectedGameObjects.Length; i++)
                             ResetTransformKeepChild(selectedGameObjects[i].transform,true,false,false);
                     }
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("归零 LocalRotation","归零物体的LocalRotation，但保持子物体Transform不变")))
+                    if (GUILayout.Button(PluginHubEditor.GuiContent("归零 LocalRotation","归零物体的LocalRotation，但保持子物体Transform不变")))
                     {
                         for (int i = 0; i < selectedGameObjects.Length; i++)
                             ResetTransformKeepChild(selectedGameObjects[i].transform,false,true,false);
                     }
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("归零 LocalScale","归零物体的LocalScale，但保持子物体Transform不变")))
+                    if (GUILayout.Button(PluginHubEditor.GuiContent("归零 LocalScale","归零物体的LocalScale，但保持子物体Transform不变")))
                     {
                         for (int i = 0; i < selectedGameObjects.Length; i++)
                             ResetTransformKeepChild(selectedGameObjects[i].transform,false,false,true);
@@ -384,13 +395,13 @@ namespace PluginHub.Editor
             {
                 //画长
                 Vector3 worldPos = _gameObjectBounds.center - new Vector3(0, _gameObjectBounds.extents.y, _gameObjectBounds.extents.z);
-                DrawSceneViewText(worldPos, $"长:{_gameObjectBounds.size.x:F2}m");
+                PluginHubEditor.DrawSceneViewText(worldPos, $"长:{_gameObjectBounds.size.x:F2}m");
                 //画宽
                 worldPos = _gameObjectBounds.center - new Vector3(_gameObjectBounds.extents.x, _gameObjectBounds.extents.y, 0);
-                DrawSceneViewText(worldPos, $"宽:{_gameObjectBounds.size.z:F2}m");
+                PluginHubEditor.DrawSceneViewText(worldPos, $"宽:{_gameObjectBounds.size.z:F2}m");
                 //画高
                 worldPos = _gameObjectBounds.center - new Vector3(_gameObjectBounds.extents.x, 0, _gameObjectBounds.extents.z);
-                DrawSceneViewText(worldPos, $"高:{_gameObjectBounds.size.y:F2}m");
+                PluginHubEditor.DrawSceneViewText(worldPos, $"高:{_gameObjectBounds.size.y:F2}m");
             }
             Handles.EndGUI();
 

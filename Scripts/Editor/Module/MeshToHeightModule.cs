@@ -39,7 +39,7 @@ namespace PluginHub.Editor
             _boxCollider = EditorGUILayout.ObjectField("盒子碰撞器", _boxCollider, typeof(BoxCollider), true) as BoxCollider;
             useBoxColliderYRange =
                 EditorGUILayout.Toggle(
-                    PluginHubFunc.GuiContent("使用盒子碰撞器的Y范围",
+                    PluginHubEditor.GuiContent("使用盒子碰撞器的Y范围",
                         "若选中，则盒体碰撞器的底部将作为高度图中的黑色，顶部将作为高度图中的白色。若不勾选，则最黑最白范围将由地形最低点和最高点决定。"), useBoxColliderYRange);
             raycastOffsetY = EditorGUILayout.FloatField("射线起始点Y偏移", raycastOffsetY);
             heightMapPath = EditorGUILayout.TextField("高度图保存路径", heightMapPath);

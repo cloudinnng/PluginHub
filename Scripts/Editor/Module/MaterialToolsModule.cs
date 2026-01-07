@@ -111,7 +111,7 @@ namespace PluginHub.Editor
             GUILayout.Label($"搜索与 {showName} 相似材质：{similarMatList.Count}个结果");
             GUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(PluginHubFunc.GuiContent("名称相同", "搜索项目中与之名称相同的材质")))
+                if (GUILayout.Button(PluginHubEditor.GuiContent("名称相同", "搜索项目中与之名称相同的材质")))
                 {
                     similarMatList.Clear();
                     similarMatList = SearchSimilarMaterials(globalSlotMat, ScanType.SameName);
@@ -145,7 +145,7 @@ namespace PluginHub.Editor
 
                     DrawMaterialTypeLabel(mat);
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("替换为该材质", "将所有引用材质槽中材质的Meshrenderer替换为对该材质的引用"),
+                    if (GUILayout.Button(PluginHubEditor.GuiContent("替换为该材质", "将所有引用材质槽中材质的Meshrenderer替换为对该材质的引用"),
                             GUILayout.ExpandWidth(false)))
                     {
                         ReplaceMatRef(globalSlotMat, mat);
@@ -311,7 +311,7 @@ namespace PluginHub.Editor
 
                             DrawMaterialTypeLabel(material);
                             //🔍 Search icon
-                            GUIContent searchGC = PluginHubFunc.IconContent("Search On Icon", "");
+                            GUIContent searchGC = PluginHubEditor.IconContent("Search On Icon", "");
                             searchGC.tooltip = "在场景中搜索所有引用该材质的Meshrender";
 
                             if (GUILayout.Button(searchGC, GUILayout.Width(30),
@@ -323,7 +323,7 @@ namespace PluginHub.Editor
                             }
 
                             //download icon
-                            GUIContent replaceGC = PluginHubFunc.IconContent("Download-Available", "");
+                            GUIContent replaceGC = PluginHubEditor.IconContent("Download-Available", "");
                             replaceGC.tooltip = "将前一个按钮的搜索结果的材质引用替换成这一行列出的材质";
 
                             if (GUILayout.Button(replaceGC, GUILayout.Width(30),
@@ -348,7 +348,7 @@ namespace PluginHub.Editor
 
                             //将此组中所有Meshrender的引用替换成这一行列出的材质。
                             if (GUILayout.Button(
-                                    PluginHubFunc.GuiContent("replace all", "将此组中所有Meshrender的引用替换成这一行列出的材质。（谨慎使用）"),
+                                    PluginHubEditor.GuiContent("replace all", "将此组中所有Meshrender的引用替换成这一行列出的材质。（谨慎使用）"),
                                     GUILayout.Width(100),
                                     GUILayout.Height(18)))
                             {

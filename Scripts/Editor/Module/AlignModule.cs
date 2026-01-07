@@ -229,7 +229,7 @@ namespace PluginHub.Editor
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.FlexibleSpace();
-                    GUI.color = axisBtnState == 0 ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = axisBtnState == 0 ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(upBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
                     {
                         upBtn?.Invoke();
@@ -237,7 +237,7 @@ namespace PluginHub.Editor
                     }
                     GUI.color = Color.white;
 
-                    GUI.color = axisBtnState == 4 ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = axisBtnState == 4 ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(forwardBtnName,GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
                     {
                         forwardBtn?.Invoke();
@@ -248,7 +248,7 @@ namespace PluginHub.Editor
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUI.color = axisBtnState == 2 ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = axisBtnState == 2 ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(leftBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
                     {
                         leftBtn?.Invoke();
@@ -258,7 +258,7 @@ namespace PluginHub.Editor
 
                     GUILayout.FlexibleSpace();
 
-                    GUI.color = axisBtnState == 3 ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = axisBtnState == 3 ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(rightBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
                     {
                         rightBtn?.Invoke();
@@ -269,7 +269,7 @@ namespace PluginHub.Editor
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUI.color = axisBtnState == 5 ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = axisBtnState == 5 ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(backBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
                     {
                         backBtn?.Invoke();
@@ -277,7 +277,7 @@ namespace PluginHub.Editor
                     }
                     GUI.color = Color.white;
 
-                    GUI.color = axisBtnState == 1 ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = axisBtnState == 1 ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(downBtnName, GUILayout.Width(axisLikeBtnSize.x), GUILayout.Height(axisLikeBtnSize.y)))
                     {
                         downBtn?.Invoke();

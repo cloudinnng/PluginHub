@@ -37,18 +37,18 @@ namespace PluginHub.Editor
         public virtual string moduleDescription => "无模块描述";
 
         //模块唯一标识前缀
-        public string moduleIdentifyPrefix => $"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}";
+        public string moduleIdentifyPrefix => $"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}";
 
         public bool expand //展开状态
         {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_ExpandState", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_ExpandState", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_ExpandState", value); }
         }
 
         protected bool moduleDebug//模块debug模式
         {
-            get { return EditorPrefs.GetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", false); }
-            set { EditorPrefs.SetBool($"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", value); }
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", value); }
         }
 
 
@@ -100,9 +100,9 @@ namespace PluginHub.Editor
                 GUILayout.BeginHorizontal();
                 {
                     string prefixStrIcon = expand ? "▼" : "▶";
-                    GUIContent guiContent = PluginHubFunc.GuiContent($"{prefixStrIcon} {moduleName}", $"{moduleDescription}");
+                    GUIContent guiContent = PluginHubEditor.GuiContent($"{prefixStrIcon} {moduleName}", $"{moduleDescription}");
                     //模块折叠按钮
-                    GUI.color = expand ? PluginHubFunc.SelectedColor : Color.white;
+                    GUI.color = expand ? PluginHubEditor.SelectedColor : Color.white;
                     if (GUILayout.Button(guiContent, GUILayout.Height(19)))
                     {
                         expand = !expand;
@@ -116,7 +116,7 @@ namespace PluginHub.Editor
                     if (isDrawingSceneGUI)
                     {
                         GUILayout.Label(
-                            PluginHubFunc.IconContent("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI，您可以在场景视图状态栏中勾选 Always Refresh 来让场景GUI绘制更加即时"),
+                            PluginHubEditor.IconContent("ParticleSystemForceField Gizmo", "", "该模块正在绘制场景GUI，您可以在场景视图状态栏中勾选 Always Refresh 来让场景GUI绘制更加即时"),
                             GUILayout.Width(19), GUILayout.Height(19));
                     }
 
@@ -125,7 +125,7 @@ namespace PluginHub.Editor
                     //针对开启debug的模块  绘制按钮时给个颜色，突出显示
                     if (moduleDebug)
                         GUI.color = Color.red;
-                    if (GUILayout.Button(PluginHubFunc.IconContent("DebuggerDisabled", "", "Enable Module Debug"),
+                    if (GUILayout.Button(PluginHubEditor.IconContent("DebuggerDisabled", "", "Enable Module Debug"),
                             GUILayout.Height(19), GUILayout.ExpandWidth(false)))
                     {
                         moduleDebug = !moduleDebug;
@@ -139,7 +139,7 @@ namespace PluginHub.Editor
                 {
                     if (moduleDebug) //画模块debug内容  Draw Debug
                     {
-                        GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("DebugPanel"));
+                        GUILayout.BeginVertical(PluginHubEditor.GetCustomStyle("DebugPanel"));
                         {
                             //画脚本行便于快速进入
                             //draw script line for quick enter by double-click
@@ -157,7 +157,7 @@ namespace PluginHub.Editor
                         GUILayout.EndVertical();
                     }
 
-                    GUILayout.BeginVertical(PluginHubFunc.GetCustomStyle("ModulePanel"));
+                    GUILayout.BeginVertical(PluginHubEditor.GetCustomStyle("ModulePanel"));
                     {
                         //画模块内容
                         DrawGuiContent();
@@ -304,7 +304,7 @@ namespace PluginHub.Editor
             get
             {
                 if (string.IsNullOrWhiteSpace(_recordableAssetsKey))
-                    _recordableAssetsKey = $"{PluginHubFunc.ProjectUniquePrefix}_{GetType().Name}_RecordableObjectsKey";
+                    _recordableAssetsKey = $"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_RecordableObjectsKey";
                 return _recordableAssetsKey;
             }
         }
@@ -352,12 +352,12 @@ namespace PluginHub.Editor
                 GUILayout.Label(title, GUILayout.Width(titleWidth));
 
                 //使用这个label，因为它是可以自动换行的
-                GUILayout.Label(content, PluginHubFunc.PHGUISkinUse.label);
+                GUILayout.Label(content, PluginHubEditor.PHGUISkinUse.label);
 
                 GUILayout.FlexibleSpace();
                 //拷贝按钮
-                if (copyBtn && GUILayout.Button(PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", "Duplicate"),
-                        PluginHubFunc.IconBtnLayoutOptions))
+                if (copyBtn && GUILayout.Button(PluginHubEditor.IconContent("d_TreeEditor.Duplicate", "", "Duplicate"),
+                        PluginHubEditor.IconBtnLayoutOptions))
                 {
                     EditorGUIUtility.systemCopyBuffer = content;
                 }
@@ -366,7 +366,7 @@ namespace PluginHub.Editor
         }
 
 
-        private GUIStyle titleLabel => PluginHubFunc.GetCustomStyle("TitleLabel");
+        private GUIStyle titleLabel => PluginHubEditor.GetCustomStyle("TitleLabel");
         //绘制一个含有标题的分隔线，用于分隔模块内的小功能
 
         public void DrawSplitLine(string title)
@@ -396,9 +396,9 @@ namespace PluginHub.Editor
             bool exist = checkExist ? Directory.Exists(checkPath) : true;
             GUI.enabled = exist;
             //open folder button
-            if (GUILayout.Button(PluginHubFunc.IconContent("FolderEmpty On Icon", buttonTxt, path),
-                    (string.IsNullOrWhiteSpace(buttonTxt)) ? PluginHubFunc.IconBtnLayoutOptions[0] : GUILayout.ExpandWidth(false),
-                    PluginHubFunc.IconBtnLayoutOptions[1]))
+            if (GUILayout.Button(PluginHubEditor.IconContent("FolderEmpty On Icon", buttonTxt, path),
+                    (string.IsNullOrWhiteSpace(buttonTxt)) ? PluginHubEditor.IconBtnLayoutOptions[0] : GUILayout.ExpandWidth(false),
+                    PluginHubEditor.IconBtnLayoutOptions[1]))
             {
                 Debug.Log($"RevealInFinder:{path}");
                 EditorUtility.RevealInFinder(path);
@@ -410,55 +410,27 @@ namespace PluginHub.Editor
         public void DrawIconBtnCopy(string textToCopy)
         {
             //拷贝按钮
-            if (GUILayout.Button(PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
-                    PluginHubFunc.IconBtnLayoutOptions))
+            if (GUILayout.Button(PluginHubEditor.IconContent("d_TreeEditor.Duplicate", "", $"Duplicate\n{textToCopy}"),
+                    PluginHubEditor.IconBtnLayoutOptions))
             {
                 EditorGUIUtility.systemCopyBuffer = textToCopy;
             }
         }
 
-        // 画一个星星icon按钮,这种按钮一般用于添加到收藏夹
-        public bool DrawIconBtnStar(string tooltip = "Add to favorite")
-        {
-            return GUILayout.Button(PluginHubFunc.IconContent("d_Favorite@2x", "", tooltip), PluginHubFunc.IconBtnLayoutOptions);
-        }
-
         // 画一个删除icon按钮
         public bool DrawIconBtnDelete(string toolTip = "delete")
         {
-            return GUILayout.Button(PluginHubFunc.IconContent("P4_DeletedLocal@2x", "", toolTip),
-                PluginHubFunc.IconBtnLayoutOptions);
+            return GUILayout.Button(PluginHubEditor.IconContent("P4_DeletedLocal@2x", "", toolTip),
+                PluginHubEditor.IconBtnLayoutOptions);
         }
 
         // 使用指定icon画一个icon按钮
         public bool DrawIconBtn(string iconStr, string btnTip)
         {
-            return GUILayout.Button(PluginHubFunc.IconContent(iconStr, "", btnTip), PluginHubFunc.IconBtnLayoutOptions);
+            return GUILayout.Button(PluginHubEditor.IconContent(iconStr, "", btnTip), PluginHubEditor.IconBtnLayoutOptions);
         }
 
 
-        #endregion
-
-        #region Draw SceneView
-        private static GUIContent sceneViewTextGUIContentTemp = new GUIContent();
-        //在场景视图中画出文字
-        // 需要使用下面的代码包围起来
-        // Handles.BeginGUI();
-        // Handles.EndGUI();
-        public static void DrawSceneViewText(Vector3 worldPos, string text, Vector2 screenOffset = default)
-        {
-            Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos) + screenOffset;
-
-            sceneViewTextGUIContentTemp.text = text;
-            //caculate text width
-            Vector2 textSize = EditorStyles.boldLabel.CalcSize(sceneViewTextGUIContentTemp);
-
-            Rect rect = new Rect(screenPos.x - textSize.x / 2, screenPos.y - textSize.y / 2, textSize.x, textSize.y);
-            GUI.color = Color.black;
-            GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
-            GUI.color = Color.white;
-            GUI.Label(rect, text, EditorStyles.boldLabel);
-        }
         #endregion
 
     }

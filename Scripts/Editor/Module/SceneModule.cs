@@ -23,8 +23,8 @@ namespace PluginHub.Editor
 
         private string filiterText
         {
-            get { return EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_FiliterText", ""); }
-            set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_FiliterText", value); }
+            get { return EditorPrefs.GetString($"{PluginHubEditor.ProjectUniquePrefix}_SceneModule_FiliterText", ""); }
+            set { EditorPrefs.SetString($"{PluginHubEditor.ProjectUniquePrefix}_SceneModule_FiliterText", value); }
         }
 
         string[] allScenePaths = null; //项目中所有场景文件的路径
@@ -220,12 +220,12 @@ namespace PluginHub.Editor
                 //draw curr scene icon
                 if (SceneManager.GetActiveScene().path.Equals(sceneAssetPath))
                 {
-                    GUILayout.Label(PluginHubFunc.IconContent("d_SceneAsset Icon", "", "this is current scene"), GUILayout.Height(19),
+                    GUILayout.Label(PluginHubEditor.IconContent("d_SceneAsset Icon", "", "this is current scene"), GUILayout.Height(19),
                         GUILayout.Width(20));
                 }
                 
                 //open button
-                if (GUILayout.Button(PluginHubFunc.GuiContent("Open", sceneAssetPath), GUILayout.Width(80)))
+                if (GUILayout.Button(PluginHubEditor.GuiContent("Open", sceneAssetPath), GUILayout.Width(80)))
                 {
                     //如果处于Playmode，退出Playmode
                     if (EditorApplication.isPlaying)
@@ -239,7 +239,7 @@ namespace PluginHub.Editor
                 }
 
                 //open folder button
-                if (GUILayout.Button(PluginHubFunc.IconContent("FolderEmpty On Icon", "", "open in explorer"), PluginHubFunc.IconBtnLayoutOptions))
+                if (GUILayout.Button(PluginHubEditor.IconContent("FolderEmpty On Icon", "", "open in explorer"), PluginHubEditor.IconBtnLayoutOptions))
                 {
                     EditorUtility.RevealInFinder(sceneAssetPath);
                 }
@@ -248,7 +248,7 @@ namespace PluginHub.Editor
                 {
                     //star icon button
                     GUI.enabled = !RecordableObjectsContain(sceneAsset);
-                    if (GUILayout.Button(PluginHubFunc.IconContent("d_Favorite@2x", "", "Add this scene to favorite list"),
+                    if (GUILayout.Button(PluginHubEditor.IconContent("d_Favorite@2x", "", "Add this scene to favorite list"),
                             GUILayout.Height(19f), GUILayout.Width(28)))
                     {
                         if (!RecordableObjectsContain(sceneAsset))
@@ -266,7 +266,7 @@ namespace PluginHub.Editor
                 if (inFavoriteList)
                 {
                     GUI.enabled = id > 0;
-                    if (GUILayout.Button("↑", PluginHubFunc.IconBtnLayoutOptions))
+                    if (GUILayout.Button("↑", PluginHubEditor.IconBtnLayoutOptions))
                     {
                         Object o = RecordableAssets[id];
                         RecordableAssets[id] = RecordableAssets[id - 1];
@@ -275,7 +275,7 @@ namespace PluginHub.Editor
                     }
 
                     GUI.enabled = id < RecordableAssets.Count - 1;
-                    if (GUILayout.Button("↓", PluginHubFunc.IconBtnLayoutOptions))
+                    if (GUILayout.Button("↓", PluginHubEditor.IconBtnLayoutOptions))
                     {
                         Object o = RecordableAssets[id];
                         RecordableAssets[id] = RecordableAssets[id + 1];
@@ -285,7 +285,7 @@ namespace PluginHub.Editor
 
                     GUI.enabled = true;
                     //remove icon
-                    if (GUILayout.Button(PluginHubFunc.IconContent("winbtn_win_close@2x", "", "remove"), PluginHubFunc.IconBtnLayoutOptions))
+                    if (GUILayout.Button(PluginHubEditor.IconContent("winbtn_win_close@2x", "", "remove"), PluginHubEditor.IconBtnLayoutOptions))
                     {
                         RemoveRecordableObject(sceneAsset);
                     }
@@ -320,8 +320,8 @@ namespace PluginHub.Editor
         //用于存储最近的场景的列表，使用分号分隔
         private static string recentScenePaths
         {
-            get { return EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_RecentScene", ""); }
-            set { EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_SceneModule_RecentScene", value); }
+            get { return EditorPrefs.GetString($"{PluginHubEditor.ProjectUniquePrefix}_SceneModule_RecentScene", ""); }
+            set { EditorPrefs.SetString($"{PluginHubEditor.ProjectUniquePrefix}_SceneModule_RecentScene", value); }
         }
         
         //将存储在EditorPrefs中的最近场景列表载入到recentScene中

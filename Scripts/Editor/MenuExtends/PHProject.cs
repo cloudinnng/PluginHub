@@ -39,13 +39,13 @@ namespace PluginHub.Editor
 
             GUI.color = Color.gray;
             {
-                if (GUI.Button(btnRect, PluginHubFunc.IconContent("FolderEmpty On Icon", "", $"使用资源管理器打开"), EditorStyles.label))
+                if (GUI.Button(btnRect, PluginHubEditor.IconContent("FolderEmpty On Icon", "", $"使用资源管理器打开"), EditorStyles.label))
                 {
                     Debug.Log("RevealInFinder: " + assetPath);
                     EditorUtility.RevealInFinder(assetPath);
                 }
                 btnRect.x -= width;
-                if (GUI.Button(btnRect, PluginHubFunc.IconContent("d_TreeEditor.Duplicate", "", $"复制路径到剪贴板"), EditorStyles.label))
+                if (GUI.Button(btnRect, PluginHubEditor.IconContent("d_TreeEditor.Duplicate", "", $"复制路径到剪贴板"), EditorStyles.label))
                 {
                     Debug.Log("按下Ctrl可分别拷贝资源路径和完整路径");
                     // assetPath.Substring(7) 去掉 开头的"Assets/"

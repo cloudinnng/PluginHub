@@ -237,8 +237,8 @@ namespace PluginHub.Editor
 
             Handles.BeginGUI();
             {
-                DrawSceneViewText(placementFirstPosition, "第一个点", new Vector2(0, 30));
-                DrawSceneViewText(placementSecondPosition, "第二个点", new Vector2(0, 30));
+                PluginHubEditor.DrawSceneViewText(placementFirstPosition, "第一个点", new Vector2(0, 30));
+                PluginHubEditor.DrawSceneViewText(placementSecondPosition, "第二个点", new Vector2(0, 30));
             }
             Handles.EndGUI();
 

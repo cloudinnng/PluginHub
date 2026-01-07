@@ -42,7 +42,7 @@ namespace PluginHub.Editor
                 {
                     GUILayout.Label($"选择相机模式：\n当前模式：{currMode}");
 
-                    if (GUILayout.Button(PluginHubFunc.GuiContent("N/L", "快速在标准/光图视图模式之间切换"), GUILayout.Width(44),
+                    if (GUILayout.Button(PluginHubEditor.GuiContent("N/L", "快速在标准/光图视图模式之间切换"), GUILayout.Width(44),
                             GUILayout.Height(36)))
                     {
                         if (SceneView.lastActiveSceneView.cameraMode.drawMode == DrawCameraMode.BakedLightmap)
@@ -52,7 +52,7 @@ namespace PluginHub.Editor
                     }
 
                     //刷新Icon  切换最近的两个相机模式
-                    if (GUILayout.Button(PluginHubFunc.IconContent("d_RotateTool On@2x", "", "切换显示最近两个相机模式"), GUILayout.Width(44),
+                    if (GUILayout.Button(PluginHubEditor.IconContent("d_RotateTool On@2x", "", "切换显示最近两个相机模式"), GUILayout.Width(44),
                             GUILayout.Height(36)))
                     {
                         SwitchRecentCameraModeShotcut(currMode);
@@ -83,12 +83,12 @@ namespace PluginHub.Editor
                 {
                     DrawCameraMode drawCameraMode = commonCameraModes[i];
 
-                    if (PluginHubFunc.ShouldBeginHorizontal(i, 3))
+                    if (PluginHubEditor.ShouldBeginHorizontal(i, 3))
                         GUILayout.BeginHorizontal();
 
                     Color oldColor = GUI.color;
                     if (CurrDrawCameraModeIs(commonCameraModes[i]))
-                        GUI.color = PluginHubFunc.SelectedColor;
+                        GUI.color = PluginHubEditor.SelectedColor;
                     if (GUILayout.Button(drawCameraMode.ToString(), GUILayout.Width(width3)))
                     {
                         //切换相机模式
@@ -98,7 +98,7 @@ namespace PluginHub.Editor
 
                     GUI.color = oldColor;
 
-                    if (PluginHubFunc.ShouldEndHorizontal(i, 3))
+                    if (PluginHubEditor.ShouldEndHorizontal(i, 3))
                         GUILayout.EndHorizontal();
 
                 }
@@ -129,12 +129,12 @@ namespace PluginHub.Editor
                         DrawCameraMode drawCameraMode =
                             (DrawCameraMode)Enum.Parse(typeof(DrawCameraMode), cameraModeText[i]);
 
-                        if (PluginHubFunc.ShouldBeginHorizontal(i, 3))
+                        if (PluginHubEditor.ShouldBeginHorizontal(i, 3))
                             GUILayout.BeginHorizontal();
 
                         Color oldColor = GUI.color;
                         if (CurrDrawCameraModeIs(drawCameraMode))
-                            GUI.color = PluginHubFunc.SelectedColor;
+                            GUI.color = PluginHubEditor.SelectedColor;
                         if (GUILayout.Button(drawCameraMode.ToString(), GUILayout.Width(width3)))
                         {
                             //切换相机模式
@@ -144,7 +144,7 @@ namespace PluginHub.Editor
 
                         GUI.color = oldColor;
 
-                        if (PluginHubFunc.ShouldEndHorizontal(i, 3) || i == cameraModeText.Length - 1)
+                        if (PluginHubEditor.ShouldEndHorizontal(i, 3) || i == cameraModeText.Length - 1)
                             GUILayout.EndHorizontal();
                     }
 

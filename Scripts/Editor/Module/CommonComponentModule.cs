@@ -104,7 +104,7 @@ namespace PluginHub.Editor
                     GUI.enabled = Selection.gameObjects != null && Selection.gameObjects.Length > 0;
                     if (GUILayout.Button("转到选中物体", GUILayout.ExpandWidth(false)))
                     {
-                        PluginHubFunc.RotateSceneViewCameraToTarget(Selection.gameObjects[0].transform);
+                        PluginHubEditor.RotateSceneViewCameraToTarget(Selection.gameObjects[0].transform);
                     }
 
                     GUI.enabled = true;
@@ -112,7 +112,7 @@ namespace PluginHub.Editor
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 //附近的东西
-                GUILayout.Label(PluginHubFunc.GuiContent("Things Nearby：", "这里显示场景相机附近的常用游戏对象，用于快速选择"));
+                GUILayout.Label(PluginHubEditor.GuiContent("Things Nearby：", "这里显示场景相机附近的常用游戏对象，用于快速选择"));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {

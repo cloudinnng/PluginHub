@@ -34,28 +34,28 @@ namespace PluginHub.Editor
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Button(" ", PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button("R", PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button("G", PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button("B", PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button(" ", PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button("R", PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button("G", PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button("B", PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Button("0 - 1 Range", PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button(_colorPicked.r.ToString("F3"), PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button(_colorPicked.g.ToString("F3"), PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button(_colorPicked.b.ToString("F3"), PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button("0 - 1 Range", PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button(_colorPicked.r.ToString("F3"), PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button(_colorPicked.g.ToString("F3"), PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button(_colorPicked.b.ToString("F3"), PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Button("0 - 255 Range", PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width), GUILayout.Width(width));
-                    GUILayout.Button((_colorPicked.r * 255f).ToString("F0"), PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button((_colorPicked.g * 255f).ToString("F0"), PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
-                    GUILayout.Button((_colorPicked.b * 255f).ToString("F0"), PluginHubFunc.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button("0 - 255 Range", PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width), GUILayout.Width(width));
+                    GUILayout.Button((_colorPicked.r * 255f).ToString("F0"), PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button((_colorPicked.g * 255f).ToString("F0"), PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
+                    GUILayout.Button((_colorPicked.b * 255f).ToString("F0"), PluginHubEditor.PHGUISkinUse.label, GUILayout.Width(width));
                 }
                 GUILayout.EndHorizontal();
             }
