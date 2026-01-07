@@ -189,7 +189,7 @@ namespace PluginHub.Editor
             get=>EditorPrefs.GetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_BuildNote", "");
             set=>EditorPrefs.SetString($"{PluginHubFunc.ProjectUniquePrefix}_BuildModule_BuildNote", value);
         }
-        
+
         protected override void DrawGuiContent()
         {
             DrawSplitLine("构建信息");
@@ -197,7 +197,10 @@ namespace PluginHub.Editor
             DrawItem("公司名称:", PlayerSettings.companyName);
             DrawItem("产品名称:", PlayerSettings.productName);
             DrawItem("版本:", PlayerSettings.bundleVersion);
+            DrawVersionControl();
             DrawItem("默认屏幕:", PlayerSettings.defaultScreenWidth + " x " + PlayerSettings.defaultScreenHeight);
+
+            
 
             GUILayout.BeginHorizontal();
             {
@@ -530,6 +533,7 @@ namespace PluginHub.Editor
                 GUILayout.Label("BaiduPCS-Go:");
                 GUILayout.BeginHorizontal();
                 {
+                    GUILayout.FlexibleSpace();
                     if(GUILayout.Button("登录",GUILayout.ExpandWidth(false)))
                     {
                         string cookiesFilePath = Path.Combine(baiduPCSGoFolderFullPath, "cookies.txt");
@@ -821,6 +825,67 @@ namespace PluginHub.Editor
                 GUILayout.Label(content, GUILayout.ExpandWidth(false));
             }
             GUILayout.EndHorizontal();
+        }
+
+        private static void DrawVersionControl()
+        {
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("版本设置:", GUILayout.Width(titleWidth));
+
+                // 解析当前版本号
+                string currentVersion = PlayerSettings.bundleVersion;
+                string[] versionParts = currentVersion.Split('.');
+                int major = versionParts.Length > 0 ? int.Parse(versionParts[0]) : 0;
+                int minor = versionParts.Length > 1 ? int.Parse(versionParts[1]) : 0;
+                int revision = versionParts.Length > 2 ? int.Parse(versionParts[2]) : 0;
+
+                GUILayout.Label("主要:", GUILayout.ExpandWidth(false));
+                if (GUILayout.Button("▲", GUILayout.Width(25)))
+                {
+                    major++;
+                    UpdateVersion(major, minor, revision);
+                }
+                GUILayout.Label(major.ToString(), GUILayout.ExpandWidth(false));
+                if (GUILayout.Button("▼", GUILayout.Width(25)))
+                {
+                    major = Mathf.Max(0, major - 1);
+                    UpdateVersion(major, minor, revision);
+                }
+
+                GUILayout.Label("次要:", GUILayout.ExpandWidth(false));
+                if (GUILayout.Button("▲", GUILayout.Width(25)))
+                {
+                    minor++;
+                    UpdateVersion(major, minor, revision);
+                }
+                GUILayout.Label(minor.ToString(), GUILayout.ExpandWidth(false));
+                if (GUILayout.Button("▼", GUILayout.Width(25)))
+                {
+                    minor = Mathf.Max(0, minor - 1);
+                    UpdateVersion(major, minor, revision);
+                }
+
+                GUILayout.Label("修订:", GUILayout.ExpandWidth(false));
+                if (GUILayout.Button("▲", GUILayout.Width(25)))
+                {
+                    revision++;
+                    UpdateVersion(major, minor, revision);
+                }
+                GUILayout.Label(revision.ToString(), GUILayout.ExpandWidth(false));
+                if (GUILayout.Button("▼", GUILayout.Width(25)))
+                {
+                    revision = Mathf.Max(0, revision - 1);
+                    UpdateVersion(major, minor, revision);
+                }
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private static void UpdateVersion(int major, int minor, int revision)
+        {
+            PlayerSettings.bundleVersion = $"{major}.{minor}.{revision}";
+            Debug.Log($"版本号已更新为: {PlayerSettings.bundleVersion}");
         }
 
         private static BuildOptions GetBuildOptions()

@@ -26,7 +26,7 @@ namespace PluginHub.Editor
         {
             bool returnValue = false;
             result = null;
-            PerformanceTest.Start();
+            PerformanceTest.Start("Raycast");
             {
                 if (!returnValue && RaycastSkinnedMeshRenderer(origin,direction,out result, ignoreBackFace)) returnValue = true;
                 if (!returnValue && RaycastMeshRenderer(origin,direction,out result, ignoreBackFace)) returnValue = true;

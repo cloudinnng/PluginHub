@@ -453,7 +453,17 @@ namespace PluginHub.Editor
             }
 
             DrawSplitLine("对象材质赋值");
+            DrawObjectMaterialAssignModule();
 
+
+        }
+        #region 对象材质赋值
+
+
+        private GameObject objectRootToAssignMat;
+        private Material materialToAssignMat;
+        private void DrawObjectMaterialAssignModule()
+        {
             objectRootToAssignMat = (GameObject)EditorGUILayout.ObjectField("根对象", objectRootToAssignMat, typeof(GameObject), true);
             materialToAssignMat = (Material)EditorGUILayout.ObjectField("要赋予的材质", materialToAssignMat, typeof(Material), true);
             if (GUILayout.Button("为根对象下所有模型赋予材质"))
@@ -461,10 +471,7 @@ namespace PluginHub.Editor
                 AssignMatToObject(objectRootToAssignMat, materialToAssignMat);
             }
         }
-        #region 对象材质赋值
 
-        private GameObject objectRootToAssignMat;
-        private Material materialToAssignMat;
         private void AssignMatToObject(GameObject objectRootToAssignMat, Material materialToAssignMat)
         {
             if (objectRootToAssignMat == null)
