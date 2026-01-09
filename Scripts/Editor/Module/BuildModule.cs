@@ -710,7 +710,10 @@ namespace PluginHub.Editor
                 //压缩这个构建到当前目录
                 if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))
                 {
-                    ZipBuildDirectory(directory);
+                    string zipFilePath = ZipBuildDirectory(directory);
+                    WinClipboard.CopyFiles(new[] { zipFilePath });
+                    Debug.Log($"已复制: {zipFilePath}");
+                    GUIUtility.ExitGUI();
                 }
 
                 //运行按钮
@@ -774,13 +777,14 @@ namespace PluginHub.Editor
             }
         }
 
-        private void ZipBuildDirectory(string directory)
+        private string ZipBuildDirectory(string directory)
         {
             // 2024年10月18日,目前遇到跨年的项目了-_-,为了分清楚版本添加了年份
             // 2025年12月4日，取消带中文和空格的文件名
             string timeStr = DateTime.Now.ToString("yy-MM-dd_HH-mm");
             string destZipPath = Path.Combine(directory + $"_{timeStr}.zip");
             CreateZip(directory, destZipPath);
+            return destZipPath;
         }
 
         private void DrawZipFilesSection()
