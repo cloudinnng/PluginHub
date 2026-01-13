@@ -82,6 +82,15 @@ namespace PluginHub.Editor
             }
         }
 
+        //实际的构建名
+        private static string realProjectBuildName
+        {
+            get
+            {
+                return devBuild ? $"{projectBuildName}_Dev" : projectBuildName;
+            }
+        }
+
         //PC平台场景构建时,用于exe执行文件的名称和构建目录名，如果为空，则使用场景名称
         // eg: 00.MainScene
         private static string sceneBuildName
@@ -1030,13 +1039,13 @@ namespace PluginHub.Editor
 
         private static string CurrProjectBuildFullPath()
         {
-            string currProjectName = projectBuildName;
+            string currProjectName = realProjectBuildName;
             return GetBuildFullPath(currProjectName, currProjectName);
         }
 
         private static void BuildStandaloneProject()
         {
-            string buildName = projectBuildName;
+            string buildName = realProjectBuildName;
             AddCurrSceneToBuildSetting();
             SetBuildSceneEnable(false);
             BuildStandalone(buildName, buildName);
