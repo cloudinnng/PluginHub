@@ -270,19 +270,19 @@ namespace PluginHub.Runtime
 
             //快捷键
             //显示/隐藏调试器  1键左边那个键
-            if (isGestureDone() || Input.GetKeyDown(KeyCode.BackQuote))
+            if (isGestureDone() || InputEx.GetKeyDown(KeyCode.BackQuote))
             {
                 isShowDebugger = !isShowDebugger;
             }
 
             //切换小窗口/正常窗口
-            if (isShowDebugger && Input.GetKeyDown(KeyCode.Tab))
+            if (isShowDebugger && InputEx.GetKeyDown(KeyCode.Tab))
             {
                 isShowFullWindow = !isShowFullWindow;
             }
 
             //重新加载场景
-            if (useRKeyReloadScene && Input.GetKeyDown(KeyCode.R))
+            if (useRKeyReloadScene && InputEx.GetKeyDown(KeyCode.R))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             }

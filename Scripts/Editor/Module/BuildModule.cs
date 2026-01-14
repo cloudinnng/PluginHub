@@ -799,6 +799,8 @@ namespace PluginHub.Editor
         private void DrawZipFilesSection()
         {
             string buildPath = Path.Combine(Application.dataPath, "../Build");
+            if (!Directory.Exists(buildPath))
+                return;
             string[] zipFiles = Directory.GetFiles(buildPath, "*.zip");
 
             if (zipFiles.Length == 0)

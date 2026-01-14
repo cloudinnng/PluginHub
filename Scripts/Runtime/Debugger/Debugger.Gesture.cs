@@ -23,18 +23,18 @@ namespace PluginHub.Runtime
             if (Application.platform == RuntimePlatform.Android ||
                 Application.platform == RuntimePlatform.IPhonePlayer)
             {
-                if (Input.touches.Length != 1)
+                if (InputEx.touchCount != 1)
                 {
                     gestureDetector.Clear();
                     gestureCount = 0;
                 }
                 else
                 {
-                    if (Input.touches[0].phase == TouchPhase.Canceled || Input.touches[0].phase == TouchPhase.Ended)
+                    if (InputEx.GetTouch(0).phase == TouchPhase.Canceled || InputEx.GetTouch(0).phase == TouchPhase.Ended)
                         gestureDetector.Clear();
-                    else if (Input.touches[0].phase == TouchPhase.Moved)
+                    else if (InputEx.GetTouch(0).phase == TouchPhase.Moved)
                     {
-                        Vector2 p = Input.touches[0].position;
+                        Vector2 p = InputEx.GetTouch(0).position;
                         if (gestureDetector.Count == 0 ||
                             (p - gestureDetector[gestureDetector.Count - 1]).magnitude > 10)
                             gestureDetector.Add(p);
@@ -43,16 +43,16 @@ namespace PluginHub.Runtime
             }
             else
             {
-                if (Input.GetMouseButtonUp(0))
+                if (InputEx.GetMouseButtonUp(0))
                 {
                     gestureDetector.Clear();
                     gestureCount = 0;
                 }
                 else
                 {
-                    if (Input.GetMouseButton(0))
+                    if (InputEx.GetMouseButton(0))
                     {
-                        Vector2 p = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+                        Vector2 p = new Vector2(InputEx.mousePosition.x, InputEx.mousePosition.y);
                         if (gestureDetector.Count == 0 ||
                             (p - gestureDetector[gestureDetector.Count - 1]).magnitude > 10)
                             gestureDetector.Add(p);
