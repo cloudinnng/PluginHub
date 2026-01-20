@@ -88,23 +88,23 @@ namespace PluginHub.Editor
         //     OpenFolder(_projectRootPath + "/");
         // }
 
-        [MenuItem("PluginHub/Folder StreamingAssets", false, -300)]
-        public static void OpenFolderStreamingAssets()
-        {
-            OpenFolder(Application.streamingAssetsPath + "/");
-        }
+        // [MenuItem("PluginHub/Folder StreamingAssets", false, -300)]
+        // public static void OpenFolderStreamingAssets()
+        // {
+        //     OpenFolder(Application.streamingAssetsPath + "/");
+        // }
 
-        [MenuItem("PluginHub/Folder PersistentDataPath", false, -299)]
-        public static void OpenFolderPersistentDataPath()
-        {
-            OpenFolder(Application.persistentDataPath + "/");
-        }
+        // [MenuItem("PluginHub/Folder PersistentDataPath", false, -299)]
+        // public static void OpenFolderPersistentDataPath()
+        // {
+        //     OpenFolder(Application.persistentDataPath + "/");
+        // }
 
-        [MenuItem("PluginHub/Folder DataPath", false, -298)]
-        public static void OpenFolderDataPath()
-        {
-            OpenFolder(Application.dataPath + "/");
-        }
+        // [MenuItem("PluginHub/Folder DataPath", false, -298)]
+        // public static void OpenFolderDataPath()
+        // {
+        //     OpenFolder(Application.dataPath + "/");
+        // }
 
         //--------------------------
         // [MenuItem("PluginHub/Folder Build", false, -281)]

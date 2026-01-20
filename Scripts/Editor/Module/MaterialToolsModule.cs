@@ -54,6 +54,9 @@ namespace PluginHub.Editor
 
         protected override void DrawGuiContent()
         {
+            Transform[] transforms =  Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
+            GUILayout.Label($"场景中共有{transforms.Length}个Active的游戏对象");
+
             DrawSplitLine("搜索与提取");
 
             //DrawSimgleSearchModule
@@ -162,6 +165,15 @@ namespace PluginHub.Editor
                     mrRefList = QuerySceneObject(globalSlotMat);
                 }
 
+                if(DrawIconBtn("P4_DeletedLocal@2x", "删除所有游戏对象")){
+                    for (int i = mrRefList.Count - 1; i >= 0; i--)
+                    {
+                        Object.DestroyImmediate(mrRefList[i].meshRenderer.gameObject);
+                    }
+                    mrRefList.Clear();
+                    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+                }
+
                 if (GUILayout.Button("Clear Result", GUILayout.ExpandWidth(false)))
                 {
                     mrRefList.Clear();
@@ -181,7 +193,7 @@ namespace PluginHub.Editor
                         Selection.objects = new Object[] { matIndexInfos.meshRenderer.gameObject };
                     }
 
-                    if (GUILayout.Button("Independence", GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button("Indep", GUILayout.ExpandWidth(false)))
                     {
                         bool userSelect = EditorUtility.DisplayDialog("注意",
                             $"将创建{globalSlotMat.name}材质的拷贝，并将该拷贝赋予该对象之前对{globalSlotMat.name}材质的引用槽，以将该材质独立出来，以便您可以单独调节该材质参数。",
@@ -205,6 +217,11 @@ namespace PluginHub.Editor
                             }
                         }
                     }
+
+                    // 删除该游戏对象
+                    // if(DrawIconBtn("P4_DeletedLocal@2x", "删除该游戏对象")){
+                    //     GameObject.DestroyImmediate(matIndexInfos.meshRenderer.gameObject);
+                    // }
 
                     string s = GetStringRepresentationOfAnArray(matIndexInfos.matIndexList);
                     GUILayout.Label($"引用位置：{s}");
@@ -462,6 +479,7 @@ namespace PluginHub.Editor
 
         private GameObject objectRootToAssignMat;
         private Material materialToAssignMat;
+        private string containsName = "";
         private void DrawObjectMaterialAssignModule()
         {
             objectRootToAssignMat = (GameObject)EditorGUILayout.ObjectField("根对象", objectRootToAssignMat, typeof(GameObject), true);
@@ -470,8 +488,23 @@ namespace PluginHub.Editor
             {
                 AssignMatToObject(objectRootToAssignMat, materialToAssignMat);
             }
+
+            containsName = EditorGUILayout.TextField("包含名称", containsName);
+            materialToAssignMat = (Material)EditorGUILayout.ObjectField("要赋予的材质", materialToAssignMat, typeof(Material), true);
+            if(GUILayout.Button("为场景中所有包含名称的模型赋予材质"))
+            {
+                MeshRenderer[] meshRenderers = GameObject.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
+                foreach (MeshRenderer meshRenderer in meshRenderers)
+                {
+                    if (meshRenderer.name.Contains(containsName))
+                    {
+                        AssignMatToObject(meshRenderer.gameObject, materialToAssignMat);
+                    }
+                }
+            }
         }
 
+        // 给指定对象的所有子对象赋予指定材质
         private void AssignMatToObject(GameObject objectRootToAssignMat, Material materialToAssignMat)
         {
             if (objectRootToAssignMat == null)
@@ -488,6 +521,7 @@ namespace PluginHub.Editor
 
             // 获取对象及其所有子对象中的所有 MeshRenderer
             MeshRenderer[] meshRenderers = objectRootToAssignMat.GetComponentsInChildren<MeshRenderer>();
+            Undo.RecordObjects(meshRenderers, "Assign Mat to Object");
 
             int counter = 0;
 

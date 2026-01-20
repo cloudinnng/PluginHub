@@ -496,55 +496,61 @@ namespace PluginHub.Editor
             }
 
         }
-        #region 排序
-        [MenuItem("GameObject/PH 排序子节点 按名称", false, -50)]
-        public static void SortChildrenByName()
+        #region 排序 SiblingIndex
+
+        [MenuItem("GameObject/PH 排序SiblingIndex/按名称", false, -51)]
+        public static void SortSelectionSiblingByName()
         {
-            if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
-                return;
-            GameObject gameObject = Selection.activeGameObject;
-            Debug.Log("Sort Children By Name", gameObject);
-            if (gameObject != null)
-            {
-                Transform[] children = gameObject.transform.GetComponentsInChildren<Transform>();
-                Undo.RegisterFullObjectHierarchyUndo(gameObject, "Sort Children By Name");
-                Array.Sort(children, (a, b) => a.name.CompareTo(b.name));
-                for (int i = 0; i < children.Length - 1; i++)
-                {
-                    children[i].SetSiblingIndex(i);
-                }
-            }
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => a.name.CompareTo(b.name)); // 按名称（由小到大），小的放在前面
         }
 
-        [MenuItem("GameObject/PH 排序所选对象 按Position.Y", false, -50)]
+        [MenuItem("GameObject/PH 排序SiblingIndex/按Position.X", false, -50)]
+        public static void SortSelectionSiblingByPosX()
+        {
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => b.transform.position.x.CompareTo(a.transform.position.x)); // 按 Position.x（由高到低），高的放在前面
+        }
+
+        [MenuItem("GameObject/PH 排序SiblingIndex/按Position.X 反向", false, -49)]
+        public static void SortSelectionSiblingByPosXReverse()
+        {
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => a.transform.position.x.CompareTo(b.transform.position.x)); // 按 Position.x（由低到高），低的放在前面
+        }   
+        [MenuItem("GameObject/PH 排序SiblingIndex/按Position.Y", false, -48)]
         public static void SortSelectionSiblingByPosY()
         {
-            Debug.Log("Sort Selection Sibling By Pos Y");
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => b.transform.position.y.CompareTo(a.transform.position.y)); // 按 Position.y（由高到低），高的放在前面
+        }
 
-            if (Selection.gameObjects.Length <= 1)
-                return;
-            // 排序所选对象 按 Position.y（由高到低），高的放在前面
-            GameObject[] selected = Selection.gameObjects;
-            int indexStart = selected.Min(go => go.transform.GetSiblingIndex());
-            // 根据Position.y值进行排序（从大到小）
-            Array.Sort(selected, (a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
-            // 统一父节点限制
-            Transform parent = selected[0].transform.parent;
-            foreach (var go in selected)
-            {
-                if (go.transform.parent != parent)
-                {
-                    Debug.LogWarning("所选对象必须有相同的父节点！");
-                    return;
-                }
-            }
+        [MenuItem("GameObject/PH 排序SiblingIndex/按Position.Y 反向", false, -47)]
+        public static void SortSelectionSiblingByPosYReverse()
+        {
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => a.transform.position.y.CompareTo(b.transform.position.y)); // 按 Position.y（由低到高），低的放在前面
+        }
+
+        [MenuItem("GameObject/PH 排序SiblingIndex/按Position.Z", false, -46)]
+        public static void SortSelectionSiblingByPosZ()
+        {
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => b.transform.position.z.CompareTo(a.transform.position.z)); // 按 Position.z（由高到低），高的放在前面
+        }
+
+        [MenuItem("GameObject/PH 排序SiblingIndex/按Position.Z 反向", false, -45)]
+        public static void SortSelectionSiblingByPosZReverse()
+        {
+            SortObjectsSiblingIndex(Selection.gameObjects, (a, b) => a.transform.position.z.CompareTo(b.transform.position.z)); // 按 Position.z（由低到高），低的放在前面
+        }
+
+        // 传入一个排序函数，根据排序函数对游戏对象进行排序
+        private static void SortObjectsSiblingIndex(GameObject[] gameObjects, Func<GameObject, GameObject, int> sortFunc){
+            Debug.Log("Sort Objects Sibling Index");
+            int indexStart = gameObjects.Min(go => go.transform.GetSiblingIndex());
+            // 根据排序函数进行排序
+            Array.Sort(gameObjects, (a, b) => sortFunc(a, b));
             // 记录undo
-            Undo.RecordObjects(selected.Select(g => g.transform).ToArray(), "Sort Sibling by Pos Y");
-
-            // 依次设置sibling index，最高的y设为最前（index=0）
-            for (int i = 0; i < selected.Length; i++)
+            Undo.RecordObjects(gameObjects.Select(g => g.transform).ToArray(), "Sort Sibling");
+            // 依次设置sibling index
+            for (int i = 0; i < gameObjects.Length; i++)
             {
-                selected[i].transform.SetSiblingIndex(i + indexStart);
+                gameObjects[i].transform.SetSiblingIndex(i + indexStart);
             }
         }
         #endregion
