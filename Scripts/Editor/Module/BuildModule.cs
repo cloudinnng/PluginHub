@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
@@ -151,6 +152,8 @@ namespace PluginHub.Editor
 
         public int callbackOrder => -999999;
 
+        public static string BuildInfoFilePath => Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt");
+
         //构建预处理
         public void OnPreprocessBuild(BuildReport report)
         {
@@ -167,9 +170,12 @@ namespace PluginHub.Editor
 
         private void WriteBuildInfo()
         {
+            Debug.Log($"[BuildModule] Write build info to {BuildInfoFilePath}");
+            Directory.CreateDirectory(Path.GetDirectoryName(BuildInfoFilePath));
             INIParser iniParser = new INIParser();
-            iniParser.Open(Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt"));
+            iniParser.Open(BuildInfoFilePath);
             iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n", "\\n").Trim());
+            iniParser.WriteValue("BuildInfo", "BuildTime", CurrentDateTimeString());
             iniParser.Close();
         }
 
@@ -705,8 +711,8 @@ namespace PluginHub.Editor
 
             GUILayout.BeginHorizontal();
             {
-                string buildTime = GetBuildTime(directory);
-                string spendTimeStr = FormatBuildTime(buildTime);
+                DateTime buildTime = GetBuildTime(directory);
+                string spendTimeStr = GetTimeSpanFromDateTime(buildTime);
                 GUILayout.Label($"{index}. {folderName} ({spendTimeStr})");
 
                 //打开StreamingAssets文件夹按钮
@@ -736,61 +742,23 @@ namespace PluginHub.Editor
             GUILayout.EndHorizontal();
         }
 
-        private string GetBuildTime(string directory)
+        private DateTime GetBuildTime(string buildDirectory)
         {
-            string folderName = Path.GetFileName(directory);
-            string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
+            string folderName = Path.GetFileName(buildDirectory);
+            string streamingAssetsPath = Path.Combine(buildDirectory, $"{folderName}_Data/StreamingAssets/");
             string buildInfoFilePath = Path.Combine(streamingAssetsPath, "BuildInfo.txt");
-
             if (!File.Exists(buildInfoFilePath))
-                return "2099-12-31 18:28:28";
-
+                return DateTime.MinValue;
             INIParser iniParser = new INIParser();
             iniParser.Open(buildInfoFilePath);
-            string buildTime = iniParser.ReadValue("BuildInfo", "BuildTime", "2099-12-31 18:28:28");
+            string buildTime = iniParser.ReadValue("BuildInfo", "BuildTime", DateTime.MinValue.ToString("yyyyMMddHHmmss"));
             iniParser.Close();
-            return buildTime;
-        }
-
-        private string FormatBuildTime(string buildTime)
-        {
-            TimeSpan spendTime;
-            try
-            {
-                spendTime = DateTime.Now - DateTime.ParseExact(buildTime, "yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture);
-            }
-            catch
-            {
-                spendTime = TimeSpan.MaxValue;
-            }
-
-            if (spendTime.TotalDays >= 1)
-            {
-                int days = (int)spendTime.TotalDays;
-                return $"{days}天前";
-            }
-            else if (spendTime.TotalHours >= 1)
-            {
-                int hours = (int)spendTime.TotalHours;
-                return $"{hours}小时前";
-            }
-            else if (spendTime.TotalMinutes >= 1)
-            {
-                int minutes = (int)spendTime.TotalMinutes;
-                return $"{minutes}分钟前";
-            }
-            else
-            {
-                int seconds = (int)spendTime.TotalSeconds;
-                return $"{seconds}秒前";
-            }
+            return GetDateTimeFromFileName(Path.GetFileName(buildTime));
         }
 
         private string ZipBuildDirectory(string directory)
         {
-            // 2024年10月18日,目前遇到跨年的项目了-_-,为了分清楚版本添加了年份
-            // 2025年12月4日，取消带中文和空格的文件名
-            string timeStr = DateTime.Now.ToString("yy-MM-dd_HH-mm");
+            string timeStr = CurrentDateTimeString();
             string destZipPath = Path.Combine(directory + $"_{timeStr}.zip");
             CreateZip(directory, destZipPath);
             return destZipPath;
@@ -821,7 +789,9 @@ namespace PluginHub.Editor
 
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label($"{index}. {zipFileName}");
+                string timeSpanStr = GetTimeSpanFromDateTime(GetDateTimeFromFileName(zipFileName));
+                string title = $"{index}. {zipFileName} ({timeSpanStr})";
+                GUILayout.Label(PluginHubEditor.GuiContent(title));
 
                 // 删除按钮
                 if (DrawIconBtn("P4_DeletedLocal", $"删除文件"))
@@ -1204,7 +1174,7 @@ namespace PluginHub.Editor
         private static void AddCurrSceneToBuildSetting()
         {
             EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-            string currScenePath = EditorSceneManager.GetActiveScene().path;
+            string currScenePath = SceneManager.GetActiveScene().path;
             int count = scenes.Where(scene => scene.path == currScenePath).Count();
             if (count == 0) //如果构建设置中没有，添加当前场景到构建设置中
             {
@@ -1236,23 +1206,67 @@ namespace PluginHub.Editor
 
         #endregion
 
-        #region 工具函数
+        #region 压缩
 
-        /// <summary>
-        /// https://www.cnblogs.com/rainbow70626/p/4559691.html
-        /// </summary>
-        /// <param name="sourceFolderPath">E:\test\</param>
-        /// <param name="destinationZipFilePath">E:\test.zip</param>
-        private static void CreateZip(string sourceFolderPath, string destinationZipFilePath)
+        // https://www.cnblogs.com/rainbow70626/p/4559691.html
+        private void CreateZip(string sourceFolderPath, string destinationZipFilePath)
         {
             //解决中文乱码
             Encoding gbk = Encoding.GetEncoding("gbk");
             ICSharpCode.SharpZipLib.Zip.ZipStrings.CodePage = gbk.CodePage;
-
             var fastZip = new ICSharpCode.SharpZipLib.Zip.FastZip();
             fastZip.CreateZip(destinationZipFilePath, sourceFolderPath, true, null);
         }
-
         #endregion
+
+        #region 日期时间处理
+        private string CurrentDateTimeString()
+        {
+            return DateTime.Now.ToString("yyyyMMddHHmm");
+        }
+
+        private DateTime GetDateTimeFromFileName(string fileName)
+        {
+            string regex = @"\d{12}";// yyyyMMddHHmm
+            Match match = Regex.Match(fileName, regex);
+            if (match.Success)
+            {
+                string dateTimeString = match.Value;
+                return DateTime.ParseExact(dateTimeString, "yyyyMMddHHmm", null);
+            }
+            return DateTime.MinValue;
+        }
+
+        private string GetTimeSpanFromDateTime(DateTime dateTime)
+        {
+            TimeSpan timeSpan = DateTime.Now - dateTime;
+            if (timeSpan.TotalDays >= 36500)
+            {
+                return "x天前";
+            }
+            else if (timeSpan.TotalDays >= 1)
+            {
+                int days = (int)timeSpan.TotalDays;
+                return $"{days}天前";
+            }
+            else if (timeSpan.TotalHours >= 1)
+            {
+                int hours = (int)timeSpan.TotalHours;
+                return $"{hours}小时前";
+            }
+            else if (timeSpan.TotalMinutes >= 1)
+            {
+                int minutes = (int)timeSpan.TotalMinutes;
+                return $"{minutes}分钟前";
+            }
+            else
+            {
+                int seconds = (int)timeSpan.TotalSeconds;
+                return $"{seconds}秒前";
+            }
+        }
+        #endregion
+
+
     }
 }

@@ -30,8 +30,11 @@ namespace PluginHub.Runtime
         [Tooltip("该时长无操作后认为是无人状态,单位秒")]
         [SerializeField]
         private float noOperationTime = 60;
-
+        [SerializeField]
         public bool showDebugUI = true;
+
+        // 可以使用这个判断,也可以使用事件接口
+        public static bool HumanExist { get; private set; } = false;
 
 #region 提供事件接口
 
@@ -47,7 +50,6 @@ namespace PluginHub.Runtime
 
 #endregion
 
-        private static bool humanExist = false;
         public static float timer { get; private set; } = 0;
 
         private void Update()
@@ -61,9 +63,9 @@ namespace PluginHub.Runtime
             {
                 timer = 0;
 
-                if (!humanExist)
+                if (!HumanExist)
                 {
-                    humanExist = true;
+                    HumanExist = true;
                     OnHumanBack?.Invoke();
                 }
             }
@@ -72,9 +74,9 @@ namespace PluginHub.Runtime
             {
                 timer = 0;
                 OnUnmanedTrigger?.Invoke();
-                if (humanExist)
+                if (HumanExist)
                 {
-                    humanExist = false;
+                    HumanExist = false;
                     OnHumanGone?.Invoke();
                 }
             }
@@ -87,7 +89,7 @@ namespace PluginHub.Runtime
             {
                 return;
             }
-            GUILayout.Label($"UnmannedDetection: humanExist: {humanExist}, Timer: {timer:F1} / {noOperationTime:F1} s");
+            GUILayout.Label($"UnmannedDetection: humanExist: {HumanExist}, Timer: {timer:F1} / {noOperationTime:F1} s");
         }
     }
 }

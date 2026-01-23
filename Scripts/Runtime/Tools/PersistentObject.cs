@@ -21,7 +21,7 @@ namespace PluginHub.Runtime
             {
                 //多单例情况下，删除多余的单例
                 Debug.LogWarning("多个PersistentObject实例，删除多余的实例");
-                Destroy(gameObject);
+                DestroyImmediate(gameObject);
                 return;
             }
 

@@ -3,22 +3,12 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Profiling;
 using System.IO;
-using PluginHub.Runtime;
-
-#if UNITY_EDITOR
-using UnityEditor;
-using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
-#endif
 
 namespace PluginHub.Runtime
 {
     public partial class Debugger
     {
         public class InfoWindow : ScrollableDebuggerWindowBase
-#if UNITY_EDITOR
-            , IPreprocessBuildWithReport
-#endif
         {
             private float titleWidth = 240;
 
@@ -229,28 +219,6 @@ namespace PluginHub.Runtime
                 return 2.54f * pixels / Screen.dpi;
             }
 
-
-#if UNITY_EDITOR
-            //将在构建之前调用
-            public void OnPreprocessBuild(BuildReport report)
-            {
-                //if windows editor
-                if (Application.platform == RuntimePlatform.WindowsEditor)
-                {
-                    Debug.Log($"Write build info to {buildInfoPath}");
-                    //make sure the directory exists
-                    Directory.CreateDirectory(Path.GetDirectoryName(buildInfoPath));
-
-                    INIParser iniParser = new INIParser();
-                    iniParser.Open(buildInfoPath);
-                    //写入构建信息到文件中
-                    iniParser.WriteValue("BuildInfo", "BuildTime", TimeEx.GetTimeStrToSecondPretty());
-                    iniParser.Close();
-                }
-            }
-
-            public int callbackOrder => 0;
-#endif
         }
     }
 }
