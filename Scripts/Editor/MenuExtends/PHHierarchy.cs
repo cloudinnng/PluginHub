@@ -31,7 +31,7 @@ namespace PluginHub.Editor
             hierarchySelectObjItemHandler(instanceId, currEvent);
 
             // 为挂有mono脚本的游戏对象添加图标
-            hierarchyMonoIconItemHandler(instanceId, selectionRect);
+            HierarchyMonoIconItemHandler(instanceId, selectionRect);
 
             lastKeyBoardEvent = Event.current.isMouse ? lastKeyBoardEvent : Event.current;
         }
@@ -58,9 +58,13 @@ namespace PluginHub.Editor
 
         private static readonly Color monoIconColor = new Color(0.1059f, 0.427f, 0.7333f, 0.8f);
 
-        private static void hierarchyMonoIconItemHandler(int instanceId, Rect selectionRect)
+        private static void HierarchyMonoIconItemHandler(int instanceId, Rect selectionRect)
         {
+#if UNITY_6000_3_OR_NEWER
+            GameObject gameObject = (GameObject)EditorUtility.EntityIdToObject((EntityId)instanceId);
+#else
             GameObject gameObject = (GameObject)EditorUtility.InstanceIDToObject(instanceId);
+#endif
             if (gameObject == null) return;
             Component[] components = gameObject.GetComponents<MonoBehaviour>();
             if (components.Length == 0) return; // 没有挂载MonoBehaviour组件

@@ -18,7 +18,9 @@ namespace PluginHub.Editor
             Object obj = Selection.activeObject;
             if (obj == null)
                 return "";
-            string path = AssetDatabase.GetAssetPath(obj.GetInstanceID());
+            // Obsolete in unity 6000.3
+            // string path = AssetDatabase.GetAssetPath(obj.GetInstanceID());
+            string path = AssetDatabase.GetAssetPath(obj);
             path = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
             path = Path.GetFullPath(path); //会自动把/转换成\
             return path;
@@ -30,7 +32,9 @@ namespace PluginHub.Editor
             Object obj = Selection.activeObject;
             if (obj == null)
                 return "";
-            string path = AssetDatabase.GetAssetPath(obj.GetInstanceID());
+            // Obsolete in unity 6000.3
+            // string path = AssetDatabase.GetAssetPath(obj.GetInstanceID());
+            string path = AssetDatabase.GetAssetPath(obj);
             return path;
         }
 
@@ -294,7 +298,7 @@ namespace PluginHub.Editor
                         EditorUtility.ClearProgressBar();
                         EditorApplication.update = null;
                         startIndex = 0;
-                        Debug.Log($"匹配结束，共找到{counter}个引用",Selection.activeObject);
+                        Debug.Log($"匹配结束，共找到{counter}个引用", Selection.activeObject);
                     }
                 };
             }
@@ -414,7 +418,7 @@ namespace PluginHub.Editor
             Debug.Log($"材质已提取到：{AssetDatabase.GetAssetPath(extractedMaterial)}");
             Selection.activeObject = extractedMaterial;
         }
-        
+
         [MenuItem("Assets/PH 提取该材质", true)]
         private static bool ValidateExtractMaterials()
         {
@@ -446,7 +450,7 @@ namespace PluginHub.Editor
         [MenuItem("Assets/PH 选择场景中所有该Mesh对象", true)]
         private static bool ValidateSelectAllMeshObjects()
         {
-            return Selection.objects!=null && Selection.objects.Length>0 && Selection.objects[0] as Mesh != null;
+            return Selection.objects != null && Selection.objects.Length > 0 && Selection.objects[0] as Mesh != null;
         }
 
         [MenuItem("Assets/PH 选择场景中所有引用该Material的对象", false)]
