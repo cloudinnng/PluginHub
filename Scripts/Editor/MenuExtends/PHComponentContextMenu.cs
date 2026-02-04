@@ -113,7 +113,6 @@ namespace PluginHub.Editor
             string componentAllName = component.GetType().ToString();
             //Debug.Log(componentAllName);
             EditorGUIUtility.systemCopyBuffer = componentAllName.Substring(componentAllName.LastIndexOf(".") + 1);
-            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene()); //标记场景脏
         }
 
         [MenuItem("CONTEXT/Component/PH Component 智能赋值(TODO)")]

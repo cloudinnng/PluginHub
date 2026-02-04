@@ -28,7 +28,7 @@ namespace PluginHub.Editor
             menu.AddItem(new GUIContent("The Material Here"), false, ()=>TheMaterialHere(out _,out _,out _,mouseDownPosition));
             menu.AddItem(new GUIContent("The Material Here (Auto Extract)"), false, ()=>TheMaterialHereAutoExtract(mouseDownPosition));
             menu.AddItem(new GUIContent("Copy Material Ref Here"), false, ()=>CopyMaterialReferenceHere(mouseDownPosition));
-            menu.AddItem(new GUIContent("Paste Material Ref Here"), false, GUIUtility.systemCopyBuffer.EndsWith(".mat") ? ()=>PasteMaterialReferenceHere(mouseDownPosition) : null);
+            menu.AddItem(new GUIContent("Paste Material Ref Here"), false, materialInClipboard != null ? ()=>PasteMaterialReferenceHere(mouseDownPosition) : null);
             menu.AddItem(new GUIContent("Move Scene Cursor To Here"), false, () =>
             {
                 if (MousePosToWorldPos(out Vector3 worldPos, out _, mouseDownPosition))
@@ -191,6 +191,8 @@ namespace PluginHub.Editor
 
         }
 
+        private static Material materialInClipboard;
+
         // 在鼠标位置提取材质路径并保存到剪贴板
         private static void CopyMaterialReferenceHere(Vector2 mouseDownPosition)
         {
@@ -202,8 +204,8 @@ namespace PluginHub.Editor
             }
 
             // 复制材质引用
-            GUIUtility.systemCopyBuffer = AssetDatabase.GetAssetPath(material);
-            Debug.Log($"已复制 {GUIUtility.systemCopyBuffer} 到剪贴板", material);
+            materialInClipboard = material;
+            Debug.Log($"已复制 {materialInClipboard.name} 到剪贴板", materialInClipboard);
         }
 
         // 使用剪切板中的材质路径获取材质引用后，赋值到到鼠标当前位置的MeshRenderer中的对应位置材质栏
@@ -215,17 +217,10 @@ namespace PluginHub.Editor
             TheMaterialHere(out Renderer renderer, out Material material,out int indexOfMaterialInMesh, mouseDownPosition);
 
             // 粘贴材质引用
-            string path = GUIUtility.systemCopyBuffer;
-            Material newMaterial = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (newMaterial == null)
-            {
-                Debug.LogError($"无法加载材质：{path}");
-                return;
-            }
             Undo.RecordObject(renderer, "Paste Material Reference Here");
             // 将材质 放到MeshRenderer中
             Material[] materials = renderer.sharedMaterials;
-            materials[indexOfMaterialInMesh] = newMaterial;
+            materials[indexOfMaterialInMesh] = materialInClipboard;
             renderer.sharedMaterials = materials;
         }
 

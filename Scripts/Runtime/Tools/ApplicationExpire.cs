@@ -171,7 +171,7 @@ namespace PluginHub.Runtime
         {
             GUILayout.Label($"您的应用程序将在 {expireDate} 到期");
 
-            if (Input.GetKey(KeyCode.K) && GUILayout.Button("Clear Last Run Time"))
+            if (InputEx.GetKey(KeyCode.K) && GUILayout.Button("Clear Last Run Time"))
                 PlayerPrefs.DeleteKey(key);
         }
 

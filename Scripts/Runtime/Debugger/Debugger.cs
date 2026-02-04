@@ -131,9 +131,9 @@ namespace PluginHub.Runtime
         [Tooltip("是否使用屏幕上的调式UI，通过实现IDebuggerOnScreenUI接口来添加该UI")]
         public bool useOnScreenUI = true;
         [Tooltip("缩放因子")]
-        public float onScreenUIGUIScale = 1;
+        public float onScreenUIGUIScale = 2.5f;
         [Tooltip("OnScreenUI的颜色")]
-        public Color onScreenUIColor = Color.white;
+        public Color onScreenUIColor = Color.red;
 
         [Space(10)]
 

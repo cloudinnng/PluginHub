@@ -472,7 +472,23 @@ namespace PluginHub.Editor
             DrawSplitLine("对象材质赋值");
             DrawObjectMaterialAssignModule();
 
+            DrawSplitLine("小物体查找");
 
+            if(GUILayout.Button("查找小物体"))
+            {
+                Renderer[] renderers = GameObject.FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+                Debug.Log("renderers.Length: " + renderers.Length);
+                foreach (Renderer renderer in renderers)
+                {
+                    if (renderer.bounds.size.magnitude < 0.1f)
+                    {
+                        Debug.Log(renderer.gameObject.name,renderer.gameObject);
+                    }
+                }
+            }
+
+            DrawSplitLine("模型移动");
+            DrawModelMoveModule();
         }
         #region 对象材质赋值
 
@@ -548,6 +564,38 @@ namespace PluginHub.Editor
 
             // 标记场景为脏
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
+
+        #endregion
+
+        #region 模型移动
+
+        private GameObject moveSourceRoot;
+        private GameObject moveTargetRoot;
+        private void DrawModelMoveModule()
+        {
+            moveSourceRoot = (GameObject)EditorGUILayout.ObjectField("源模型根对象", moveSourceRoot, typeof(GameObject), true);
+            bool isPartOfPrefab = moveSourceRoot != null && (PrefabUtility.IsPartOfPrefabAsset(moveSourceRoot) || PrefabUtility.IsPartOfPrefabInstance(moveSourceRoot));
+            GUILayout.Label(isPartOfPrefab ? "属于Prefab":"不属于Prefab");
+            moveTargetRoot = (GameObject)EditorGUILayout.ObjectField("目标模型根对象", moveTargetRoot, typeof(GameObject), true);
+            isPartOfPrefab = moveTargetRoot != null && (PrefabUtility.IsPartOfPrefabAsset(moveTargetRoot) || PrefabUtility.IsPartOfPrefabInstance(moveTargetRoot));
+            GUILayout.Label(isPartOfPrefab ? "属于Prefab":"不属于Prefab");
+
+
+            if(GUILayout.Button("移动对象到目标模型根对象下，保持相对位置"))
+            {
+                GameObject[] objectsToMove =Selection.gameObjects;
+                Undo.RecordObjects(objectsToMove, "Move Objects to Target Root");
+                foreach (GameObject objectToMove in objectsToMove)
+                {
+                    Vector3 relativePosition = objectToMove.transform.position - moveSourceRoot.transform.position;
+                    Quaternion relativeRotation = objectToMove.transform.rotation * Quaternion.Inverse(moveSourceRoot.transform.rotation);
+                    objectToMove.transform.position = moveTargetRoot.transform.position + relativePosition;
+                    objectToMove.transform.rotation = moveTargetRoot.transform.rotation * relativeRotation;
+                    objectToMove.transform.SetParent(moveTargetRoot.transform);
+                    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+                }
+            }
         }
 
         #endregion

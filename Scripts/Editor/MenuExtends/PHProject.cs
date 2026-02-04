@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using PluginHub.Runtime.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -65,12 +66,18 @@ namespace PluginHub.Editor
                 bool isDirectory = AssetDatabase.IsValidFolder(assetPath);
                 if (!isDirectory)
                 {
+                    if (Selection.assetGUIDs.Contains(guid))
+                    {
+                        GUI.color = Color.yellow;
+                    }
+
                     string extension = Path.GetExtension(assetPath);
                     tmpGUIContent.text = extension;
                     float labelWidth = GUI.skin.label.CalcSize(tmpGUIContent).x;
                     btnRect.width = labelWidth;
                     btnRect.x -= labelWidth;
                     GUI.Label(btnRect, extension);
+                    
                 }
             }
             GUI.color = Color.white;

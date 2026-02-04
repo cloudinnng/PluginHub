@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using PluginHub.Runtime.Runtime;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,6 +28,7 @@ namespace PluginHub.Runtime
         }
 
         private static Color tempColor = Color.black;
+        private static GUIContent tempGUIContent = new GUIContent();
 
         /// <summary>
         /// 在场景视图给定世界坐标绘制文字
@@ -56,7 +58,8 @@ namespace PluginHub.Runtime
                             // if(Application.platform == RuntimePlatform.OSXEditor)
                             screenPos.y = view.position.height - screenPos.y;
                             //绘制
-                            Vector2 size = _style.CalcSize(new GUIContent(text));
+                            tempGUIContent.text = text;
+                            Vector2 size = _style.CalcSize(tempGUIContent);
                             Rect bgRect = new Rect(screenPos.x - (size.x / 2) - 10, +view.position.height - screenPos.y - 5,
                                 size.x + 20, size.y + 10);
                             GUI.color = tempColor;
