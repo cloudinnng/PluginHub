@@ -1,26 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using PluginHub.Editor;
 using UnityEditor;
-using UnityEditor.Rendering;
-using UnityEditor.SceneManagement;
-using UnityEditor.VersionControl;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
-using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
-using UnityEngine.XR;
 using Debug = UnityEngine.Debug;
-using Lightmapping = UnityEditor.Lightmapping;
-using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 namespace PluginHub.Editor
 {
