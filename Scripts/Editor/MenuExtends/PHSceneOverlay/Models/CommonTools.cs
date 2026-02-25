@@ -313,6 +313,9 @@ namespace PluginHub.Editor
                         case "VS Code":
                             // 此路径是为系统安装的Cursor，不是为用户安装的
                             newEditorPath = @"C:\Program Files\cursor\Cursor.exe";
+                            if(!File.Exists(newEditorPath)){
+                                newEditorPath = @"C:\Users\TTW\AppData\Local\Programs\cursor\Cursor.exe";
+                            }
                             break;
                         case "Cursor":
                             // 切换到Rider，为了兼容自动升级后的路径，这里动态查找最新版本的Rider
@@ -329,6 +332,9 @@ namespace PluginHub.Editor
                         case "rider64":
                             // 此路径是为系统安装的vscode，不是为用户安装的
                             newEditorPath = @"C:\Program Files\Microsoft VS Code\Code.exe";
+                            if(!File.Exists(newEditorPath)){
+                                newEditorPath = @"C:\Users\TTW\AppData\Local\Programs\Microsoft VS Code\Code.exe";
+                            }
                             break;
                     }
                     CodeEditor.SetExternalScriptEditor(newEditorPath);
