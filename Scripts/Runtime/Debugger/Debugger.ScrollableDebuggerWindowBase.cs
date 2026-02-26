@@ -15,7 +15,7 @@ namespace PluginHub.Runtime
             {
             }
 
-            public virtual void OnDrawToolbar()
+            protected virtual void OnDrawToolbar()
             {
             }
             

@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using ICSharpCode.SharpZipLib.Zip;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 
 namespace PluginHub.Runtime
@@ -31,13 +26,13 @@ namespace PluginHub.Runtime
 
             private bool exchangeWidthHeight
             {
-                get { return PlayerPrefs.GetInt("PH_portrait", 0) == 1; }
-                set { PlayerPrefs.SetInt("PH_portrait", value ? 1 : 0); }
+                get => PlayerPrefs.GetInt("PH_portrait", 0) == 1;
+                set => PlayerPrefs.SetInt("PH_portrait", value ? 1 : 0);
             }
 
 
             private int _selectedTab = 0;
-            private string[] tabNames = new string[] { "Common", "Scene", "PersistentDataPath" };
+            private readonly string[] tabNames = { "Common", "Scene", "PersistentDataPath", "Settings"};
 
             public override void OnStart()
             {
@@ -45,7 +40,7 @@ namespace PluginHub.Runtime
                 currentPath = Application.persistentDataPath;
             }
 
-            public override void OnDrawToolbar()
+            protected override void OnDrawToolbar()
             {
                 _selectedTab = GUILayout.Toolbar(_selectedTab, tabNames);
             }
@@ -66,6 +61,9 @@ namespace PluginHub.Runtime
                             break;
                         case 2:
                             DrawPersistentDataModule();
+                            break;
+                        case 3:
+                            DrawSettingsModule();
                             break;
                     }
                 }
@@ -159,13 +157,11 @@ namespace PluginHub.Runtime
             // 将游戏分辨率设置成以给定分辨率尽可能大的分辨率保持宽高比的窗口模式。（给任务栏留出空间）
             // 这在PC端快速预览移动设备的屏幕比例时非常有用
             // 使用 exchangeWidthHeight 可以很容易的切换横屏和竖屏
-            private void TryResolutionWindowed(int tryWidth, int tryHeight, bool exchangeWidthHeight = false)
+            private void TryResolutionWindowed(int tryWidth, int tryHeight, bool mExchangeWidthHeight = false)
             {
-                if (exchangeWidthHeight)
+                if (mExchangeWidthHeight)
                 {
-                    int temp = tryWidth;
-                    tryWidth = tryHeight;
-                    tryHeight = temp;
+                    (tryWidth, tryHeight) = (tryHeight, tryWidth);
                 }
 
                 float factorForTaskBar = 0.88f;// 一个比例用于给任务栏留出空间
@@ -524,6 +520,10 @@ namespace PluginHub.Runtime
                 GUILayout.EndVertical();
             }
 
+            private void DrawSettingsModule()
+            {
+                Instance.useOnScreenUI = GUILayout.Toggle(Instance.useOnScreenUI, "使用OnScreenUI");
+            }
         }
     }
 }
