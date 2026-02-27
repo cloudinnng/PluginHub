@@ -41,14 +41,14 @@ namespace PluginHub.Editor
 
         public bool expand //展开状态
         {
-            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_ExpandState", false); }
-            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_ExpandState", value); }
+            get => EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_ExpandState", false);
+            set => EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_ExpandState", value);
         }
 
         protected bool moduleDebug//模块debug模式
         {
-            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", false); }
-            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", value); }
+            get => EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", false);
+            set => EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_{GetType().Name}_moduleDebug", value);
         }
 
 
@@ -78,7 +78,7 @@ namespace PluginHub.Editor
             }
         }
 
-        public PluginHubModuleBase() { }
+        protected PluginHubModuleBase() { }
 
         public PluginHubModuleBase Init(int tabIndex)
         {
@@ -201,13 +201,13 @@ namespace PluginHub.Editor
         //当模块展开时调用
         public virtual void OnFoldoutExpand()
         {
-            if (moduleDebug) Debug.Log($"{moduleName} mudule : OnFoldoutExpand");
+            if (moduleDebug) Debug.Log($"{moduleName} module : OnFoldoutExpand");
         }
 
         //当模块折叠时调用
         public virtual void OnFoldoutCollapse()
         {
-            if (moduleDebug) Debug.Log($"{moduleName} mudule : OnFoldoutCollapse");
+            if (moduleDebug) Debug.Log($"{moduleName} module : OnFoldoutCollapse");
         }
 
         public bool m_OnSceneGUI(SceneView sceneView)

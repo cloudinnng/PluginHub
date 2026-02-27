@@ -8,6 +8,7 @@ using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace PluginHub.Editor
 {
@@ -42,9 +43,10 @@ namespace PluginHub.Editor
         private Material globalSlotMat; //全局槽材质
         private List<Material> similarMatList = new List<Material>(); //用于存储结果
         private List<MRMatIndexInfos> mrRefList = new List<MRMatIndexInfos>(); //用于存储结果
-        private bool showAllMaterial = false;
+        private bool showAllMaterial;
 
         private string userInputForAllMaterialSearch = "";
+        
 
         protected override void DrawModuleDebug()
         {
@@ -52,10 +54,27 @@ namespace PluginHub.Editor
             GUILayout.TextField(RecordableSavedString);
         }
 
+        public override void RefreshData()
+        {
+            base.RefreshData();
+            Transform[] transforms =  Object.FindObjectsByType<Transform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            gameObjectCount = transforms.Length;
+            MeshFilter[] activedRenderers = Object.FindObjectsByType<MeshFilter>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            meshFilterCount = activedRenderers.Length;
+            totalFaceCount = activedRenderers.Sum(mr => mr.sharedMesh.triangles.Length / 3);
+        }
+        
+        int gameObjectCount;
+        int meshFilterCount;
+        int totalFaceCount;
+        
         protected override void DrawGuiContent()
         {
-            Transform[] transforms =  Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
-            GUILayout.Label($"场景中共有{transforms.Length}个Active的游戏对象");
+            DrawSplitLine("统计信息");
+            
+            GUILayout.Label($"场景中共有{gameObjectCount}个Active的游戏对象");
+            GUILayout.Label($"场景中共有{meshFilterCount}个Active的MeshFilter组件");
+            GUILayout.Label($"场景中共有{totalFaceCount}个面");
 
             DrawSplitLine("搜索与提取");
 
@@ -171,7 +190,7 @@ namespace PluginHub.Editor
                         Object.DestroyImmediate(mrRefList[i].meshRenderer.gameObject);
                     }
                     mrRefList.Clear();
-                    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+                    EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
                 }
 
                 if (GUILayout.Button("Clear Result", GUILayout.ExpandWidth(false)))
@@ -328,7 +347,7 @@ namespace PluginHub.Editor
 
                             DrawMaterialTypeLabel(material);
                             //🔍 Search icon
-                            GUIContent searchGC = PluginHubEditor.IconContent("Search On Icon", "");
+                            GUIContent searchGC = PluginHubEditor.IconContent("Search On Icon");
                             searchGC.tooltip = "在场景中搜索所有引用该材质的Meshrender";
 
                             if (GUILayout.Button(searchGC, GUILayout.Width(30),
@@ -340,7 +359,7 @@ namespace PluginHub.Editor
                             }
 
                             //download icon
-                            GUIContent replaceGC = PluginHubEditor.IconContent("Download-Available", "");
+                            GUIContent replaceGC = PluginHubEditor.IconContent("Download-Available");
                             replaceGC.tooltip = "将前一个按钮的搜索结果的材质引用替换成这一行列出的材质";
 
                             if (GUILayout.Button(replaceGC, GUILayout.Width(30),
