@@ -10,12 +10,12 @@ using UnityEngine.SceneManagement;
 
 namespace PluginHub.Editor
 {
-    [InitializeOnLoad]
     public static class PHHierarchy
     {
         private static Event lastKeyBoardEvent;
 
-        static PHHierarchy()
+        [InitializeOnLoadMethod]
+        private static void InitializeOnLoadMethod()
         {
             EditorApplication.hierarchyWindowItemOnGUI -= hierarchyWindowItemOnGUIHandler;
             EditorApplication.hierarchyWindowItemOnGUI += hierarchyWindowItemOnGUIHandler;
@@ -370,6 +370,8 @@ namespace PluginHub.Editor
             Transform tmpParent = child.parent;
             while (true)
             {
+                if (tmpParent == null)
+                    return string.Empty;
                 if (tmpParent == parent) //肯定会退出的
                 {
                     stack.Add(parent.gameObject.name);
