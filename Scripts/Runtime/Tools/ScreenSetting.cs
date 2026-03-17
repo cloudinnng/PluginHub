@@ -34,6 +34,8 @@ namespace PluginHub.Runtime
 
         [Tooltip("设计分辨率,若有值,则系统会在没有运行在此分辨率的情况下,向用户做出提示")]
         public Vector2Int designResolution = Vector2Int.zero;
+        [Tooltip("设计宽高比,若有值,则系统会在没有运行在此宽高比的情况下,向用户做出提示")]
+        public Vector2 designAspectRatio = Vector2.zero;
 
         void Start()
         {
@@ -87,16 +89,21 @@ namespace PluginHub.Runtime
                 Screen.SetResolution(useResolution.x, useResolution.y, false);
             }
 
-            if (designResolution != Vector2Int.zero)
+            if (!resolutionMatch || !aspectRatioMatch)
                 StartCoroutine(nameof(Runner));
         }
+
+        private bool resolutionMatch => designResolution == Vector2Int.zero || (Screen.width == designResolution.x && Screen.height == designResolution.y);
+        private bool aspectRatioMatch => designAspectRatio == Vector2.zero || Mathf.Abs((float)Screen.width / Screen.height - designAspectRatio.x / designAspectRatio.y) < 0.01f;
 
         private IEnumerator Runner()
         {
             while (true)
             {
-                if (Screen.width != designResolution.x || Screen.height != designResolution.y)
-                    Debug.LogWarning($"系统未在设计分辨率下运行({designResolution.x} x {designResolution.y})");
+                if (!resolutionMatch)
+                    Debug.LogWarning($"系统未在设计分辨率下运行({designResolution.x} x {designResolution.y}),当前分辨率({Screen.width} x {Screen.height})");
+                if (!aspectRatioMatch)
+                    Debug.LogWarning($"系统未在设计宽高比下运行({designAspectRatio.x}:{designAspectRatio.y}[{designAspectRatio.x / designAspectRatio.y}])当前宽高比({(float)Screen.width}:{(float)Screen.height}[{(float)Screen.width /(float)Screen.height}])");
                 yield return new WaitForSeconds(1);
             }
         }
