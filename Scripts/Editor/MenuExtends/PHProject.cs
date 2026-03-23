@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PluginHub.Runtime.Runtime;
@@ -76,11 +76,49 @@ namespace PluginHub.Editor
                     float labelWidth = GUI.skin.label.CalcSize(tmpGUIContent).x;
                     btnRect.width = labelWidth;
                     btnRect.x -= labelWidth;
-                    GUI.Label(btnRect, extension);
-                    
+
+                    // 文件扩展名按钮
+                    if (GUI.Button(btnRect, extension, EditorStyles.label))
+                    {
+                        // Debug.Log("按下扩展名按钮: " + extension);
+                        if (IsImageExtension(extension))
+                        {
+                            var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+                            if (importer != null)
+                            {
+                                importer.GetSourceTextureWidthAndHeight(out int origW, out int origH);
+                                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                                string fullPath = Path.Combine(Application.dataPath, assetPath.Substring(7)).Replace("/", "\\");
+                                long fileSize = new FileInfo(fullPath).Length;
+                                string importedRes = tex != null ? $"{tex.width} x {tex.height}" : "N/A";
+                                Debug.Log($"原始分辨率: {origW} x {origH} 导入后分辨率: {importedRes} 文件大小: {FormatFileSize(fileSize)}");
+                            }
+                            else
+                                Debug.LogWarning("无法获取图片导入信息: " + assetPath);
+                        }
+                        else
+                        {
+                            string fullPath = Path.Combine(Application.dataPath, assetPath.Substring(7)).Replace("/", "\\");
+                            long fileSize = new FileInfo(fullPath).Length;
+                            Debug.Log($"文件大小: {FormatFileSize(fileSize)}");
+                        }
+                    }
                 }
             }
             GUI.color = Color.white;
+        }
+
+        private static bool IsImageExtension(string ext)
+        {
+            ext = ext?.ToLowerInvariant();
+            return ext is ".png" or ".jpg" or ".jpeg" or ".gif" or ".tga" or ".psd" or ".bmp" or ".exr" or ".hdr" or ".tif" or ".tiff" or ".iff";
+        }
+
+        private static string FormatFileSize(long bytes)
+        {
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{bytes / 1024f:F1} KB";
+            return $"{bytes / 1024f / 1024f:F1} MB";
         }
     }
 }
