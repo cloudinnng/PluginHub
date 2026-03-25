@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -32,6 +32,10 @@ namespace PluginHub.Runtime
         [Tooltip("启动程序后，如果目前是窗口模式，则保持窗口宽高比并自动使用合适的较大分辨率显示。这在使用窗口模式以多种平台下测试应用程序时非常方便有用,仅Standalone平台有效")]
         public bool autoWindowSize = false;
 
+        [Tooltip("启用的显示器数量(1=仅主显示器, >1则自动激活对应数量的额外显示器)")]
+        [Range(1, 8)]
+        public int activeDisplayCount = 1;
+
         [Tooltip("设计分辨率,若有值,则系统会在没有运行在此分辨率的情况下,向用户做出提示")]
         public Vector2Int designResolution = Vector2Int.zero;
         [Tooltip("设计宽高比,若有值,则系统会在没有运行在此宽高比的情况下,向用户做出提示")]
@@ -40,6 +44,19 @@ namespace PluginHub.Runtime
         void Start()
         {
             Screen.sleepTimeout = screenNeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
+
+            // 激活额外显示器
+            if (activeDisplayCount > 1)
+            {
+                int count = Mathf.Min(activeDisplayCount, Display.displays.Length);
+                for (int i = 1; i < count; i++)
+                {
+                    Display.displays[i].Activate();
+                    Debug.Log($"已激活显示器 {i} ({Display.displays[i].systemWidth}x{Display.displays[i].systemHeight})");
+                }
+                if (activeDisplayCount > Display.displays.Length)
+                    Debug.LogWarning($"请求激活 {activeDisplayCount} 个显示器，但系统仅检测到 {Display.displays.Length} 个");
+            }
 
             //Windows
             if (Application.platform == RuntimePlatform.WindowsPlayer ||

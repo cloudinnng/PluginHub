@@ -2,3 +2,5 @@
 开源地址：https://github.com/qjfoidnh/BaiduPCS-Go
 
 将cookie.txt放在与BaudiPCS-Go同一目录下使用 login.bat 登录
+
+使用chrome插件 “Get cookies.txt LOCALLY” 也可以快速获取cookie

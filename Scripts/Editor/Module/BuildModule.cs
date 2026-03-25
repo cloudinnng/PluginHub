@@ -908,6 +908,7 @@ namespace PluginHub.Editor
 
         private static void RunCmd(string workingDirectory, string command)
         {
+            Debug.Log($"RunCmd: {workingDirectory} {command}");
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
@@ -922,6 +923,7 @@ namespace PluginHub.Editor
 
         private static void RunCmdRedirectOutputNoWindow(string workingDirectory, string command)
         {
+            Debug.Log($"RunCmdRedirectOutputNoWindow: {workingDirectory} {command}");
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
