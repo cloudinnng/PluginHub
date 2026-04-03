@@ -29,7 +29,7 @@ namespace PluginHub.Runtime
 
         [Tooltip("自动切换场景（-1为不切换）,只在发布后生效")] public int changeSceneOnStart = -1;
 
-        [Tooltip("启动程序后，如果目前是窗口模式，则保持窗口宽高比并自动使用合适的较大分辨率显示。这在使用窗口模式以多种平台下测试应用程序时非常方便有用,仅Standalone平台有效")]
+        [Tooltip("启动程序后，如果目前是窗口模式，则保持正确宽高比并自动使用合适的较大分辨率显示。这在使用窗口模式以多种平台下测试应用程序时非常方便有用,仅Standalone平台有效")]
         public bool autoWindowSize = false;
 
         [Tooltip("启用的显示器数量(1=仅主显示器, >1则自动激活对应数量的额外显示器)")]
@@ -58,23 +58,8 @@ namespace PluginHub.Runtime
                     Debug.LogWarning($"请求激活 {activeDisplayCount} 个显示器，但系统仅检测到 {Display.displays.Length} 个");
             }
 
-            //Windows
-            if (Application.platform == RuntimePlatform.WindowsPlayer ||
-                Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                Application.targetFrameRate = 9999;
-                targetFrameRate = (int)Rate;
-                if (targetFrameRate <= 0)
-                    targetFrameRate = 9999;
-                StartCoroutine("WaitForNextFrame");
-            }
-            else
-            {
-                //Other Platform
-                if (Rate != FrameRateType.DontCare)
-                    Application.targetFrameRate = (int)Rate;
-                Destroy(this);
-            }
+            if (Rate != FrameRateType.DontCare)
+                Application.targetFrameRate = (int)Rate;
 
             if (changeSceneOnStart != -1 && !Application.isEditor)
             {
@@ -87,8 +72,10 @@ namespace PluginHub.Runtime
             {
                 if (Screen.fullScreen == true) // 全屏模式下不进行调整
                     return;
+                float aspect = designAspectRatio.x / designAspectRatio.y;
                 // 刚进入程序时的宽高比
-                float aspect = (float)Screen.width / Screen.height;
+                if(designAspectRatio.x == 0 || designAspectRatio.y == 0)
+                    aspect = (float)Screen.width / Screen.height;
                 // 桌面分辨率
                 Vector2Int screenResolution = new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
                 Vector2Int useResolution = new Vector2Int();
@@ -126,23 +113,24 @@ namespace PluginHub.Runtime
         }
 
 
-        private static int targetFrameRate = 0;
+        // 这段代码到底有没有用
+        // private static int targetFrameRate = 0;
 
-        IEnumerator WaitForNextFrame()
-        {
-            currentFrameTime = Time.realtimeSinceStartup;
-            while (true)
-            {
-                yield return new WaitForEndOfFrame();
-                currentFrameTime += 1.0f / targetFrameRate;
-                var t = Time.realtimeSinceStartup;
-                var sleepTime = currentFrameTime - t - 0.01f;
-                if (sleepTime > 0)
-                    Thread.Sleep((int)(sleepTime * 1000));
-                while (t < currentFrameTime)
-                    t = Time.realtimeSinceStartup;
-            }
-        }
+        // IEnumerator WaitForNextFrame()
+        // {
+        //     currentFrameTime = Time.realtimeSinceStartup;
+        //     while (true)
+        //     {
+        //         yield return new WaitForEndOfFrame();
+        //         currentFrameTime += 1.0f / targetFrameRate;
+        //         var t = Time.realtimeSinceStartup;
+        //         var sleepTime = currentFrameTime - t - 0.01f;
+        //         if (sleepTime > 0)
+        //             Thread.Sleep((int)(sleepTime * 1000));
+        //         while (t < currentFrameTime)
+        //             t = Time.realtimeSinceStartup;
+        //     }
+        // }
 
         public bool IsVisible => designResolution.x > 0 && designResolution.y > 0;
 
