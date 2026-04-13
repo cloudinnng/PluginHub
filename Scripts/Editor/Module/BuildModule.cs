@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -614,6 +613,9 @@ namespace PluginHub.Editor
             GUILayout.BeginHorizontal();
             {
                 GUILayout.FlexibleSpace();
+
+                DrawIconBtnOpenFolder(baiduPCSGoFolderFullPath, true);
+                
                 if (GUILayout.Button("登录", GUILayout.ExpandWidth(false)))
                 {
                     BaiduPCSLogin();
@@ -698,13 +700,24 @@ namespace PluginHub.Editor
 
             GUILayout.Label("构建：");
             string[] directories = Directory.GetDirectories(buildPath);
+
+            // 按构建时间排序，找出最新
+            var directoriesWithTime = directories
+                .Select(d => new { Path = d, Time = GetBuildTime(d) })
+                .OrderBy(x => x.Time)
+                .ToList();
+
+            DateTime latestBuildTime = directoriesWithTime.LastOrDefault()?.Time ?? DateTime.MinValue;
+
             for (int i = 0; i < directories.Length; i++)
             {
-                DrawBuildItem(directories[i], i);
+                DateTime buildTime = GetBuildTime(directories[i]);
+                bool isLatest = buildTime == latestBuildTime && latestBuildTime != DateTime.MinValue;
+                DrawBuildItem(directories[i], i, isLatest);
             }
         }
 
-        private void DrawBuildItem(string directory, int index)
+        private void DrawBuildItem(string directory, int index, bool isLatest)
         {
             string folderName = Path.GetFileName(directory);
             string executeFullpath = Path.Combine(directory, $"{folderName}.exe");
@@ -713,7 +726,19 @@ namespace PluginHub.Editor
             {
                 DateTime buildTime = GetBuildTime(directory);
                 string spendTimeStr = GetTimeSpanFromDateTime(buildTime);
-                GUILayout.Label($"{index}. {folderName} ({spendTimeStr})");
+                string labelText = $"{index}. {folderName} ({spendTimeStr})";
+
+                if (isLatest)
+                {
+                    Color oldColor = GUI.color;
+                    GUI.color = new Color(0.3f, 1f, 0.3f);
+                    GUILayout.Label(labelText);
+                    GUI.color = oldColor;
+                }
+                else
+                {
+                    GUILayout.Label(labelText);
+                }
 
                 //打开StreamingAssets文件夹按钮
                 string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
@@ -775,13 +800,24 @@ namespace PluginHub.Editor
                 return;
 
             GUILayout.Label("压缩文件：");
+
+            // 按文件名前缀的时间戳排序，找出最新
+            var zipFilesWithTime = zipFiles
+                .Select(f => new { Path = f, Time = GetDateTimeFromFileName(Path.GetFileName(f)) })
+                .OrderBy(x => x.Time)
+                .ToList();
+
+            DateTime latestZipTime = zipFilesWithTime.LastOrDefault()?.Time ?? DateTime.MinValue;
+
             for (int i = 0; i < zipFiles.Length; i++)
             {
-                DrawZipFileItem(zipFiles[i], i);
+                DateTime zipTime = GetDateTimeFromFileName(Path.GetFileName(zipFiles[i]));
+                bool isLatest = (zipTime == latestZipTime && latestZipTime != DateTime.MinValue);
+                DrawZipFileItem(zipFiles[i], i, isLatest);
             }
         }
 
-        private void DrawZipFileItem(string zipFile, int index)
+        private void DrawZipFileItem(string zipFile, int index, bool isLatest)
         {
             zipFile = zipFile.Replace("/", "\\");
             zipFile = zipFile.Replace(@"Assets\..\", "");
@@ -791,7 +827,18 @@ namespace PluginHub.Editor
             {
                 string timeSpanStr = GetTimeSpanFromDateTime(GetDateTimeFromFileName(zipFileName));
                 string title = $"{index}. {zipFileName} ({timeSpanStr})";
-                GUILayout.Label(PluginHubEditor.GuiContent(title));
+
+                if (isLatest)
+                {
+                    Color oldColor = GUI.color;
+                    GUI.color = new Color(0.3f, 1f, 0.3f);
+                    GUILayout.Label(PluginHubEditor.GuiContent(title));
+                    GUI.color = oldColor;
+                }
+                else
+                {
+                    GUILayout.Label(PluginHubEditor.GuiContent(title));
+                }
 
                 // 删除按钮
                 if (DrawIconBtn("P4_DeletedLocal", $"删除文件"))
