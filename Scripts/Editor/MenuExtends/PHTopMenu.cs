@@ -94,12 +94,6 @@ namespace PluginHub.Editor
         //     OpenFolder(Application.streamingAssetsPath + "/");
         // }
 
-        // [MenuItem("PluginHub/Folder PersistentDataPath", false, -299)]
-        // public static void OpenFolderPersistentDataPath()
-        // {
-        //     OpenFolder(Application.persistentDataPath + "/");
-        // }
-
         // [MenuItem("PluginHub/Folder DataPath", false, -298)]
         // public static void OpenFolderDataPath()
         // {
@@ -124,6 +118,12 @@ namespace PluginHub.Editor
         {
             // 这个文件夹非标准Unity文件夹，是个人习惯用于放置项目相关的外部资源，例如参考图，策划文档等。
             OpenFolder(_projectRootPath + "/ExternalAssets/");
+        }
+
+        [MenuItem("PluginHub/Folder PersistentDataPath", false, -278)]
+        public static void OpenFolderPersistentDataPath()
+        {
+            OpenFolder(Application.persistentDataPath + "/");
         }
 
         //--------------------------

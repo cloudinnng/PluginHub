@@ -57,6 +57,23 @@
             if (foldout = EditorGUILayout.Foldout(foldout, "更多信息", true))
             {
                 RectTransform rectTransform = target as RectTransform;
+
+                // 将锚点矩形精确对齐到当前 UI 在父节点坐标下的外接矩形四角，并把 offset 清零（与 Unity 检视里“拉伸四角”效果一致）
+                if (GUILayout.Button("锚点贴合当前矩形四角"))
+                {
+                    int applied = 0;
+                    foreach (var obj in targets)
+                    {
+                        if (obj is RectTransform rt)
+                        {
+                            if (SnapAnchorsToRectCorners(rt))
+                                applied++;
+                        }
+                    }
+
+                    Debug.Log($"[CustomRectTransformEditor] 锚点贴合四角：成功处理 {applied}/{targets.Length} 个对象。");
+                }
+
                 EditorGUILayout.Vector3Field("Position", rectTransform.position);
                 rectTransform.localPosition = EditorGUILayout.Vector3Field("Local Position", rectTransform.localPosition);
                 rectTransform.anchoredPosition = EditorGUILayout.Vector2Field("Anchored Position", rectTransform.anchoredPosition);
@@ -82,6 +99,50 @@
             {
                 DestroyImmediate(instance);
             }
+        }
+
+        /// <summary>
+        /// 把 anchorMin / anchorMax 挪到「当前矩形」在父 Rect 归一化坐标系下的四角位置，并 offsetMin/Max 置零。
+        /// 数学上等价于：原先子矩形相对父 anchor 框的像素偏移，换算成 anchor 坐标上的增量并合并进 anchor。
+        /// </summary>
+        /// <returns>是否执行成功（无父 RectTransform 或父尺寸为 0 时返回 false）</returns>
+        private static bool SnapAnchorsToRectCorners(RectTransform rt)
+        {
+            if (rt == null)
+                return false;
+
+            RectTransform parentRt = rt.parent as RectTransform;
+            if (parentRt == null)
+            {
+                Debug.LogWarning($"[CustomRectTransformEditor] 「{rt.name}」没有 RectTransform 父物体，无法把锚点对齐到四角。", rt);
+                return false;
+            }
+
+            float w = parentRt.rect.width;
+            float h = parentRt.rect.height;
+            if (Mathf.Approximately(w, 0f) || Mathf.Approximately(h, 0f))
+            {
+                Debug.LogWarning($"[CustomRectTransformEditor] 父物体「{parentRt.name}」Rect 宽高为 0，跳过。", parentRt);
+                return false;
+            }
+
+            Undo.RecordObject(rt, "锚点贴合当前矩形四角");
+
+            // 与 Unity 社区常用的「扩展锚点包住当前矩形」公式一致（本文件上方曾注释的 Auto Anchors）
+            Vector2 newMin = new Vector2(
+                rt.anchorMin.x + rt.offsetMin.x / w,
+                rt.anchorMin.y + rt.offsetMin.y / h);
+            Vector2 newMax = new Vector2(
+                rt.anchorMax.x + rt.offsetMax.x / w,
+                rt.anchorMax.y + rt.offsetMax.y / h);
+
+            rt.anchorMin = newMin;
+            rt.anchorMax = newMax;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+
+            EditorUtility.SetDirty(rt);
+            return true;
         }
     }
 }

@@ -44,8 +44,18 @@ namespace PluginHub.Editor
                 }
                 else
                 {
-                    Debug.LogWarning("没有找到Image组件或Sprite为空，无法设置aspectRatio。");
+                    RawImage rawImage = aspectRatioFitter.GetComponent<RawImage>();
+                    if (rawImage != null && rawImage.texture != null)
+                    {
+                        aspectRatioFitter.aspectRatio = (float)rawImage.texture.width / rawImage.texture.height;
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(aspectRatioFitter);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("没有找到Image或RawImage组件，或者资源为空，无法设置aspectRatio。");
+                    }
                 }
+           
             }
         }
     }
