@@ -632,7 +632,7 @@ namespace PluginHub.Editor
                     GUIUtility.systemCopyBuffer = "cd /apps/BaiduPCS-Go";
                 }
 
-                if (GUILayout.Button("分享", GUILayout.ExpandWidth(false)))
+                if (GUILayout.Button("分享（有问题）", GUILayout.ExpandWidth(false)))
                 {
                     RunCmd(baiduPCSGoFolderFullPath, $"BaiduPCS-Go.exe share set /apps/BaiduPCS-Go/{PlayerSettings.productName}");
                 }

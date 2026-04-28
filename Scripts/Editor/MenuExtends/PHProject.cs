@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using PluginHub.Runtime.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +13,11 @@ namespace PluginHub.Editor
     {
         private const float width = 18f;
         private const float height = 18f;
+        private const float referenceBtnWidth = 28f;
+        private const float btnSpacing = 2f;
         private static Rect btnRect = new(0, 0, width, height);
+        private static readonly string[] referenceSearchExtensions =
+            { ".prefab", ".unity", ".mat", ".asset", ".controller" };
 
         // <guid, assetPath>
         private static Dictionary<string, string> guidToAssetPathMap = new();
@@ -74,11 +79,28 @@ namespace PluginHub.Editor
                     string extension = Path.GetExtension(assetPath);
                     tmpGUIContent.text = extension;
                     float labelWidth = GUI.skin.label.CalcSize(tmpGUIContent).x;
-                    btnRect.width = labelWidth;
                     btnRect.x -= labelWidth;
+                    Rect extensionBtnRect = new(btnRect.x, btnRect.y, labelWidth, height);
+                    // Ref按钮仅在按住Ctrl时显示，避免常态占用项目视图空间
+                    if (PluginHubRuntime.IsCtrlPressed)
+                    {
+                        Rect referenceBtnRect = new(
+                            extensionBtnRect.x - referenceBtnWidth - btnSpacing,
+                            btnRect.y,
+                            referenceBtnWidth,
+                            height
+                        );
+
+                        // 在扩展名按钮前增加引用统计按钮，用于快速检查该资源是否仍被项目引用
+                        if (GUI.Button(referenceBtnRect, new GUIContent("Ref", "统计该资源在项目中的引用个数"), EditorStyles.miniButton))
+                        {
+                            Debug.Log($"开始统计项目引用: {assetPath}");
+                            FindReferenceCountInProject(assetPath);
+                        }
+                    }
 
                     // 文件扩展名按钮
-                    if (GUI.Button(btnRect, extension, EditorStyles.label))
+                    if (GUI.Button(extensionBtnRect, extension, EditorStyles.label))
                     {
                         // Debug.Log("按下扩展名按钮: " + extension);
                         if (IsImageExtension(extension))
@@ -106,6 +128,79 @@ namespace PluginHub.Editor
                 }
             }
             GUI.color = Color.white;
+        }
+
+        // 参考 PHProjectContextMenu.PHFindReferencesInProject 的实现思路，统计引用个数并输出日志
+        private static void FindReferenceCountInProject(string assetPath)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath))
+            {
+                Debug.LogWarning("统计引用失败: 资源路径为空");
+                return;
+            }
+
+            EditorSettings.serializationMode = SerializationMode.ForceText;
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            if (string.IsNullOrWhiteSpace(guid))
+            {
+                Debug.LogWarning($"统计引用失败: 无法获取GUID, path={assetPath}");
+                return;
+            }
+
+            string[] files = Directory.GetFiles(Application.dataPath, "*.*", SearchOption.AllDirectories)
+                .Where(s => referenceSearchExtensions.Contains(Path.GetExtension(s).ToLowerInvariant()))
+                .ToArray();
+
+            if (files.Length == 0)
+            {
+                Debug.LogWarning("统计引用结束: 没有可扫描的资源文件");
+                return;
+            }
+
+            int startIndex = 0;
+            int counter = 0;
+            Object contextObj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
+            Debug.Log($"引用扫描已启动: path={assetPath}, guid={guid}, files={files.Length}");
+
+            EditorApplication.update = delegate
+            {
+                string file = files[startIndex];
+                bool isCancel = EditorUtility.DisplayCancelableProgressBar(
+                    "统计资源引用中",
+                    file,
+                    (float)startIndex / files.Length
+                );
+
+                try
+                {
+                    if (Regex.IsMatch(File.ReadAllText(file), guid))
+                    {
+                        counter++;
+                        string relativeAssetPath = GetRelativeAssetsPath(file);
+                        Object hitObj = AssetDatabase.LoadAssetAtPath<Object>(relativeAssetPath);
+                        Debug.Log($"引用文件: {relativeAssetPath}", hitObj);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Debug.LogWarning($"读取文件失败，跳过: {file}\n{ex.Message}");
+                }
+
+                startIndex++;
+                if (isCancel || startIndex >= files.Length)
+                {
+                    EditorUtility.ClearProgressBar();
+                    EditorApplication.update = null;
+                    Debug.Log($"引用统计结束: {assetPath} 共找到 {counter} 个引用", contextObj);
+                }
+            };
+        }
+
+        private static string GetRelativeAssetsPath(string fullPath)
+        {
+            return "Assets" + Path.GetFullPath(fullPath)
+                .Replace(Path.GetFullPath(Application.dataPath), "")
+                .Replace('\\', '/');
         }
 
         private static bool IsImageExtension(string ext)
