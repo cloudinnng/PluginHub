@@ -205,7 +205,72 @@ namespace PluginHub.Editor
             else if (buildTarget == BuildTarget.StandaloneWindows64)
             {
                 IncrementPCVersionNumber();
+                CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);
             }
+        }
+
+        /// <summary>
+        /// Windows 构建完成后，将 daemon-run.bat 复制到构建目录（exe 同级目录）。
+        /// 优先通过 Package Manager API 解析包真实路径，再回退到多个候选路径，
+        /// 兼容插件放在 Packages/Assets/工程根目录等不同场景。
+        /// </summary>
+        private static void CopyDaemonRunBatToWindowsBuildDirectory(string pathToBuiltProject)
+        {
+            if (string.IsNullOrWhiteSpace(pathToBuiltProject))
+            {
+                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：pathToBuiltProject 为空。");
+                return;
+            }
+
+            string buildDirectory = Path.GetDirectoryName(pathToBuiltProject);
+            if (string.IsNullOrWhiteSpace(buildDirectory) || !Directory.Exists(buildDirectory))
+            {
+                Debug.LogWarning($"[BuildModule] 跳过复制 daemon-run.bat：构建目录无效，pathToBuiltProject={pathToBuiltProject}");
+                return;
+            }
+
+            // 按优先级尝试多个来源路径，兼容不同插件安装方式。
+            string packageResolvedPath = "";
+            try
+            {
+                UnityEditor.PackageManager.PackageInfo packageInfo =
+                    UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/com.hellottw.pluginhub");
+                if (packageInfo != null && !string.IsNullOrWhiteSpace(packageInfo.resolvedPath))
+                {
+                    packageResolvedPath = packageInfo.resolvedPath;
+                    Debug.Log($"[BuildModule] PackageManager resolvedPath={packageResolvedPath}");
+                }
+                else
+                {
+                    Debug.LogWarning("[BuildModule] PackageManager 未找到 com.hellottw.pluginhub，将使用回退路径。");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[BuildModule] 调用 PackageManager API 失败，将使用回退路径。异常：{e.Message}");
+            }
+
+            string[] candidateSourcePaths =
+            {
+                string.IsNullOrWhiteSpace(packageResolvedPath)
+                    ? ""
+                    : Path.Combine(packageResolvedPath, "Files", "daemon-run.bat"),
+                Path.GetFullPath("Packages/com.hellottw.pluginhub/Files/daemon-run.bat"),
+                Path.GetFullPath("Assets/PluginHub/Files/daemon-run.bat"),
+                Path.GetFullPath("Files/daemon-run.bat")
+            };
+
+            string sourceFilePath = candidateSourcePaths.FirstOrDefault(File.Exists);
+            if (string.IsNullOrWhiteSpace(sourceFilePath))
+            {
+                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：未找到源文件。已检查路径：" +
+                                 string.Join(" | ", candidateSourcePaths));
+                return;
+            }
+
+            string targetFilePath = Path.Combine(buildDirectory, "daemon-run.bat");
+            File.Copy(sourceFilePath, targetFilePath, true);
+            Debug.Log($"[BuildModule] 已复制 daemon-run.bat 到构建目录：{targetFilePath}");
         }
 
         private static void IncrementIOSBuildNumber()
