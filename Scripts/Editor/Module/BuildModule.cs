@@ -1184,10 +1184,10 @@ namespace PluginHub.Editor
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"Build succeeded");
+                    Debug.Log($"✅Build succeeded");
                     break;
                 case BuildResult.Failed:
-                    Debug.LogError("Build failed");
+                    Debug.LogError("❌Build failed");
                     break;
             }
         }
