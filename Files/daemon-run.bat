@@ -11,7 +11,7 @@ REM ===== configurable =====
 set "PROC_NAME="
 set "EXE_PATH="
 set "INTERVAL_SEC=5"
-set "DEBUG=1"
+set "DEBUG=0"
 set "RESTART_COUNT=0"
 REM ========================
 
@@ -19,8 +19,15 @@ REM If EXE_PATH is empty, auto-detect the first .exe in current folder.
 if "%EXE_PATH%"=="" (
     for %%I in ("%~dp0*.exe") do (
         if /I not "%%~nxI"=="%~nx0" (
-            set "EXE_PATH=%%~fI"
-            goto :exe_ready
+            REM Exclude Unity crash handlers to avoid selecting them as target process.
+            if /I not "%%~nxI"=="UnityCrashHandler.exe" (
+                if /I not "%%~nxI"=="UnityCrashHandler32.exe" (
+                    if /I not "%%~nxI"=="UnityCrashHandler64.exe" (
+                        set "EXE_PATH=%%~fI"
+                        goto :exe_ready
+                    )
+                )
+            )
         )
     )
 )
