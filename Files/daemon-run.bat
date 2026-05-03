@@ -13,6 +13,9 @@ set "EXE_PATH="
 set "INTERVAL_SEC=5"
 set "DEBUG=0"
 set "RESTART_COUNT=0"
+REM LOG_FILE: full path of log file. Empty = <EXE_DIR>\daemon.log (auto fill after EXE detect).
+REM Logging is dual-write: same line goes to console AND appended to this file.
+set "LOG_FILE="
 REM ========================
 
 REM If EXE_PATH is empty, auto-detect the first .exe in current folder.
@@ -53,7 +56,15 @@ if "%PROC_NAME%"=="" (
     for %%I in ("%EXE_PATH%") do set "PROC_NAME=%%~nxI"
 )
 
+REM Now EXE_DIR is known, decide final LOG_FILE path (default: same folder as exe).
+if "%LOG_FILE%"=="" set "LOG_FILE=%EXE_DIR%daemon.log"
+
+REM Write a session separator so multiple runs are easy to tell apart inside one file.
+>>"%LOG_FILE%" echo.
+>>"%LOG_FILE%" echo ===== Session start: %date% %time:~0,8% =====
+
 call :log Watchdog start.
+call :log LOG_FILE=%LOG_FILE%
 call :log PROC_NAME=%PROC_NAME%
 call :log EXE_PATH=%EXE_PATH%
 call :log EXE_DIR=%EXE_DIR%
@@ -145,5 +156,9 @@ if errorlevel 1 (
 exit /b 0
 
 :log
+REM Dual-write: console + append to LOG_FILE.
+REM NOTE: use leading ">>file echo ..." to avoid the famous cmd quirk where a trailing
+REM digit before ">>" (e.g. "RestartCount=1>>file") is parsed as a redirect handle.
 echo [%date% %time:~0,8%] %*
+if not "%LOG_FILE%"=="" >>"%LOG_FILE%" echo [%date% %time:~0,8%] %*
 exit /b 0
