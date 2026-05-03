@@ -95,9 +95,9 @@ namespace PluginHub.Editor
                 stopwatch.Start();
             }
 
-            GUILayout.BeginVertical("Box");
+            using(new GUILayout.VerticalScope("Box"))
             {
-                GUILayout.BeginHorizontal();
+                using(new GUILayout.HorizontalScope())
                 {
                     string prefixStrIcon = expand ? "▼" : "▶";
                     GUIContent guiContent = PluginHubEditor.GuiContent($"{prefixStrIcon} {moduleName}", $"{moduleDescription}");
@@ -133,36 +133,32 @@ namespace PluginHub.Editor
 
                     GUI.color = oldColor;
                 }
-                GUILayout.EndHorizontal();
 
                 if (expand)
                 {
                     if (moduleDebug) //画模块debug内容  Draw Debug
                     {
-                        GUILayout.BeginVertical(PluginHubEditor.GetCustomStyle("DebugPanel"));
+                        using(new GUILayout.VerticalScope(PluginHubEditor.GetCustomStyle("DebugPanel")))
                         {
                             //画脚本行便于快速进入
                             //draw script line for quick enter by double-click
-                            GUILayout.BeginHorizontal();
+                            using(new GUILayout.HorizontalScope())
                             {
                                 GUI.enabled = false;
                                 GUILayout.Label("Script File:");
                                 EditorGUILayout.ObjectField("", scriptObj, typeof(PluginHubModuleBase), false); //画出这个脚本对象
                                 GUI.enabled = true;
                             }
-                            GUILayout.EndHorizontal();
                             GUILayout.Label($"模块GUI时间：{guiTimeLastFrame}ms");
                             DrawModuleDebug();
                         }
-                        GUILayout.EndVertical();
                     }
 
-                    GUILayout.BeginVertical(PluginHubEditor.GetCustomStyle("ModulePanel"));
+                    using(new GUILayout.VerticalScope(PluginHubEditor.GetCustomStyle("ModulePanel")))
                     {
                         //画模块内容
                         DrawGuiContent();
                     }
-                    GUILayout.EndVertical();
 
                     //draw split line
                     // GUIStyle centerLabel = PluginHubFunc.PHGUISkin.label;
@@ -170,7 +166,6 @@ namespace PluginHub.Editor
                     // GUILayout.Label($"------{moduleName} END------", centerLabel, GUILayout.ExpandWidth(true));
                 }
             }
-            GUILayout.EndVertical();
 
             if (moduleDebug)
             {
@@ -347,7 +342,7 @@ namespace PluginHub.Editor
         //绘制一个标签行，提供标题和内容，以及可选的复制内容按钮
         public void DrawRow(string title, string content, bool copyBtn = false, float titleWidth = 100)
         {
-            GUILayout.BeginHorizontal();
+            using(new GUILayout.HorizontalScope())
             {
                 GUILayout.Label(title, GUILayout.Width(titleWidth));
 
@@ -362,7 +357,6 @@ namespace PluginHub.Editor
                     EditorGUIUtility.systemCopyBuffer = content;
                 }
             }
-            GUILayout.EndHorizontal();
         }
 
 
@@ -371,13 +365,12 @@ namespace PluginHub.Editor
 
         public void DrawSplitLine(string title)
         {
-            GUILayout.BeginHorizontal();
+            using(new GUILayout.HorizontalScope())
             {
                 GUILayout.FlexibleSpace();
                 GUILayout.Label($"--- {title} ---", titleLabel);
                 GUILayout.FlexibleSpace();
             }
-            GUILayout.EndHorizontal();
             GUILayout.Space(5);
         }
 

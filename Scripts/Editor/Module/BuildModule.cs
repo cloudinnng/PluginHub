@@ -376,9 +376,11 @@ namespace PluginHub.Editor
                 GUILayout.FlexibleSpace();
                 if (DrawIconBtn("d_TreeEditor.Duplicate", "复制备注"))
                 {
-                    GUIUtility.systemCopyBuffer = buildNote;
-                    Debug.Log("构建备注已复制到剪贴板");
-                    GUIUtility.ExitGUI();
+                    EditorApplication.delayCall += () =>
+                    {
+                        GUIUtility.systemCopyBuffer = buildNote;
+                        Debug.Log("构建备注已复制到剪贴板");
+                    };
                 }
             }
             GUILayout.EndHorizontal();
@@ -390,13 +392,12 @@ namespace PluginHub.Editor
         private void DrawPCBuildButtons()
         {
             //PC平台快捷构建按钮
-            GUILayout.BeginVertical("Box");
+            using(new GUILayout.VerticalScope("Box"))
             {
                 DrawPlatformHeader("BuildSettings.Standalone On", BuildTarget.StandaloneWindows64.ToString());
                 DrawPCProjectBuildSection();
                 DrawPCSceneBuildSection();
             }
-            GUILayout.EndVertical();
         }
 
         private void DrawPlatformHeader(string icon, string platformName)
@@ -420,8 +421,7 @@ namespace PluginHub.Editor
                     string path = CurrProjectBuildFullPath();
                     if (GUILayout.Button(PluginHubEditor.GuiContent("构建项目", $"将构建到{path}")))
                     {
-                        BuildStandaloneProject();
-                        GUIUtility.ExitGUI();
+                        EditorApplication.delayCall += BuildStandaloneProject;
                     }
 
                     DrawIconBtnOpenFolder(path, true);
@@ -434,34 +434,30 @@ namespace PluginHub.Editor
 
         private void DrawPCSceneBuildSection()
         {
-            GUILayout.BeginVertical("Box");
+            using(new GUILayout.VerticalScope("Box"))
             {
                 GUILayout.Label("场景构建:");
                 sceneBuildName = EditorGUILayout.TextField("场景构建名称:", sceneBuildName);
 
-                GUILayout.BeginHorizontal();
+                using(new GUILayout.HorizontalScope())
                 {
                     string path = CurrSceneBuildFullPath();
                     if (GUILayout.Button(PluginHubEditor.GuiContent("构建当前场景", $"将会直接构建到{path}。")))
                     {
-                        BuildStandaloneCurrScene(false);
-                        GUIUtility.ExitGUI();
+                        EditorApplication.delayCall += () => BuildStandaloneCurrScene(false);
                     }
 
                     if (GUILayout.Button(
                             PluginHubEditor.GuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
                             GUILayout.ExpandWidth(false)))
                     {
-                        BuildStandaloneCurrScene(true);
-                        GUIUtility.ExitGUI();
+                        EditorApplication.delayCall += () => BuildStandaloneCurrScene(true);
                     }
 
                     DrawIconBtnOpenFolder(path, true);
                     DrawRunButton(path);
                 }
-                GUILayout.EndHorizontal();
             }
-            GUILayout.EndVertical();
         }
 
         private void DrawRunButton(string exePath)
@@ -531,8 +527,7 @@ namespace PluginHub.Editor
 
                 if (GUILayout.Button(PluginHubEditor.GuiContent("构建 IOS 项目", $"将构建到{path}"), GUILayout.Height(PluginHubEditor.NormalBtnHeight)))
                 {
-                    BuildIOS(path);
-                    GUIUtility.ExitGUI();
+                    EditorApplication.delayCall += () => BuildIOS(path);
                 }
 
                 // 快捷打开xCode项目的icon按钮
@@ -544,8 +539,7 @@ namespace PluginHub.Editor
                     GUI.enabled = exist;
                     if (DrawIconBtn("BuildSettings.iPhone On@2x", $"打开xCode项目{xCodePath}"))
                     {
-                        OpenFile(xCodePath);
-                        GUIUtility.ExitGUI();
+                        EditorApplication.delayCall += () => OpenFile(xCodePath);
                     }
                     GUI.enabled = true;
                 }
@@ -577,8 +571,7 @@ namespace PluginHub.Editor
                 string path = fullPath;
                 if (GUILayout.Button(PluginHubEditor.GuiContent("构建 Android 项目", $"将构建到{path}")))
                 {
-                    BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
-                    GUIUtility.ExitGUI();
+                    EditorApplication.delayCall += () => BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
                 }
 
                 DrawIconBtnOpenFolder(path, true);
@@ -607,8 +600,7 @@ namespace PluginHub.Editor
                 string path = fullPath;
                 if (GUILayout.Button(PluginHubEditor.GuiContent("构建 WebGL 项目", $"将构建到{path}")))
                 {
-                    BuildWebGL($@"Build/WebGL/");
-                    GUIUtility.ExitGUI();
+                    EditorApplication.delayCall += () => BuildWebGL($@"Build/WebGL/");
                 }
 
                 DrawIconBtnOpenFolder(path, true);
@@ -636,8 +628,7 @@ namespace PluginHub.Editor
                 string path = fullPath;
                 if (GUILayout.Button(PluginHubEditor.GuiContent("构建 MacOS 项目", $"将构建到{path}")))
                 {
-                    BuildMacOS($@"Build/MacOS/{PlayerSettings.productName}.app");
-                    GUIUtility.ExitGUI();
+                    EditorApplication.delayCall += () => BuildMacOS($@"Build/MacOS/{PlayerSettings.productName}.app");
                 }
                 DrawIconBtnOpenFolder(path, true);
             }
@@ -815,10 +806,12 @@ namespace PluginHub.Editor
                 //压缩这个构建到当前目录
                 if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))
                 {
-                    string zipFilePath = ZipBuildDirectory(directory);
-                    WinClipboard.CopyFiles(new[] { zipFilePath });
-                    Debug.Log($"已复制: {zipFilePath}");
-                    GUIUtility.ExitGUI();
+                    EditorApplication.delayCall += () =>
+                    {
+                        string zipFilePath = ZipBuildDirectory(directory);
+                        WinClipboard.CopyFiles(new[] { zipFilePath });
+                        Debug.Log($"已复制: {zipFilePath}");
+                    };
                 }
 
                 //运行按钮
@@ -908,14 +901,16 @@ namespace PluginHub.Editor
                 // 删除按钮
                 if (DrawIconBtn("P4_DeletedLocal", $"删除文件"))
                 {
-                    if (EditorUtility.DisplayDialog("提示", $"是否删除文件: {zipFile}", "是", "否"))
+                    EditorApplication.delayCall += () =>
                     {
-                        if (File.Exists(zipFile))
+                        if (EditorUtility.DisplayDialog("提示", $"是否删除文件: {zipFile}", "是", "否"))
                         {
-                            File.Delete(zipFile);
+                            if (File.Exists(zipFile))
+                            {
+                                File.Delete(zipFile);
+                            }
                         }
-                    }
-                    GUIUtility.ExitGUI();
+                    };
                 }
 
                 // 上传到百度网盘
