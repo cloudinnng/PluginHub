@@ -107,32 +107,32 @@ namespace PluginHub.Runtime
         Vector3 GetInputTranslationDirection()
         {
             Vector3 direction = new Vector3();
-            if (Input.GetKey(KeyCode.W))
+            if (InputEx.GetKey(KeyCode.W))
             {
                 direction += Vector3.forward;
             }
 
-            if (Input.GetKey(KeyCode.S))
+            if (InputEx.GetKey(KeyCode.S))
             {
                 direction += Vector3.back;
             }
 
-            if (Input.GetKey(KeyCode.A))
+            if (InputEx.GetKey(KeyCode.A))
             {
                 direction += Vector3.left;
             }
 
-            if (Input.GetKey(KeyCode.D))
+            if (InputEx.GetKey(KeyCode.D))
             {
                 direction += Vector3.right;
             }
 
-            if (Input.GetKey(KeyCode.Q))
+            if (InputEx.GetKey(KeyCode.Q))
             {
                 direction += Vector3.down;
             }
 
-            if (Input.GetKey(KeyCode.E))
+            if (InputEx.GetKey(KeyCode.E))
             {
                 direction += Vector3.up;
             }
@@ -148,11 +148,11 @@ namespace PluginHub.Runtime
 
             if (enableRotateAround)
             {
-                if (Input.GetKey(KeyCode.LeftAlt))
+                if (InputEx.GetKey(KeyCode.LeftAlt))
                 {
-                    if (Input.GetMouseButtonDown(0))
+                    if (InputEx.GetMouseButtonDown(0))
                     {
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit))
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(InputEx.mousePosition), out var hit))
                         {
                             rotateAroundOriginPos = hit.point;
                         }
@@ -164,16 +164,16 @@ namespace PluginHub.Runtime
                         print($"rotateAroundOriginPos: {rotateAroundOriginPos}");
                     }
 
-                    if (Input.GetMouseButton(0))
+                    if (InputEx.GetMouseButton(0))
                     {
-                        Vector2 mouseMovement = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) *
+                        Vector2 mouseMovement = new Vector2(InputEx.GetAxis("Mouse X"), -InputEx.GetAxis("Mouse Y")) *
                                                 rotateRroundSpeed;
 
                         transform.RotateAround(rotateAroundOriginPos, Vector3.up, mouseMovement.x);
                         transform.RotateAround(rotateAroundOriginPos, transform.right, mouseMovement.y);
                     }
 
-                    if (Input.GetMouseButtonUp(0))
+                    if (InputEx.GetMouseButtonUp(0))
                     {
                         rotateAroundOriginPos = Vector3.zero;
                     }
@@ -186,7 +186,7 @@ namespace PluginHub.Runtime
             #region 鼠标右键
 
             // Hide and lock cursor when right mouse button pressed
-            if (Input.GetMouseButtonDown(1))
+            if (InputEx.GetMouseButtonDown(1))
             {
                 m_TargetCameraState.SetFromTransform(transform);
                 m_InterpolatingCameraState.SetFromTransform(transform);
@@ -195,13 +195,13 @@ namespace PluginHub.Runtime
             }
 
             // Unlock and show cursor when right mouse button released
-            if (Input.GetMouseButtonUp(1))
+            if (InputEx.GetMouseButtonUp(1))
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
             }
 
-            if (Input.GetMouseButton(1) || inputProvider != null)
+            if (InputEx.GetMouseButton(1) || inputProvider != null)
             {
                 if (justPressedThisFrame)
                 {
@@ -209,7 +209,7 @@ namespace PluginHub.Runtime
                     return;
                 }
                 // Rotation
-                var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
+                var mouseMovement = new Vector2(InputEx.GetAxis("Mouse X"), -InputEx.GetAxis("Mouse Y"));
                 if (inputProvider != null)
                     mouseMovement = inputProvider.GetLookInput();
 
@@ -219,10 +219,10 @@ namespace PluginHub.Runtime
                 m_TargetCameraState.pitch += mouseMovement.y * mouseSensitivityFactor;
             }
 
-            if (Input.GetMouseButton(1))
+            if (InputEx.GetMouseButton(1))
             {
                 // Modify movement by a boost factor (defined in Inspector and modified in play mode through the mouse scroll wheel)
-                float mouseScrollY = Input.mouseScrollDelta.y;
+                float mouseScrollY = InputEx.mouseScrollDelta.y;
                 if (!Mathf.Approximately(mouseScrollY, 0))
                 {
                     boost += mouseScrollY * 0.2f;
@@ -232,7 +232,7 @@ namespace PluginHub.Runtime
             }
 
             //2024年3月12日 新增不按住右键也可以通过左Ctrl键来移动相机
-            if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.LeftControl) || inputProvider != null)
+            if (InputEx.GetMouseButton(1) || InputEx.GetKey(KeyCode.LeftControl) || inputProvider != null)
             {
                 // Translation
                 var translation = GetInputTranslationDirection() * Time.deltaTime;
@@ -240,7 +240,7 @@ namespace PluginHub.Runtime
                     translation = inputProvider.GetMovementInput() * Time.deltaTime;
 
                 // Speed up movement when shift key held
-                if (Input.GetKey(KeyCode.LeftShift))
+                if (InputEx.GetKey(KeyCode.LeftShift))
                 {
                     translation *= 10.0f;
                 }

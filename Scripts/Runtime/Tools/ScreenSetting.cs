@@ -2,6 +2,12 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static PluginHub.Runtime.Debugger.CustomWindow;
+#if UNITY_EDITOR
+using System;
+using System.Reflection;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
 
 namespace PluginHub.Runtime
 {
@@ -17,7 +23,7 @@ namespace PluginHub.Runtime
             None,           // 不检查屏幕分辨率或宽高比
             [InspectorName("宽高比要求")]
             AspectRatio,    // 仅检查宽高比是否匹配
-            [InspectorName("准确分辨率要求")]
+            [InspectorName("精确分辨率要求")]
             ExactResolution // 检查分辨率是否完全匹配（同时检查宽高比）
         }
 
@@ -59,14 +65,14 @@ namespace PluginHub.Runtime
                  "• 宽高比要求：运行时会持续检查宽高比是否匹配\n" +
                  "• 准确分辨率要求：运行时会持续检查分辨率是否完全匹配")]
         public ScreenRequirementLevel screenRequirement = ScreenRequirementLevel.None;
-
-        [Tooltip("设计宽高比（仅在「宽高比要求」模式下需要手动设置）。\n" +
-                 "例：16:9 填入 (16, 9)，32:9 填入 (32, 9)")]
-        public Vector2 designAspectRatio = new Vector2(16, 9);
-
-        [Tooltip("设计分辨率（仅在「准确分辨率要求」模式下需要设置）。\n" +
-                 "系统会自动从此值推导出宽高比。")]
+        [Tooltip("设计分辨率")]
         public Vector2Int designResolution = new Vector2Int(1920, 1080);
+
+        [Tooltip("在 Unity Editor 中打开场景时，自动将 Game 视图分辨率切换为 designResolution。\n" +
+                 "仅当「屏幕要求」为「准确分辨率要求」(ExactResolution) 时生效。\n" +
+                 "仅影响编辑器 Game 视图，不影响打包后程序。")]
+        public bool autoApplyEditorGameViewResolution = true;
+
 
         [Header("帧率")]
         [Tooltip("应用程序的目标帧率。\n" +
@@ -130,18 +136,9 @@ namespace PluginHub.Runtime
         {
             get
             {
-                switch (screenRequirement)
-                {
-                    case ScreenRequirementLevel.AspectRatio:
-                        return designAspectRatio;
-                    case ScreenRequirementLevel.ExactResolution:
-                        // 从分辨率推导宽高比
-                        if (designResolution.x > 0 && designResolution.y > 0)
-                            return new Vector2(designResolution.x, designResolution.y);
-                        return Vector2.zero;
-                    default:
-                        return Vector2.zero;
-                }
+                if (designResolution.x > 0 && designResolution.y > 0)
+                    return new Vector2(designResolution.x, designResolution.y);
+                return Vector2.zero;
             }
         }
 
@@ -323,5 +320,157 @@ namespace PluginHub.Runtime
         }
 
         #endregion
+
+#if UNITY_EDITOR
+        // ============================================================
+        // 编辑器扩展：打开场景时自动将 Game 视图切换为 designResolution
+        // ------------------------------------------------------------
+        // Unity 没有公开 GameView 分辨率 API，这里通过反射访问内部类型：
+        //   UnityEditor.GameViewSizes / GameViewSizeGroup / GameViewSize / GameView
+        // 注意：仅在 Unity Editor 中编译，不影响打包后行为。
+        // ============================================================
+        #region Editor: 打开场景自动切换 Game 视图分辨率
+
+        // InitializeOnLoadMethod 在编辑器加载与每次脚本重编译后调用一次
+        [InitializeOnLoadMethod]
+        private static void RegisterEditorSceneOpenedHook()
+        {
+            // 防重复订阅
+            EditorSceneManager.sceneOpened -= OnEditorSceneOpened;
+            EditorSceneManager.sceneOpened += OnEditorSceneOpened;
+        }
+
+        private static void OnEditorSceneOpened(Scene scene, OpenSceneMode mode)
+        {
+            // 查找刚打开的这个场景内的 ScreenSetting（包含未激活的）
+            // 多场景模式下避免误用其它场景的实例
+            ScreenSetting[] all = UnityEngine.Object.FindObjectsByType<ScreenSetting>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            ScreenSetting target = null;
+            foreach (var s in all)
+            {
+                if (s != null && s.gameObject.scene == scene)
+                {
+                    target = s;
+                    break;
+                }
+            }
+            if (target == null) return;
+
+            if (!target.autoApplyEditorGameViewResolution) return;
+            if (target.screenRequirement == ScreenRequirementLevel.None) return;
+
+            int w = target.designResolution.x;
+            int h = target.designResolution.y;
+            if (w <= 0 || h <= 0)
+            {
+                Debug.LogWarning($"[ScreenSetting] designResolution 非法 ({w}x{h})，跳过 Game 视图切换。");
+                return;
+            }
+
+            Debug.Log($"[ScreenSetting] 场景已打开 ({scene.name})，自动将 Game 视图切换为 {w}x{h}");
+            ApplyGameViewResolution(w, h);
+        }
+
+        // 通过反射设置 Game 视图分辨率。如果分组里没有匹配项，会自动添加一个自定义项。
+        private static void ApplyGameViewResolution(int width, int height)
+        {
+            try
+            {
+                Assembly editorAsm = typeof(Editor).Assembly;
+                Type gameViewSizesT = editorAsm.GetType("UnityEditor.GameViewSizes");
+                Type gameViewSizeT = editorAsm.GetType("UnityEditor.GameViewSize");
+                Type gameViewSizeTypeEnumT = editorAsm.GetType("UnityEditor.GameViewSizeType");
+                Type gameViewT = editorAsm.GetType("UnityEditor.GameView");
+
+                if (gameViewSizesT == null || gameViewSizeT == null
+                    || gameViewSizeTypeEnumT == null || gameViewT == null)
+                {
+                    Debug.LogWarning("[ScreenSetting] 找不到 Unity 内部 GameView 类型，反射 API 可能已变更。");
+                    return;
+                }
+
+                // ScriptableSingleton<GameViewSizes>.instance
+                Type singletonT = typeof(ScriptableSingleton<>).MakeGenericType(gameViewSizesT);
+                PropertyInfo instanceProp = singletonT.GetProperty(
+                    "instance", BindingFlags.Static | BindingFlags.Public);
+                object sizesInstance = instanceProp.GetValue(null);
+
+                // 当前生效的分组(Standalone/Android/...)
+                PropertyInfo currentGroupTypeProp = gameViewSizesT.GetProperty("currentGroupType");
+                int currentGroupTypeInt = (int)currentGroupTypeProp.GetValue(sizesInstance);
+
+                MethodInfo getGroupMethod = gameViewSizesT.GetMethod("GetGroup");
+                object group = getGroupMethod.Invoke(sizesInstance, new object[] { currentGroupTypeInt });
+                Type groupT = group.GetType();
+
+                // 遍历当前分组里的所有 size，找匹配的 FixedResolution
+                int totalCount = (int)groupT.GetMethod("GetTotalCount").Invoke(group, null);
+                MethodInfo getSizeMethod = groupT.GetMethod("GetGameViewSize");
+
+                PropertyInfo widthProp = gameViewSizeT.GetProperty("width");
+                PropertyInfo heightProp = gameViewSizeT.GetProperty("height");
+                PropertyInfo sizeTypeProp = gameViewSizeT.GetProperty("sizeType");
+
+                int foundIndex = -1;
+                for (int i = 0; i < totalCount; i++)
+                {
+                    object size = getSizeMethod.Invoke(group, new object[] { i });
+                    if (size == null) continue;
+
+                    int w = (int)widthProp.GetValue(size);
+                    int h = (int)heightProp.GetValue(size);
+                    int sType = (int)sizeTypeProp.GetValue(size); // 0=AspectRatio, 1=FixedResolution
+                    if (w == width && h == height && sType == 1)
+                    {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+
+                // 没有匹配项就追加一条自定义分辨率
+                if (foundIndex < 0)
+                {
+                    object fixedResEnum = Enum.ToObject(gameViewSizeTypeEnumT, 1); // FixedResolution
+                    string label = $"ScreenSetting {width}x{height}";
+                    ConstructorInfo ctor = gameViewSizeT.GetConstructor(
+                        new[] { gameViewSizeTypeEnumT, typeof(int), typeof(int), typeof(string) });
+                    object newSize = ctor.Invoke(new object[] { fixedResEnum, width, height, label });
+
+                    groupT.GetMethod("AddCustomSize").Invoke(group, new object[] { newSize });
+                    foundIndex = totalCount; // 新条目追加在末尾
+                    Debug.Log($"[ScreenSetting] 新增 Game 视图自定义分辨率: {label}");
+                }
+
+                // 找到/确保已打开的 GameView，设置 selectedSizeIndex
+                EditorWindow gameView = EditorWindow.GetWindow(gameViewT, false, null, false);
+                if (gameView == null)
+                {
+                    Debug.LogWarning("[ScreenSetting] 未找到 Game 视图窗口，跳过切换。");
+                    return;
+                }
+
+                PropertyInfo sizeIndexProp = gameViewT.GetProperty(
+                    "selectedSizeIndex",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (sizeIndexProp == null)
+                {
+                    Debug.LogWarning("[ScreenSetting] 找不到 GameView.selectedSizeIndex 属性。");
+                    return;
+                }
+
+                sizeIndexProp.SetValue(gameView, foundIndex);
+                gameView.Repaint();
+                Debug.Log($"[ScreenSetting] Game 视图已切换为 {width}x{height} (size index = {foundIndex})");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[ScreenSetting] 切换 Game 视图分辨率失败: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        #endregion
+#endif
     }
 }
