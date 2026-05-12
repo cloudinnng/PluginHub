@@ -44,6 +44,9 @@ namespace PluginHub.Runtime
             // 用于探测 DontDestroyOnLoad 场景的占位对象（在该场景中创建任何 GO 即可获得 scene 引用）
             // 设为 HideAndDontSave，并在绘制 DDOL 根对象时跳过该实例本身
             private GameObject _ddolProbe;
+            // 当前选中的层级节点，用于在面板下方显示 Transform 详细信息
+            // 引用类型，对象被销毁时 Unity 重载的 == null 会返回 true，绘制前需做空检查
+            private Transform _selectedTransform;
 
             public override void OnStart()
             {
@@ -593,6 +596,75 @@ namespace PluginHub.Runtime
                     }
                 }
                 GUILayout.EndVertical();
+
+                // 选中节点的详情面板（在层级树下方独立绘制，便于在树过长时仍能看到）
+                DrawSelectedTransformInfo();
+            }
+
+            // 绘制当前选中 Transform 的详细信息：路径、世界/本地 PRS、parent、childCount 等
+            // 仅显示信息，不做编辑；如需调试时改值，再后续拓展可编辑字段
+            private void DrawSelectedTransformInfo()
+            {
+                // 选中对象被销毁后 Unity 的 == 重载会判定为 null，这里直接清空引用以避免脏数据
+                if (_selectedTransform == null)
+                {
+                    _selectedTransform = null;
+                    return;
+                }
+
+                GUILayout.Space(6);
+                GUILayout.BeginVertical("Box");
+                {
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label($"已选中: {_selectedTransform.gameObject.name}");
+                        GUILayout.FlexibleSpace();
+                        if (GUILayout.Button("取消选择", GUILayout.Width(80)))
+                        {
+                            Debug.Log($"[Debugger.Hierarchy] 取消选择: {GetHierarchyPath(_selectedTransform)}");
+                            _selectedTransform = null;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+
+                    // 再次校验：上面的"取消选择"按钮可能已清空引用
+                    if (_selectedTransform == null)
+                    {
+                        GUILayout.EndVertical();
+                        return;
+                    }
+
+                    GameObject go = _selectedTransform.gameObject;
+
+                    GUILayout.Label($"Path: {GetHierarchyPath(_selectedTransform)}");
+                    GUILayout.Label(
+                        $"InstanceID: {_selectedTransform.GetInstanceID()}   " +
+                        $"Layer: {LayerMask.LayerToName(go.layer)}({go.layer})   " +
+                        $"Tag: {go.tag}   " +
+                        $"Active(self/inHierarchy): {go.activeSelf}/{go.activeInHierarchy}");
+
+                    GUILayout.Label("World:");
+                    GUILayout.Label($"  Position  : {FormatVec3(_selectedTransform.position)}");
+                    GUILayout.Label($"  EulerAngles: {FormatVec3(_selectedTransform.eulerAngles)}");
+                    GUILayout.Label($"  LossyScale : {FormatVec3(_selectedTransform.lossyScale)}");
+
+                    GUILayout.Label("Local:");
+                    GUILayout.Label($"  Position  : {FormatVec3(_selectedTransform.localPosition)}");
+                    GUILayout.Label($"  EulerAngles: {FormatVec3(_selectedTransform.localEulerAngles)}");
+                    GUILayout.Label($"  Scale     : {FormatVec3(_selectedTransform.localScale)}");
+
+                    string parentName = _selectedTransform.parent == null
+                        ? "<none>"
+                        : _selectedTransform.parent.name;
+                    GUILayout.Label($"Parent: {parentName}    ChildCount: {_selectedTransform.childCount}");
+                }
+                GUILayout.EndVertical();
+            }
+
+            // Vector3 格式化辅助：固定 3 位小数，便于阅读
+            private static string FormatVec3(Vector3 v)
+            {
+                return $"({v.x:F3}, {v.y:F3}, {v.z:F3})";
             }
 
             // 绘制单个 GameObject 节点：缩进 + 折叠按钮 + 激活Toggle + 名称
@@ -639,9 +711,28 @@ namespace PluginHub.Runtime
                         Debug.Log($"[Debugger.Hierarchy] SetActive: {GetHierarchyPath(t)} -> {newActive}");
                     }
 
-                    // 名称：若 inactive 则加个标记便于一眼分辨
-                    GUI.color = curActiveInHierarchy ? Color.white : Color.gray;
-                    GUILayout.Label(t.gameObject.name);
+                    // 名称：点击可选中；选中时用青色高亮，未激活时灰色，二者叠加时优先显示选中
+                    // 这里用 label 样式的 Button 模拟"可点击的 Label"，保留视觉上紧凑的层级外观
+                    bool isSelected = ReferenceEquals(_selectedTransform, t);
+                    if (isSelected)
+                        GUI.color = Color.cyan;
+                    else
+                        GUI.color = curActiveInHierarchy ? Color.white : Color.gray;
+
+                    if (GUILayout.Button(t.gameObject.name, GUI.skin.label))
+                    {
+                        // 再次点击同一行可视作"取消选择"，便于隐藏下方详情面板
+                        if (isSelected)
+                        {
+                            _selectedTransform = null;
+                            Debug.Log($"[Debugger.Hierarchy] 取消选择: {GetHierarchyPath(t)}");
+                        }
+                        else
+                        {
+                            _selectedTransform = t;
+                            Debug.Log($"[Debugger.Hierarchy] 选中: {GetHierarchyPath(t)}");
+                        }
+                    }
                     GUI.color = Color.white;
 
                     GUILayout.FlexibleSpace();
