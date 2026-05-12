@@ -32,7 +32,18 @@ namespace PluginHub.Runtime
 
 
             private int _selectedTab = 0;
-            private readonly string[] tabNames = { "Common", "Scene", "PersistentDataPath", "Settings"};
+            private readonly string[] tabNames = { "Common", "Scene", "PersistentDataPath", "Hierarchy" };
+
+            // ========== Runtime Hierarchy 模块相关字段 ==========
+            // 按 Transform.GetInstanceID() 记录每个节点的展开状态；销毁后残留 key 开销极小，不做清理
+            private readonly Dictionary<int, bool> _hierarchyExpanded = new Dictionary<int, bool>();
+            // 每层缩进像素，行布局靠它实现树形结构的视觉
+            private const float HIERARCHY_INDENT = 14f;
+            // 折叠按钮与 Toggle 的固定宽度，无子级时用同宽 Space 占位保持列对齐
+            private const float HIERARCHY_FOLDOUT_WIDTH = 20f;
+            // 用于探测 DontDestroyOnLoad 场景的占位对象（在该场景中创建任何 GO 即可获得 scene 引用）
+            // 设为 HideAndDontSave，并在绘制 DDOL 根对象时跳过该实例本身
+            private GameObject _ddolProbe;
 
             public override void OnStart()
             {
@@ -63,7 +74,7 @@ namespace PluginHub.Runtime
                             DrawPersistentDataModule();
                             break;
                         case 3:
-                            DrawSettingsModule();
+                            DrawRuntimeHierarchyModule();
                             break;
                     }
                 }
@@ -286,6 +297,7 @@ namespace PluginHub.Runtime
                         }
                         GUILayout.EndHorizontal();
                     }
+                    Instance.useOnScreenUI = GUILayout.Toggle(Instance.useOnScreenUI, "使用OnScreenUI");
                 }
                 GUILayout.EndVertical();
             }
@@ -520,10 +532,185 @@ namespace PluginHub.Runtime
                 GUILayout.EndVertical();
             }
 
-            private void DrawSettingsModule()
+            #region Runtime Hierarchy
+            // ========== Runtime Hierarchy 模块 ==========
+            // 简单的运行时层级视图：树状显示所有加载场景的根对象与其子级，提供激活/反激活 Toggle
+            private void DrawRuntimeHierarchyModule()
             {
-                Instance.useOnScreenUI = GUILayout.Toggle(Instance.useOnScreenUI, "使用OnScreenUI");
+                GUILayout.Label("Runtime Hierarchy:");
+
+                // 顶栏：全部折叠 / 展开所有根节点（仅一层，避免一键展开几千个对象导致 IMGUI 卡顿）
+                GUILayout.BeginHorizontal();
+                {
+                    if (GUILayout.Button("全部折叠", GUILayout.Width(80)))
+                    {
+                        _hierarchyExpanded.Clear();
+                        Debug.Log("[Debugger.Hierarchy] 清除所有展开状态");
+                    }
+
+                    if (GUILayout.Button("展开根节点", GUILayout.Width(100)))
+                    {
+                        ExpandAllRoots();
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginVertical("Box");
+                {
+                    // 1) 遍历所有已加载场景
+                    int sceneCount = SceneManager.sceneCount;
+                    for (int i = 0; i < sceneCount; i++)
+                    {
+                        Scene scene = SceneManager.GetSceneAt(i);
+                        if (!scene.isLoaded) continue;
+
+                        GUILayout.Label($"Scene: {scene.name} (roots: {scene.rootCount})");
+
+                        GameObject[] roots = scene.GetRootGameObjects();
+                        for (int r = 0; r < roots.Length; r++)
+                        {
+                            DrawGameObjectNode(roots[r].transform, 0);
+                        }
+                    }
+
+                    // 2) DontDestroyOnLoad 场景：通过 probe GameObject 拿到其 Scene 引用
+                    Scene ddolScene = GetOrCreateDdolScene();
+                    if (ddolScene.IsValid())
+                    {
+                        // probe 自己也算 1 个根，这里显示时减掉
+                        int ddolRootCount = Mathf.Max(0, ddolScene.rootCount - 1);
+                        GUILayout.Label($"Scene: {ddolScene.name} (roots: {ddolRootCount})");
+
+                        GameObject[] ddolRoots = ddolScene.GetRootGameObjects();
+                        for (int r = 0; r < ddolRoots.Length; r++)
+                        {
+                            // 跳过探测对象自身
+                            if (ReferenceEquals(ddolRoots[r], _ddolProbe)) continue;
+                            DrawGameObjectNode(ddolRoots[r].transform, 0);
+                        }
+                    }
+                }
+                GUILayout.EndVertical();
             }
+
+            // 绘制单个 GameObject 节点：缩进 + 折叠按钮 + 激活Toggle + 名称
+            // 展开时递归绘制子级；通过缩进列对齐保持层级可读性
+            private void DrawGameObjectNode(Transform t, int depth)
+            {
+                if (t == null) return;
+
+                int instanceId = t.GetInstanceID();
+                int childCount = t.childCount;
+                // 默认折叠：字典中没有键时返回 false
+                bool expanded = _hierarchyExpanded.TryGetValue(instanceId, out bool v) && v;
+
+                GUILayout.BeginHorizontal();
+                {
+                    // 缩进
+                    if (depth > 0)
+                        GUILayout.Space(depth * HIERARCHY_INDENT);
+
+                    // 折叠按钮：有子级才显示，否则用同宽 Space 占位以保持列对齐
+                    if (childCount > 0)
+                    {
+                        // 用 > 与 v 代替三角符号，避免某些字体缺字形导致显示为方块
+                        string foldoutLabel = expanded ? "v" : ">";
+                        if (GUILayout.Button(foldoutLabel, GUILayout.Width(HIERARCHY_FOLDOUT_WIDTH)))
+                        {
+                            _hierarchyExpanded[instanceId] = !expanded;
+                            expanded = !expanded;
+                        }
+                    }
+                    else
+                    {
+                        GUILayout.Space(24);
+                    }
+
+                    // 激活 Toggle：直接绑定 gameObject.activeSelf
+                    // 注意：父级被禁用时子级在 Editor 中显示为灰色，这里 Toggle 仍可点击，行为符合 Editor Hierarchy
+                    bool curActive = t.gameObject.activeSelf;
+                    bool curActiveInHierarchy = t.gameObject.activeInHierarchy;
+                    bool newActive = GUILayout.Toggle(curActive, GUIContent.none, GUILayout.Width(18));
+                    if (newActive != curActive)
+                    {
+                        t.gameObject.SetActive(newActive);
+                        Debug.Log($"[Debugger.Hierarchy] SetActive: {GetHierarchyPath(t)} -> {newActive}");
+                    }
+
+                    // 名称：若 inactive 则加个标记便于一眼分辨
+                    GUI.color = curActiveInHierarchy ? Color.white : Color.gray;
+                    GUILayout.Label(t.gameObject.name);
+                    GUI.color = Color.white;
+
+                    GUILayout.FlexibleSpace();
+                }
+                GUILayout.EndHorizontal();
+
+                // 展开时递归子级
+                if (expanded && childCount > 0)
+                {
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        DrawGameObjectNode(t.GetChild(i), depth + 1);
+                    }
+                }
+            }
+
+            // 展开所有场景的根节点一层（不递归子级，避免一次性渲染过多）
+            private void ExpandAllRoots()
+            {
+                int total = 0;
+                int sceneCount = SceneManager.sceneCount;
+                for (int i = 0; i < sceneCount; i++)
+                {
+                    Scene scene = SceneManager.GetSceneAt(i);
+                    if (!scene.isLoaded) continue;
+                    GameObject[] roots = scene.GetRootGameObjects();
+                    for (int r = 0; r < roots.Length; r++)
+                    {
+                        _hierarchyExpanded[roots[r].transform.GetInstanceID()] = true;
+                        total++;
+                    }
+                }
+
+                Scene ddolScene = GetOrCreateDdolScene();
+                if (ddolScene.IsValid())
+                {
+                    GameObject[] ddolRoots = ddolScene.GetRootGameObjects();
+                    for (int r = 0; r < ddolRoots.Length; r++)
+                    {
+                        if (ReferenceEquals(ddolRoots[r], _ddolProbe)) continue;
+                        _hierarchyExpanded[ddolRoots[r].transform.GetInstanceID()] = true;
+                        total++;
+                    }
+                }
+
+                Debug.Log($"[Debugger.Hierarchy] 展开根节点完成，共 {total} 个");
+            }
+
+            // 创建/复用 DontDestroyOnLoad 探测对象，用以拿到该场景引用
+            // Unity 没有直接 API 拿 DDOL 场景，必须先有一个对象在该场景里
+            private Scene GetOrCreateDdolScene()
+            {
+                if (_ddolProbe == null)
+                {
+                    _ddolProbe = new GameObject("[Debugger.DDOL.Probe]");
+                    _ddolProbe.hideFlags = HideFlags.HideAndDontSave;
+                    GameObject.DontDestroyOnLoad(_ddolProbe);
+                }
+                return _ddolProbe.scene;
+            }
+
+            // 仅用于日志输出：生成形如 "Root/Child/Leaf" 的路径，便于排查 SetActive 是谁触发的
+            private static string GetHierarchyPath(Transform t)
+            {
+                if (t == null) return string.Empty;
+                if (t.parent == null) return t.name;
+                return GetHierarchyPath(t.parent) + "/" + t.name;
+            }
+            #endregion
         }
     }
 }
