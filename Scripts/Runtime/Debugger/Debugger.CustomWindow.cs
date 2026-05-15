@@ -3,7 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if UNITY_EDITOR
+#else
 using UnityEngine.SceneManagement;
+#endif
 
 namespace PluginHub.Runtime
 {
@@ -14,11 +17,13 @@ namespace PluginHub.Runtime
         /// </summary>
         public class CustomWindow : ScrollableDebuggerWindowBase
         {
-            private readonly Dictionary<string, IDebuggerCustomWindowGUI> _guiClientsDic =
-                new Dictionary<string, IDebuggerCustomWindowGUI>();
+            private readonly Dictionary<string, IDebuggerCustomWindowUI> _guiClientsDic =
+                new Dictionary<string, IDebuggerCustomWindowUI>();
 
 
-            public interface IDebuggerCustomWindowGUI
+            [Obsolete("请改用 IDebuggerCustomWindowUI（行为相同）")]
+            public interface IDebuggerCustomWindowGUI : IDebuggerCustomWindowUI { }
+            public interface IDebuggerCustomWindowUI
             {
                 ///客户端调试UI在Debugger CustomWindow中的绘制顺序，越小越靠前。可选择性实现
                 ///具体绘制函数，由客户端程序实现
@@ -31,7 +36,7 @@ namespace PluginHub.Runtime
 #elif UNITY_2020_1_OR_NEWER
                 public int DebuggerDrawOrder { get; set; }
                 public void OnDrawDebuggerGUI();
-#else
+#else //Unity 2020.1 以下
                 int DebuggerDrawOrder { get; set; }
                 void OnDrawDebuggerGUI();
 #endif
@@ -42,9 +47,9 @@ namespace PluginHub.Runtime
                 if (_guiClientsDic.Count == 0)
                     return;
 
-                #if UNITY_EDITOR
+#if UNITY_EDITOR
                 InnerDraw();
-                #else
+#else
                 //这里进行异常捕获，避免CustomWindowGUI的异常导致整个Debugger无法绘制
                 try
                 {
@@ -65,12 +70,12 @@ namespace PluginHub.Runtime
                         PlayerPrefs.DeleteAll();
                     }
                 }
-                #endif
+#endif
             }
 
             private void InnerDraw()
             {
-                foreach (KeyValuePair<string, IDebuggerCustomWindowGUI> item in _guiClientsDic)
+                foreach (KeyValuePair<string, IDebuggerCustomWindowUI> item in _guiClientsDic)
                 {
                     if (!item.Value.IsVisible)
                         continue;
@@ -102,11 +107,11 @@ namespace PluginHub.Runtime
                 //重新寻找客户端
                 _guiClientsDic.Clear();
                 MonoBehaviour[] monos = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-                List<IDebuggerCustomWindowGUI> clients = new List<IDebuggerCustomWindowGUI>();
+                List<IDebuggerCustomWindowUI> clients = new List<IDebuggerCustomWindowUI>();
                 for (int i = 0; i < monos.Length; i++)
                 {
                     MonoBehaviour mono = monos[i];
-                    IDebuggerCustomWindowGUI client = mono as IDebuggerCustomWindowGUI;
+                    IDebuggerCustomWindowUI client = mono as IDebuggerCustomWindowUI;
                     if (client != null)
                         clients.Add(client);
                 }
@@ -115,7 +120,7 @@ namespace PluginHub.Runtime
                 for (int i = 0; i < clients.Count; i++)
                 {
                     string key = clients[i].GetType().ToString();
-                    IDebuggerCustomWindowGUI value = clients[i];
+                    IDebuggerCustomWindowUI value = clients[i];
                     if (_guiClientsDic.ContainsKey(key))//如果有重复的key，加上序号
                         key += i;
                     _guiClientsDic.Add(key, value);

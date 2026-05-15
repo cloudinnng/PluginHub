@@ -1,37 +1,38 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Events;
 using static PluginHub.Runtime.Debugger;
+using static PluginHub.Runtime.Debugger.CustomWindow;
 
 namespace PluginHub.Runtime
 {
-#if UNITY_EDITOR
-    [UnityEditor.CustomEditor(typeof(UnmannedDetection))]
-    public class UnmannedDetectionEditor : UnityEditor.Editor
-    {
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
+// #if UNITY_EDITOR
+//     [UnityEditor.CustomEditor(typeof(UnmannedDetection))]
+//     public class UnmannedDetectionEditor : UnityEditor.Editor
+//     {
+//         public override void OnInspectorGUI()
+//         {
+//             base.OnInspectorGUI();
 
-            GUI.enabled = false;
-            UnityEditor.EditorGUILayout.FloatField("Timer", UnmannedDetection.timer.ToFloat(1));
-            GUI.enabled = true;
-            // 刷新检视面板以便实时看到timer的变化
-            UnityEditor.EditorUtility.SetDirty(target);
-        }
-    }
-
-#endif
+//             GUI.enabled = false;
+//             UnityEditor.EditorGUILayout.FloatField("Timer", UnmannedDetection.timer.ToFloat(1));
+//             GUI.enabled = true;
+//             // 刷新检视面板以便实时看到timer的变化
+//             UnityEditor.EditorUtility.SetDirty(target);
+//         }
+//     }
+// #endif
 
 
     //无人检测
     //很多应用需要在没人操作时自动回到主页或者执行一些其他操作，该脚本用于检测无人状态。只需订阅 OnHumanGone 事件即可。
-    public class UnmannedDetection : MonoBehaviour, IDebuggerOnScreenUI
+    public class UnmannedDetection : MonoBehaviour, IDebuggerOnScreenUI, IDebuggerCustomWindowUI
     {
         [Tooltip("该时长无操作后认为是无人状态,单位秒")]
         [SerializeField]
         private float noOperationTime = 60;
         [SerializeField]
-        public bool showDebugUI = true;
+        public bool showDebugUI = false;
 
         // 可以使用这个判断,也可以使用事件接口
         public static bool HumanExist { get; private set; } = false;
@@ -47,6 +48,10 @@ namespace PluginHub.Runtime
         // 外部代码提供的是否有人的检测函数，例如使用LeapMotion，Kinect等，可以传递该函数表示有人存在。
         // 有人存在时应返回true，无人存在时应返回false。
         public static Func<bool> ExternalHumanExistFunc = () => false;
+
+        public UnityEvent OnUnmanedTriggerEvent = new UnityEvent();
+        public UnityEvent OnHumanGoneEvent = new UnityEvent();
+        public UnityEvent OnHumanBackEvent = new UnityEvent();
 
 #endregion
 
@@ -67,6 +72,7 @@ namespace PluginHub.Runtime
                 {
                     HumanExist = true;
                     OnHumanBack?.Invoke();
+                    OnHumanBackEvent.Invoke();
                 }
             }
 
@@ -74,10 +80,12 @@ namespace PluginHub.Runtime
             {
                 timer = 0;
                 OnUnmanedTrigger?.Invoke();
+                OnUnmanedTriggerEvent.Invoke();
                 if (HumanExist)
                 {
                     HumanExist = false;
                     OnHumanGone?.Invoke();
+                    OnHumanGoneEvent.Invoke();
                 }
             }
         }
@@ -90,6 +98,13 @@ namespace PluginHub.Runtime
                 return;
             }
             GUILayout.Label($"UnmannedDetection: humanExist: {HumanExist}, Timer: {timer:F1} / {noOperationTime:F1} s");
+        }
+
+        public void OnDrawDebuggerGUI()
+        {
+            GUILayout.Label($"No Operation Time: {noOperationTime:F1} s");
+            noOperationTime = GUILayout.HorizontalSlider(noOperationTime, 60, 600);
+            showDebugUI = GUILayout.Toggle(showDebugUI, "Show Debug UI");
         }
     }
 }

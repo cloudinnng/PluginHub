@@ -42,7 +42,7 @@ namespace PluginHub.Runtime
 
     [ExecuteAlways]
     // 提供IMGUI左侧边栏滚动视图
-    public class IMGUISideScrollableView : SceneSingleton<IMGUISideScrollableView>, IMGUIManager.IIMGUI, Debugger.CustomWindow.IDebuggerCustomWindowGUI
+    public class IMGUISideScrollableView : SceneSingleton<IMGUISideScrollableView>, IMGUIManager.IIMGUI, Debugger.CustomWindow.IDebuggerCustomWindowUI
     {
         public interface IIMGUI
         {

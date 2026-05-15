@@ -12,7 +12,7 @@ using UnityEditor.SceneManagement;
 namespace PluginHub.Runtime
 {
     // 为应用程序提供统一的屏幕配置入口：分辨率/宽高比要求、帧率、休眠、多屏、自动窗口尺寸、自动切换场景
-    public class ScreenSetting : MonoBehaviour, IDebuggerCustomWindowGUI
+    public class ScreenSetting : MonoBehaviour, IDebuggerCustomWindowUI
     {
         #region 枚举定义
 
