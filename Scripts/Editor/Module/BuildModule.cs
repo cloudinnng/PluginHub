@@ -17,7 +17,7 @@ using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Editor
 {
-    public class BuildModule : PluginHubModuleBase, IPreprocessBuildWithReport
+    public partial class BuildModule : PluginHubModuleBase, IPreprocessBuildWithReport
     {
         #region 模块信息
 
@@ -83,13 +83,7 @@ namespace PluginHub.Editor
         }
 
         //实际的构建名
-        private static string realProjectBuildName
-        {
-            get
-            {
-                return devBuild ? $"{projectBuildName}_Dev" : projectBuildName;
-            }
-        }
+        private static string realProjectBuildName => devBuild ? $"{projectBuildName}_Dev" : projectBuildName;
 
         //PC平台场景构建时,用于exe执行文件的名称和构建目录名，如果为空，则使用场景名称
         // eg: 00.MainScene
@@ -147,7 +141,7 @@ namespace PluginHub.Editor
 
         #endregion
 
-        #region 构建回调
+        #region 构建预处理
 
         public int callbackOrder => -999999;
 
@@ -193,8 +187,10 @@ namespace PluginHub.Editor
                 }
             }
         }
+        #endregion
 
-        //构建后处理
+        #region 构建后处理
+
         [PostProcessBuild]
         public static void PostProcessBuild(BuildTarget buildTarget, string pathToBuiltProject)
         {
@@ -204,8 +200,9 @@ namespace PluginHub.Editor
             }
             else if (buildTarget == BuildTarget.StandaloneWindows64)
             {
-                IncrementPCVersionNumber();
-                CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);
+                IncrementPCVersionNumber();// 增加版本号
+                CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);// 复制 daemon-run.bat 到构建目录
+                ExecutePostCopyFolders(buildTarget, pathToBuiltProject);// 执行构建后复制文件夹到构建目录
             }
         }
 
@@ -332,6 +329,11 @@ namespace PluginHub.Editor
                     devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
                     deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
                     clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
+                    enablePostCopy = GUILayout.Toggle(enablePostCopy, new GUIContent("构建后复制文件夹到构建目录"));
+                    if (enablePostCopy)
+                    {
+                        DrawPostCopyFolderPathsUI();
+                    }
                 }
                 GUILayout.EndVertical();
             }
