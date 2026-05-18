@@ -25,41 +25,54 @@ namespace PluginHub.Editor
             $"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_postCopyFolderPaths";
 
         /// <summary>
-        /// 构建后要复制的文件夹映射：源目录 → 目标目录（相对构建输出根目录或绝对路径）。
+        /// 构建后要复制的文件夹配置列表（源、目标、是否启用）。
         /// </summary>
-        private static List<Tuple<string, string>> postCopyFolderPaths
+        private static List<PostCopyFolderPathEntry> postCopyFolderPaths
         {
             get
             {
                 string json = EditorPrefs.GetString(PostCopyFolderPathsEditorPrefsKey, "");
                 if (string.IsNullOrWhiteSpace(json))
-                    return new List<Tuple<string, string>>();
+                    return new List<PostCopyFolderPathEntry>();
 
                 try
                 {
                     PostCopyFolderPathsStorage storage = JsonUtility.FromJson<PostCopyFolderPathsStorage>(json);
                     if (storage?.entries == null || storage.entries.Length == 0)
-                        return new List<Tuple<string, string>>();
+                        return new List<PostCopyFolderPathEntry>();
 
-                    return storage.entries
-                        .Select(e => Tuple.Create(e.source ?? "", e.destination ?? ""))
-                        .ToList();
+                    // 旧版 JSON 无 enabled 字段时 JsonUtility 会得到 false，统一视为启用以保持兼容
+                    bool legacyWithoutPerEntryToggle = storage.version < PostCopyFolderPathsStorage.CurrentVersion;
+                    List<PostCopyFolderPathEntry> list = new List<PostCopyFolderPathEntry>(storage.entries.Length);
+                    foreach (PostCopyFolderPathEntry e in storage.entries)
+                    {
+                        list.Add(new PostCopyFolderPathEntry
+                        {
+                            source = e.source ?? "",
+                            destination = e.destination ?? "",
+                            enabled = legacyWithoutPerEntryToggle || e.enabled
+                        });
+                    }
+
+                    return list;
                 }
                 catch (Exception e)
                 {
                     Debug.LogWarning($"[BuildModule] 读取 postCopyFolderPaths 失败，将使用空列表。{e.Message}");
-                    return new List<Tuple<string, string>>();
+                    return new List<PostCopyFolderPathEntry>();
                 }
             }
             set
             {
                 PostCopyFolderPathsStorage storage = new PostCopyFolderPathsStorage
                 {
-                    entries = (value ?? new List<Tuple<string, string>>())
-                        .Select(t => new PostCopyFolderPathEntry
+                    version = PostCopyFolderPathsStorage.CurrentVersion,
+                    entries = (value ?? new List<PostCopyFolderPathEntry>())
+                        .Select(e => new PostCopyFolderPathEntry
                         {
-                            source = t.Item1 ?? "",
-                            destination = t.Item2 ?? ""
+                            source = e.source ?? "",
+                            destination = e.destination ?? "",
+                            enabled = e.enabled
                         })
                         .ToArray()
                 };
@@ -73,11 +86,17 @@ namespace PluginHub.Editor
         {
             public string source = "";
             public string destination = "";
+            /// <summary>是否参与构建后复制（持久化到 EditorPrefs）。</summary>
+            public bool enabled = true;
         }
 
         [Serializable]
         private class PostCopyFolderPathsStorage
         {
+            public const int CurrentVersion = 2;
+
+            /// <summary>2 起支持每条目的 enabled 开关。</summary>
+            public int version = CurrentVersion;
             public PostCopyFolderPathEntry[] entries = Array.Empty<PostCopyFolderPathEntry>();
         }
 
@@ -89,10 +108,17 @@ namespace PluginHub.Editor
             if (!enablePostCopy)
                 return;
 
-            List<Tuple<string, string>> copyList = postCopyFolderPaths;
+            List<PostCopyFolderPathEntry> copyList = postCopyFolderPaths;
             if (copyList == null || copyList.Count == 0)
             {
                 Debug.Log("[BuildModule] 已启用构建后复制，但未配置任何路径，跳过。");
+                return;
+            }
+
+            int enabledCount = copyList.Count(e => e.enabled);
+            if (enabledCount == 0)
+            {
+                Debug.Log("[BuildModule] 已启用构建后复制，但所有条目均已关闭，跳过。");
                 return;
             }
 
@@ -103,18 +129,25 @@ namespace PluginHub.Editor
                 return;
             }
 
-            Debug.Log($"[BuildModule] 开始构建后复制，平台={buildTarget}，构建根目录={buildRoot}，共 {copyList.Count} 条。");
+            Debug.Log($"[BuildModule] 开始构建后复制，平台={buildTarget}，构建根目录={buildRoot}，共 {copyList.Count} 条（启用 {enabledCount} 条）。");
 
-            foreach (Tuple<string, string> pair in copyList)
+            for (int index = 0; index < copyList.Count; index++)
             {
-                string sourcePath = ResolveProjectPath(pair.Item1);
-                if (string.IsNullOrWhiteSpace(sourcePath) || !Directory.Exists(sourcePath))
+                PostCopyFolderPathEntry entry = copyList[index];
+                if (!entry.enabled)
                 {
-                    Debug.LogWarning($"[BuildModule] 构建后复制跳过：源目录无效 → {pair.Item1}");
+                    Debug.Log($"[BuildModule] 构建后复制跳过（已关闭）#{index + 1}：{entry.source} → {entry.destination}");
                     continue;
                 }
 
-                string destPath = ResolveDestinationPath(pair.Item2, buildRoot, pathToBuiltProject);
+                string sourcePath = ResolveProjectPath(entry.source);
+                if (string.IsNullOrWhiteSpace(sourcePath) || !Directory.Exists(sourcePath))
+                {
+                    Debug.LogWarning($"[BuildModule] 构建后复制跳过：源目录无效 → {entry.source}");
+                    continue;
+                }
+
+                string destPath = ResolveDestinationPath(entry.destination, buildRoot, pathToBuiltProject);
                 if (string.IsNullOrWhiteSpace(destPath))
                 {
                     Debug.LogWarning($"[BuildModule] 构建后复制跳过：目标目录为空，源={sourcePath}");
@@ -141,20 +174,34 @@ namespace PluginHub.Editor
         /// </summary>
         private void DrawPostCopyFolderPathsUI()
         {
-            List<Tuple<string, string>> paths = postCopyFolderPaths;
+            List<PostCopyFolderPathEntry> paths = postCopyFolderPaths;
             bool changed = false;
 
 
             for (int i = 0; i < paths.Count; i++)
             {
-                string source = paths[i].Item1;
-                string destination = paths[i].Item2;
+                PostCopyFolderPathEntry entry = paths[i];
+                string source = entry.source;
+                string destination = entry.destination;
+                bool entryEnabled = entry.enabled;
 
                 GUILayout.BeginVertical("box");
                 {
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Label($"#{i + 1}", GUILayout.Width(24));
+                        bool newEnabled = EditorGUILayout.ToggleLeft(
+                            "启用",
+                            entryEnabled,
+                            GUILayout.Width(56));
+                        if (newEnabled != entryEnabled)
+                        {
+                            entryEnabled = newEnabled;
+                            changed = true;
+                            Debug.Log($"[BuildModule] 复制项 #{i + 1} 启用状态 → {entryEnabled}");
+                        }
+
+                        GUILayout.FlexibleSpace();
                         if (DrawIconBtnDelete("删除此复制项"))
                         {
                             paths.RemoveAt(i);
@@ -201,7 +248,12 @@ namespace PluginHub.Editor
                     }
                     GUILayout.EndHorizontal();
 
-                    paths[i] = Tuple.Create(source, destination);
+                    paths[i] = new PostCopyFolderPathEntry
+                    {
+                        source = source,
+                        destination = destination,
+                        enabled = entryEnabled
+                    };
                 }
                 GUILayout.EndVertical();
             }
@@ -209,9 +261,14 @@ namespace PluginHub.Editor
             if (GUILayout.Button("添加复制项"))
             {
                 string defaultDestination = GetDefaultPostCopyDestination();
-                paths.Add(Tuple.Create("", defaultDestination));
+                paths.Add(new PostCopyFolderPathEntry
+                {
+                    source = "",
+                    destination = defaultDestination,
+                    enabled = true
+                });
                 changed = true;
-                Debug.Log($"[BuildModule] 已添加一条空的构建后复制配置，默认目标={defaultDestination}");
+                Debug.Log($"[BuildModule] 已添加一条空的构建后复制配置（默认启用），默认目标={defaultDestination}");
             }
 
             if (changed)
