@@ -9,7 +9,6 @@ namespace PluginHub.Editor
 {
     public partial class BuildModule : PluginHubModuleBase
     {
-
         // 获取 BaiduPCS-Go 文件夹在系统中的完整路径
         private static string baiduPCSGoFolderFullPath => Path.GetFullPath("Packages/com.hellottw.pluginhub/Plugins/BaiduPCS-Go");
 
