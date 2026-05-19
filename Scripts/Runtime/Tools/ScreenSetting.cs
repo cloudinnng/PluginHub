@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static PluginHub.Runtime.Debugger.CustomWindow;
+using System.Threading;
+
 #if UNITY_EDITOR
 using System;
 using System.Reflection;
@@ -80,6 +82,7 @@ namespace PluginHub.Runtime
                  "• 不限制 (-1)：尽可能快地渲染\n" +
                  "• 其他值：限制到指定帧率")]
         public FrameRateType targetFrameRate = FrameRateType.DontCare;
+        public bool forceRenderRateInWindows = true;
 
         [Header("移动设备")]
         [Tooltip("控制移动设备的屏幕休眠行为。\n" +
@@ -180,9 +183,32 @@ namespace PluginHub.Runtime
         private void ApplyFrameRate()
         {
             if (targetFrameRate == FrameRateType.DontCare) return;
-            Application.targetFrameRate = (int)targetFrameRate;
+            if (Application.platform == RuntimePlatform.WindowsPlayer && forceRenderRateInWindows)
+            {
+                StartCoroutine(ForceRenderRate_OnlyWin());
+            }else{
+                Application.targetFrameRate = (int)targetFrameRate;
+            }
             if (verboseLogs)
                 Debug.Log($"[ScreenSetting] 目标帧率: {(int)targetFrameRate}");
+        }
+
+        IEnumerator ForceRenderRate_OnlyWin()
+        {
+            float currentFrameTime = Time.realtimeSinceStartup;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 9999;
+            while (true)
+            {
+                yield return new WaitForEndOfFrame();
+                currentFrameTime += 1.0f / (int)targetFrameRate;
+                var t = Time.realtimeSinceStartup;
+                var sleepTime = currentFrameTime - t - 0.01f;
+                if (sleepTime > 0)
+                    Thread.Sleep((int)(sleepTime * 1000));
+                while (t < currentFrameTime)
+                    t = Time.realtimeSinceStartup;
+            }
         }
 
         private void ActivateDisplays()
