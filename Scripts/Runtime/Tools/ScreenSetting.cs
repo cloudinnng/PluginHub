@@ -102,6 +102,7 @@ namespace PluginHub.Runtime
         [Tooltip("打包后启动时自动切换到指定场景（按 Build Settings 中的索引）。\n" +
                  "-1 表示不自动切换。仅在非编辑器模式下生效。")]
         public int autoSwitchSceneIndex = -1;
+        public bool verboseLogs = false;
 
         #endregion
 
@@ -157,7 +158,8 @@ namespace PluginHub.Runtime
             // 如果屏幕要求不满足，启动持续检测协程
             if (!IsResolutionMatch || !IsAspectRatioMatch)
             {
-                Debug.LogWarning($"[ScreenSetting] 当前屏幕不满足要求，启动持续检测。");
+                if (verboseLogs)
+                    Debug.LogWarning($"[ScreenSetting] 当前屏幕不满足要求，启动持续检测。");
                 StartCoroutine(ScreenRequirementCheckRoutine());
             }
         }
@@ -171,14 +173,16 @@ namespace PluginHub.Runtime
             Screen.sleepTimeout = sleepPolicy == SleepPolicy.NeverSleep
                 ? SleepTimeout.NeverSleep
                 : SleepTimeout.SystemSetting;
-            Debug.Log($"[ScreenSetting] 屏幕休眠策略: {sleepPolicy}");
+            if (verboseLogs)
+                Debug.Log($"[ScreenSetting] 屏幕休眠策略: {sleepPolicy}");
         }
 
         private void ApplyFrameRate()
         {
             if (targetFrameRate == FrameRateType.DontCare) return;
             Application.targetFrameRate = (int)targetFrameRate;
-            Debug.Log($"[ScreenSetting] 目标帧率: {(int)targetFrameRate}");
+            if (verboseLogs)
+                Debug.Log($"[ScreenSetting] 目标帧率: {(int)targetFrameRate}");
         }
 
         private void ActivateDisplays()
@@ -194,11 +198,13 @@ namespace PluginHub.Runtime
             for (int i = 1; i < toActivate; i++)
             {
                 Display.displays[i].Activate();
-                Debug.Log($"[ScreenSetting] 已激活显示器 {i} ({Display.displays[i].systemWidth}x{Display.displays[i].systemHeight})");
+                if (verboseLogs)
+                    Debug.Log($"[ScreenSetting] 已激活显示器 {i} ({Display.displays[i].systemWidth}x{Display.displays[i].systemHeight})");
             }
 
             if (activeDisplayCount > available)
-                Debug.LogWarning($"[ScreenSetting] 请求激活 {activeDisplayCount} 个显示器，但系统仅检测到 {available} 个");
+                if (verboseLogs)
+                    Debug.LogWarning($"[ScreenSetting] 请求激活 {activeDisplayCount} 个显示器，但系统仅检测到 {available} 个");
         }
 
         private void ApplyAutoWindowSize()
@@ -207,7 +213,8 @@ namespace PluginHub.Runtime
             if (!IsStandalonePlatform()) return;
             if (Screen.fullScreen)
             {
-                Debug.Log("[ScreenSetting] 当前是全屏模式，跳过自动窗口尺寸调整");
+                if (verboseLogs)
+                    Debug.Log("[ScreenSetting] 当前是全屏模式，跳过自动窗口尺寸调整");
                 return;
             }
 
@@ -246,7 +253,8 @@ namespace PluginHub.Runtime
                 useResolution = new Vector2Int(availableW, (int)(availableW / aspect));
             }
 
-            Debug.Log($"[ScreenSetting] 自动窗口尺寸 → 桌面:{screenW}x{screenH} 可用:{availableW}x{availableH} " +
+            if (verboseLogs)
+                Debug.Log($"[ScreenSetting] 自动窗口尺寸 → 桌面:{screenW}x{screenH} 可用:{availableW}x{availableH} " +
                       $"宽高比:{aspect:F3} → 窗口:{useResolution.x}x{useResolution.y}");
             Screen.SetResolution(useResolution.x, useResolution.y, false);
         }
@@ -256,7 +264,8 @@ namespace PluginHub.Runtime
             if (autoSwitchSceneIndex < 0) return;
             if (Application.isEditor) return;
 
-            Debug.Log($"[ScreenSetting] 自动切换到场景索引 {autoSwitchSceneIndex}");
+            if (verboseLogs)
+                Debug.Log($"[ScreenSetting] 自动切换到场景索引 {autoSwitchSceneIndex}");
             SceneManager.LoadScene(autoSwitchSceneIndex);
         }
 

@@ -119,6 +119,7 @@ namespace PluginHub.Runtime
     public class ApplicationExpire : MonoBehaviour, Debugger.CustomWindow.IDebuggerCustomWindowUI
     {
         public string dataFilePath => Path.Combine(Application.streamingAssetsPath, "ApplicationExpire.data");
+        public bool verboseLogs = false;
 
         private DateTime _expireDate;
         private DateTime _buildDate;
@@ -146,7 +147,8 @@ namespace PluginHub.Runtime
         {
             try
             {
-                Debug.Log($"[ApplicationExpire] InitDataFromFile: {dataFilePath}");
+                if (verboseLogs)
+                    Debug.Log($"[ApplicationExpire] InitDataFromFile: {dataFilePath}");
                 if (!File.Exists(dataFilePath))
                 {
                     _expireDate = new DateTime(1970, 1, 1);
@@ -156,7 +158,8 @@ namespace PluginHub.Runtime
                 byte[] dataBytes = File.ReadAllBytes(dataFilePath);
                 if (dataBytes.Length != 16)
                 {
-                    Debug.LogError($"[ApplicationExpire] InitDataFromFile: 构建时间文件格式错误，长度应为16字节，实际为{dataBytes.Length}字节");
+                    if (verboseLogs)
+                        Debug.LogError($"[ApplicationExpire] InitDataFromFile: 构建时间文件格式错误，长度应为16字节，实际为{dataBytes.Length}字节");
                     _expireDate = new DateTime(1970, 1, 1);
                     _buildDate = new DateTime(1970, 1, 1);
                     return;
@@ -170,7 +173,8 @@ namespace PluginHub.Runtime
             }
             catch (Exception e)
             {
-                Debug.LogError($"[ApplicationExpire] InitDataFromFile: 读取构建时间文件失败: {e.Message}");
+                if (verboseLogs)
+                    Debug.LogError($"[ApplicationExpire] InitDataFromFile: 读取构建时间文件失败: {e.Message}");
                 _expireDate = new DateTime(1970, 1, 1);
                 _buildDate = new DateTime(1970, 1, 1);
                 return;
@@ -216,7 +220,8 @@ namespace PluginHub.Runtime
                 }
                 catch (FormatException e)
                 {
-                    Debug.LogError($"[ApplicationExpire] expireStatus: {e}: {e.Message}");
+                    if (verboseLogs)
+                        Debug.LogError($"[ApplicationExpire] expireStatus: {e}: {e.Message}");
                     return ApplicationExpireStatus.BuildTimeError;
                 }
             }
