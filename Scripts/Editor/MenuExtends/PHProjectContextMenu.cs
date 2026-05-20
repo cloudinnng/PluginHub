@@ -460,6 +460,166 @@ namespace PluginHub.Editor
             return Selection.objects != null && Selection.objects.Length == 1 && Selection.objects[0] as Material != null;
         }
         #endregion
+
+
+        #region mklink 引入外部文件夹
+
+        // Validate：菜单可用性校验
+        //  1. 仅 Windows 平台（mklink 是 Windows cmd 内建命令）
+        //  2. 仅允许单选 1 个 Project 视图对象，且必须是文件夹
+        [MenuItem("Assets/PH 使用 mklink 引入外部文件夹", true)]
+        private static bool ImportExternalFolderUseMklinkValidate()
+        {
+#if UNITY_EDITOR_WIN
+            // 严格单选
+            if (Selection.objects == null || Selection.objects.Length != 1)
+                return false;
+
+            string projectPath = GetSelectionAssetProjectPath();
+            if (string.IsNullOrEmpty(projectPath))
+                return false;
+
+            // 必须是文件夹
+            return AssetDatabase.IsValidFolder(projectPath);
+#else
+            // 非 Windows 平台直接隐藏（置灰）
+            return false;
+#endif
+        }
+
+        //用于存储上次选择的mklink外部文件夹路径到EditorPrefs的Key
+        private static string lastMklinkFolderPath
+        {
+            get { return EditorPrefs.GetString("PH_LastMklinkFolderPath", ""); }
+            set { EditorPrefs.SetString("PH_LastMklinkFolderPath", value); }
+        }
+
+
+        // 在右键文件夹下创建以外部文件夹名命名的 junction，使外部资源被 Unity 索引
+        // 命令: cmd.exe /c mklink /j "右键文件夹\外部文件夹名" "外部文件夹绝对路径"
+        [MenuItem("Assets/PH 使用 mklink 引入外部文件夹")]
+        private static void ImportExternalFolderUseMklink()
+        {
+            // 1. 取右键文件夹的绝对路径，作为 junction 的父目录
+            string rightClickFolderAbs = GetSelectionAssetAbsolutePath();
+            if (string.IsNullOrEmpty(rightClickFolderAbs) || !Directory.Exists(rightClickFolderAbs))
+            {
+                Debug.LogError($"[mklink] 右键文件夹路径无效：{rightClickFolderAbs}");
+                return;
+            }
+            Debug.Log($"[mklink] 右键文件夹（junction 父目录）：{rightClickFolderAbs}");
+
+            // 2. 弹出文件夹选择面板，让用户选外部文件夹
+            string externalFolderPath = EditorUtility.OpenFolderPanel("选择要通过 mklink 引入的外部文件夹", lastMklinkFolderPath, "");
+            if (string.IsNullOrEmpty(externalFolderPath))
+            {
+                // 用户取消，不算错误
+                Debug.Log("[mklink] 用户取消了外部文件夹选择");
+                return;
+            }
+            lastMklinkFolderPath = externalFolderPath;
+            // 路径规整：拿到绝对路径并统一为反斜杠，去掉末尾分隔符，便于后续比对
+            externalFolderPath = Path.GetFullPath(externalFolderPath).Replace('/', '\\').TrimEnd('\\');
+            if (!Directory.Exists(externalFolderPath))
+            {
+                Debug.LogError($"[mklink] 外部文件夹不存在：{externalFolderPath}");
+                return;
+            }
+            Debug.Log($"[mklink] 外部文件夹（junction 目标）：{externalFolderPath}");
+
+            // 3. 边界检查：外部文件夹不能位于当前项目内部，避免 Unity 重复/循环索引
+            string projectRoot = Path.GetFullPath(Path.GetDirectoryName(Application.dataPath))
+                .Replace('/', '\\').TrimEnd('\\');
+            if (externalFolderPath.Equals(projectRoot, System.StringComparison.OrdinalIgnoreCase)
+                || externalFolderPath.StartsWith(projectRoot + "\\", System.StringComparison.OrdinalIgnoreCase))
+            {
+                string msg = $"外部文件夹位于当前 Unity 项目内部，会导致循环引用，操作已中止。\n\n外部：{externalFolderPath}\n项目：{projectRoot}";
+                EditorUtility.DisplayDialog("操作中止", msg, "确定");
+                Debug.LogError($"[mklink] {msg}");
+                return;
+            }
+
+            // 4. 推导链接名（= 外部文件夹名），并拼出最终链接的完整路径
+            string linkName = Path.GetFileName(externalFolderPath);
+            if (string.IsNullOrEmpty(linkName))
+            {
+                // 例如选了驱动器根 D:\，此时 GetFileName 为空
+                Debug.LogError($"[mklink] 无法从外部路径推导出文件夹名（可能选了驱动器根目录）：{externalFolderPath}");
+                return;
+            }
+            string linkFullPath = Path.Combine(rightClickFolderAbs, linkName).Replace('/', '\\');
+
+            // 5. 同名冲突检查：目标位置不能已存在同名文件夹/文件/链接
+            if (Directory.Exists(linkFullPath) || File.Exists(linkFullPath))
+            {
+                string msg = $"目标位置已存在同名条目，操作已中止。请先手动处理：\n{linkFullPath}";
+                EditorUtility.DisplayDialog("操作中止", msg, "确定");
+                Debug.LogError($"[mklink] {msg}");
+                return;
+            }
+
+            // 6. 二次确认：把即将执行的命令明明白白给用户看一遍
+            //    避免误操作（比如选错了外部文件夹、链接位置不是预期等）
+            string confirmMsg =
+                $"即将创建 junction（目录联接）：\n\n" +
+                $"链接位置：\n{linkFullPath}\n\n" +
+                $"指向目标：\n{externalFolderPath}\n\n" +
+                $"等价命令：\nmklink /j \"{linkFullPath}\" \"{externalFolderPath}\"\n\n" +
+                $"注意：Unity 会在外部文件夹真实位置生成 .meta 文件。";
+            if (!EditorUtility.DisplayDialog("确认创建 mklink junction", confirmMsg, "确认创建", "取消"))
+            {
+                Debug.Log("[mklink] 用户在二次确认对话框中取消");
+                return;
+            }
+
+            // 7. 调用 cmd.exe 执行 mklink /j（mklink 是 cmd 内建命令，不能直接 Process.Start）
+            string args = $"/c mklink /j \"{linkFullPath}\" \"{externalFolderPath}\"";
+            Debug.Log($"[mklink] 执行命令：cmd.exe {args}");
+
+            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                StandardErrorEncoding = System.Text.Encoding.UTF8,
+            };
+
+            try
+            {
+                using (System.Diagnostics.Process process = System.Diagnostics.Process.Start(psi))
+                {
+                    string stdout = process.StandardOutput.ReadToEnd();
+                    string stderr = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        string errMsg = $"mklink 执行失败 (ExitCode={process.ExitCode})\nstdout: {stdout}\nstderr: {stderr}";
+                        Debug.LogError($"[mklink] {errMsg}");
+                        EditorUtility.DisplayDialog("mklink 失败", errMsg, "确定");
+                        return;
+                    }
+
+                    Debug.Log($"[mklink] 创建成功：{linkFullPath} → {externalFolderPath}\n{stdout}");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[mklink] 调用 cmd.exe 抛出异常：{e}");
+                EditorUtility.DisplayDialog("mklink 异常", e.Message, "确定");
+                return;
+            }
+
+            // 8. 刷新 AssetDatabase，让 Unity 索引到 junction 里的内容
+            AssetDatabase.Refresh();
+            Debug.Log("[mklink] AssetDatabase 已刷新，外部文件夹已可在 Project 视图中访问");
+        }
+
+        #endregion
     }
 
 }

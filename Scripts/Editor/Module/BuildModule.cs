@@ -785,12 +785,13 @@ namespace PluginHub.Editor
             for (int i = 0; i < zipFiles.Length; i++)
             {
                 DateTime zipTime = GetDateTimeFromFileName(Path.GetFileName(zipFiles[i]));
-                bool isLatest = (zipTime == latestZipTime && latestZipTime != DateTime.MinValue);
-                DrawZipFileItem(zipFiles[i], i, isLatest);
+                bool isLatest = zipTime == latestZipTime && latestZipTime != DateTime.MinValue;
+                bool isProjectZipFile = zipFiles[i].Contains(PlayerSettings.productName);
+                DrawZipFileItem(zipFiles[i], i, isLatest, isProjectZipFile);
             }
         }
 
-        private void DrawZipFileItem(string zipFile, int index, bool isLatest)
+        private void DrawZipFileItem(string zipFile, int index, bool isLatest, bool isProjectZipFile)
         {
             zipFile = zipFile.Replace("/", "\\");
             zipFile = zipFile.Replace(@"Assets\..\", "");
@@ -805,6 +806,13 @@ namespace PluginHub.Editor
                 {
                     Color oldColor = GUI.color;
                     GUI.color = new Color(0.3f, 1f, 0.3f);
+                    GUILayout.Label(PluginHubEditor.GuiContent(title));
+                    GUI.color = oldColor;
+                }
+                else if (isProjectZipFile)
+                {
+                    Color oldColor = GUI.color;
+                    GUI.color = new Color(1f, 1f, 0.3f);
                     GUILayout.Label(PluginHubEditor.GuiContent(title));
                     GUI.color = oldColor;
                 }
