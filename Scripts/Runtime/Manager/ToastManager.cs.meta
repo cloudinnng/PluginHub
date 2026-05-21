@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: c7952dff4bcc78149b065d7aa810a05f
-timeCreated: 1508221015
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - panelSettings: {fileID: 11400000, guid: 0c6a678c6fa0a864e9488297242fbefe, type: 2}
+  - toastVisualTreeAsset: {fileID: 9197481963319205126, guid: ef9a370fa319cb94189a29e73a775033, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
