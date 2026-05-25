@@ -38,7 +38,7 @@ namespace PluginHub.Runtime
         IEnumerator Delay(string path)
         {
             yield return null;
-            ToastManager.Instance.Show($"屏幕截屏已保存{path}", -1, true);
+            ToastManager.Instance.Show($"屏幕截屏已保存{path}");
         }
     }
 }

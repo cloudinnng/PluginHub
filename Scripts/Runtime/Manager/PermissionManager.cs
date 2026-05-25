@@ -33,8 +33,8 @@ namespace PluginHub.Runtime
             {
                 if (Application.internetReachability == NetworkReachability.NotReachable)
                 {
-                    ToastManager.Instance.Show("无网络权限", 3, true);
-                    ToastManager.Instance.Show("部分功能可能无法使用", 3, true);
+                    ToastManager.Instance.Show("无网络权限");
+                    ToastManager.Instance.Show("部分功能可能无法使用");
                     OnPermission?.Invoke(PermissionType.Internet, false);
                 }
                 else

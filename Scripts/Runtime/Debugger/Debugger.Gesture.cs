@@ -91,7 +91,7 @@ namespace PluginHub.Runtime
                 gestureDetector.Clear();
                 gestureCount++;
                 if(showGestureTipOnToast)
-                    ToastManager.Instance.Show($"{gestureCount}/{numOfCircleToShow}", 1);
+                    ToastManager.Instance.Show($"{gestureCount}/{numOfCircleToShow}");
                 if (gestureCount >= numOfCircleToShow)
                 {
                     gestureCount = 0;

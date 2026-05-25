@@ -227,7 +227,7 @@ namespace PluginHub.Runtime
                 {
                     boost += mouseScrollY * 0.2f;
                     if (ToastManager.Instance)
-                        ToastManager.Instance.Show($"{boost:F1}", 0.1f);
+                        ToastManager.Instance.Show($"{boost:F1}");
                 }
             }
 

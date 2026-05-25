@@ -1,284 +1,166 @@
-﻿using System;
-using System.Collections.Generic;
-using PluginHub.Runtime;
+﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using UnityEngine.PlayerLoop;
+using UnityEngine.UIElements;
 
 namespace PluginHub.Runtime
 {
-#if UNITY_EDITOR
-    using UnityEditor;
-
-    [CustomEditor(typeof(ToastManager))]
-    public class ToastManagerEditor : Editor
-    {
-        private SerializedProperty _autoGuiScale;
-        private SerializedProperty _guiScale;
-        private SerializedProperty _guiScaleMultiplier;
-        private SerializedProperty _horizontalScaleFac;
-        private SerializedProperty _verticalScaleFac;
-        private SerializedProperty _DefaultShowTime;
-
-
-        private void OnEnable()
-        {
-            _autoGuiScale = serializedObject.FindProperty("autoGuiScale");
-            _guiScale = serializedObject.FindProperty("guiScale");
-            _guiScaleMultiplier = serializedObject.FindProperty("guiScaleMultiplier");
-            _horizontalScaleFac = serializedObject.FindProperty("horizontalScaleFac");
-            _verticalScaleFac = serializedObject.FindProperty("verticalScaleFac");
-            _DefaultShowTime = serializedObject.FindProperty("DefaultShowTime");
-
-        }
-
-        public override void OnInspectorGUI()
-        {
-            // base.OnInspectorGUI();
-
-            //画脚本行
-            GUI.enabled = false;
-            EditorGUILayout.ObjectField("Script:", MonoScript.FromMonoBehaviour((ToastManager)target),
-                typeof(ToastManager), false);
-            GUI.enabled = true;
-
-
-            serializedObject.Update();
-
-            _autoGuiScale.boolValue = EditorGUILayout.Toggle("Auto Gui Scale", _autoGuiScale.boolValue);
-
-            if (_autoGuiScale.boolValue)
-            {
-                _guiScaleMultiplier.floatValue =
-                    EditorGUILayout.FloatField("Gui Scale Multiplier", _guiScaleMultiplier.floatValue);
-                _horizontalScaleFac.floatValue =
-                    EditorGUILayout.FloatField("Horizontal Scale Factor", _horizontalScaleFac.floatValue);
-                _verticalScaleFac.floatValue =
-                    EditorGUILayout.FloatField("Vertical Scale Factor", _verticalScaleFac.floatValue);
-
-                GUI.enabled = false;
-                _guiScale.floatValue = EditorGUILayout.FloatField("Gui Scale", _guiScale.floatValue);
-                GUI.enabled = true;
-            }
-            else
-            {
-                _guiScale.floatValue = EditorGUILayout.FloatField("Gui Scale", _guiScale.floatValue);
-            }
-
-            _DefaultShowTime.floatValue = EditorGUILayout.FloatField("Default Show Time", _DefaultShowTime.floatValue);
-
-            serializedObject.ApplyModifiedProperties();
-
-            GUI.enabled = false;
-            EditorGUILayout.Vector2Field("ScreenSizeScaled", ToastManager.ScreenSizeScaled);
-            GUI.enabled = true;
-
-            GUI.enabled = Application.isPlaying;
-            if (GUILayout.Button("发射一个测试Toast"))
-            {
-                ToastManager.Instance.Show("Test Toast with default time");
-            }
-
-            if (GUILayout.Button("发射测试Toast"))
-            {
-                ToastManager.Instance.Show("Test Toast with default time");
-                ToastManager.Instance.Show("中文字测试", 10);
-                ToastManager.Instance.Show("，。、；‘、【】", 10);
-            }
-
-            GUI.enabled = true;
-        }
-    }
-
-#endif
-
-//2022年6月17日 更新
-//现在改为继承findsimgleton，需要将其挂在场景游戏对象上
-//2022年6月19日 更新
-//支持多行toast
-
-
-//模仿安卓手机的toast 可用于显示提示信息，一段时间后自动消失
+    /// <summary>
+    /// 模仿安卓手机的 Toast：屏幕底部居中、半透明黑底白字，一段时间后自动渐隐消失。
+    /// - 新 Toast 立刻覆盖旧 Toast（停止旧动画，强制重置 opacity=0 再渐入）。
+    /// - 显示节奏：0.2s 渐入 + DefaultShowTime 全显 + 0.2s 渐出（默认总时长约 3.4s）。
+    /// - 字号基准：1280x720 下 30px，按屏幕"对角线长度"等比缩放（每次 Show 重算）。
+    /// - 不拦截下层 UI 的点击（root + Label 均设 PickingMode.Ignore）。
+    /// - 配套 UXML：Assets/PluginHub-dev/Scripts/Runtime/UITK/ToastOverlap.uxml
+    /// </summary>
     [DefaultExecutionOrder(300)]
     public class ToastManager : SceneSingleton<ToastManager>
     {
-        public enum ToastMode
+        // 完全显示时长（不含渐入/渐出）
+        public float DefaultShowTime = 3f;
+
+        public bool testToastUseSpace = false;
+
+        [SerializeField]
+        private PanelSettings panelSettings;
+        [SerializeField]
+        private VisualTreeAsset toastVisualTreeAsset;
+
+        // 渐入/渐出动画时长（必须与 UXML 里 transition-duration 保持一致）
+        private const float FadeDuration = .2f;
+
+        // 字号基准：1280x720 设计分辨率下 Label 文字 30px
+        private const float BaseFontSize = 30f;
+
+        // 基准对角线长度，约 1468.6
+        private static readonly float BaseDiagonal = Mathf.Sqrt(1280f * 1280f + 720f * 720f);
+
+        // UXML 中 Label 的 name
+        private const string ToastLabelName = "ToastLabel";
+
+        private UIDocument uiDocument;
+        private Label toastLabel;
+
+        // 当前显示流程的协程，便于被新 Show 打断
+        private Coroutine showCoroutine;
+
+        private void Awake()
         {
-            Time,
-            OneFrame,
-        }
-
-        public bool autoGuiScale = true;
-        public float guiScale = 1;
-        [Range(0.01f, 2)] public float guiScaleMultiplier = 1;
-
-        [Tooltip("横屏下toast的缩放比例计算因子")] public float horizontalScaleFac = 800;
-        [Tooltip("竖屏下toast的缩放比例计算因子")] public float verticalScaleFac = 400;
-
-        public float DefaultShowTime = 5;
-
-
-        private static GUISkin _myCustonSkin;
-        private static readonly List<ToastText> ToastTextList = new List<ToastText>();
-        private static Vector2 screenSizeScaled; //经过缩放的屏幕分辨率
-
-        public static Vector2 ScreenSizeScaled
-        {
-            get { return screenSizeScaled; }
-        }
-
-
-        protected void Awake()
-        {
-            // _myCustonSkin = GUI.skin;
-        }
-
-        private void Update()
-        {
-            foreach (var toast in ToastTextList)
+            uiDocument = GetComponent<UIDocument>();
+            if (uiDocument == null)
             {
-                toast.Update();
+                uiDocument = gameObject.AddComponent<UIDocument>();
+            }
+            uiDocument.panelSettings = panelSettings;
+            uiDocument.visualTreeAsset = toastVisualTreeAsset;
+            uiDocument.sortingOrder = 9999;
+        }
+
+        private void OnEnable()
+        {
+            // UIDocument 在 OnEnable 时才保证 rootVisualElement 可用
+            var root = uiDocument != null ? uiDocument.rootVisualElement : null;
+            if (root == null)
+            {
+                Debug.LogError("[ToastManager] rootVisualElement 为空，请检查 UIDocument.sourceAsset 是否指向 ToastOverlap.uxml");
+                return;
             }
 
-            //删除所有应该删除的
-            for (int i = ToastTextList.Count - 1; i >= 0; i--)
+            // 整个 Toast 面板都不挡点击：root 和它所有子元素
+            root.pickingMode = PickingMode.Ignore;
+            foreach (var child in root.Children())
+                child.pickingMode = PickingMode.Ignore;
+
+            toastLabel = root.Q<Label>(ToastLabelName);
+            if (toastLabel == null)
             {
-                if (ToastTextList[i].IsDestory)
+                Debug.LogError($"[ToastManager] 在 UXML 中找不到 name=\"{ToastLabelName}\" 的 Label，请检查 ToastOverlap.uxml");
+                return;
+            }
+
+            // 双保险：Label 也不挡点击
+            toastLabel.pickingMode = PickingMode.Ignore;
+            toastLabel.text = string.Empty;
+            toastLabel.style.opacity = 0f;
+
+        }
+
+        void Update()
+        {
+            if (testToastUseSpace)
+            {
+                if (InputEx.GetKeyDown(KeyCode.Space))
                 {
-                    ToastTextList.RemoveAt(i);
+                    Show($"Tick: {Time.time:F2}s");
                 }
             }
-        }
-
-        public void OnGUI()
-        {
-            if (autoGuiScale)
-            {
-                //按照屏幕分辨率自动计算gui缩放
-                if (Screen.width < Screen.height)
-                    guiScale = Screen.width / verticalScaleFac * guiScaleMultiplier;
-                else
-                    guiScale = Screen.height / horizontalScaleFac * guiScaleMultiplier;
-            }
-
-            screenSizeScaled = new Vector2(Screen.width, Screen.height) / guiScale;
-
-            //绘制之前进行布局
-            Relayout();
-
-            Matrix4x4 tmp = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(guiScale, guiScale, guiScale));
-
-            foreach (var toast in ToastTextList)
-            {
-                toast.Draw();
-            }
-
-            GUI.matrix = tmp;
-        }
-
-        public void Show(string text, float duration = -1, bool alsoLogToConsole = false)
-        {
-            ToastText toast = new ToastText(ToastMode.Time, text);
-            toast.duration = duration == -1 ? DefaultShowTime : duration;
-            ToastTextList.Add(toast);
-
-            if (alsoLogToConsole)
-                print(text);
-        }
-
-        public void Show(string text, bool alsoLogToConsole = false)
-        {
-            Show(text, -1, alsoLogToConsole);
         }
 
         public void Show(string text)
         {
-            Show(text, -1, false);
+            if (toastLabel == null)
+            {
+                Debug.LogWarning("[ToastManager] toastLabel 未绑定，无法显示 Toast。请确认场景中 ToastManager 已启用且 UXML 配置正确。");
+                return;
+            }
+
+            // 1) 立刻打断旧的显示协程
+            if (showCoroutine != null)
+            {
+                StopCoroutine(showCoroutine);
+                showCoroutine = null;
+            }
+
+            // 2) 立刻替换文本
+            toastLabel.text = text;
+
+            // 3) 按当前屏幕对角线重算字号（运行时屏幕尺寸可能变化）
+            UpdateFontSize(toastLabel);
+
+            // 4) 关键：强制把 opacity 拉回 0，等下一帧再设 1 才能触发完整的 1s 渐入 transition
+            //    （UI Toolkit 的 transition 不会从"目标值 -> 目标值"插值，必须有变化才会触发）
+            toastLabel.style.opacity = 0f;
+
+            Debug.Log($"[ToastManager] Show: \"{text}\", visibleTime={DefaultShowTime}s, fontSize={toastLabel.resolvedStyle.fontSize:F1}px");
+
+            showCoroutine = StartCoroutine(ShowRoutine(DefaultShowTime));
         }
 
-
-        public void ShowOneFrame(string text, bool alsoLogToConsole = false)
+        /// <summary>
+        /// 显示流程：渐入 -> 全显 -> 渐出。期间被打断会由 Show() 重新启动一条新协程。
+        /// </summary>
+        private IEnumerator ShowRoutine(float visibleTime)
         {
-            ToastText toast = new ToastText(ToastMode.OneFrame, text);
-            ToastTextList.Add(toast);
+            // 等一帧让 opacity=0 真正落到样式上
+            yield return null;
 
-            if (alsoLogToConsole)
-                print(text);
+            // 触发渐入 transition
+            // 直接设置 opacity=1f（UI Toolkit 的 style.opacity 若设置 transition-duration，会自动进行淡入动画）
+            toastLabel.style.opacity = 1f;
+
+            // 等"渐入完成 + 完全显示"时长
+            yield return new WaitForSeconds(FadeDuration + visibleTime);
+
+            // 触发渐出 transition
+            toastLabel.style.opacity = 0f;
+
+            // 等渐出动画走完，避免协程提前结束
+            yield return new WaitForSeconds(FadeDuration);
+
+            showCoroutine = null;
         }
 
-
-        //计算每一个toast的坐标
-        public void Relayout()
+        /// <summary>
+        /// 按对角线长度等比缩放字号：fontSize = 30 * (currentDiagonal / 1468.6)
+        /// </summary>
+        private static void UpdateFontSize(Label label)
         {
-            float heightSum = 10;
-            float margin = 5;
-
-            for (int i = ToastTextList.Count - 1; i >= 0; i--)
-            {
-                float boxH = ToastTextList[i].boxRect.height;
-                heightSum += boxH;
-                heightSum += margin;
-
-                ToastTextList[i].Layout(heightSum);
-            }
-        }
-
-        private class ToastText
-        {
-            private ToastMode mode;
-            public float duration;
-            private readonly string Text;
-            public Rect boxRect;
-            private Rect _labelRect;
-            public bool IsDestory = false;
-            private Vector2 textSize;
-
-            public ToastText(ToastMode mode, string text)
-            {
-                this.mode = mode;
-                this.Text = text;
-            }
-
-            //布局这个toast文本的坐标
-            //startY 屏幕底边为0，往上为正
-            public void Layout(float startY)
-            {
-                this.textSize = GUI.skin.label.CalcSize(new GUIContent(this.Text));
-                //padding 是盒子内填充的空间大小
-                float padding = 15;
-                //外面的盒子  左上角是0，0
-                boxRect = new Rect((ToastManager.screenSizeScaled.x - textSize.x) / 2 - padding,
-                    ToastManager.screenSizeScaled.y - startY, textSize.x + padding * 2, textSize.y + padding * 2);
-
-                float textWidthOffset = 6;
-                //中间的文字大小
-                _labelRect = new Rect(boxRect.x + padding - textWidthOffset, boxRect.y + padding,
-                    boxRect.width - padding * 2 + textWidthOffset * 2, boxRect.height - padding * 2);
-            }
-
-            public void Update()
-            {
-                if (mode == ToastMode.Time)
-                {
-                    duration -= Time.deltaTime;
-                    if (duration <= 0)
-                        IsDestory = true;
-                }
-            }
-
-            public void Draw()
-            {
-                GUI.color = Color.white;
-                GUI.Box(boxRect, "", GUI.skin.box);
-                GUI.Label(_labelRect, Text, GUI.skin.label);
-
-                if (mode == ToastMode.OneFrame)
-                {
-                    IsDestory = true;
-                }
-            }
-
+            float w = Screen.width;
+            float h = Screen.height;
+            float currentDiagonal = Mathf.Sqrt(w * w + h * h);
+            float scale = currentDiagonal / BaseDiagonal;
+            float fontSize = BaseFontSize * scale;
+            label.style.fontSize = new StyleLength(new Length(fontSize, LengthUnit.Pixel));
         }
     }
 }
