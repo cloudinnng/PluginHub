@@ -14,7 +14,6 @@ namespace PluginHub.Runtime
     /// - 配套 UXML：Assets/PluginHub-dev/Scripts/Runtime/UITK/ToastOverlap.uxml
     /// </summary>
     [DefaultExecutionOrder(300)]
-    [RequireComponent(typeof(UIDocument))]
     public class ToastManager : SceneSingleton<ToastManager>
     {
         // 完全显示时长（不含渐入/渐出）
@@ -48,8 +47,13 @@ namespace PluginHub.Runtime
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
+            if (uiDocument == null)
+            {
+                uiDocument = gameObject.AddComponent<UIDocument>();
+            }
             uiDocument.panelSettings = panelSettings;
             uiDocument.visualTreeAsset = toastVisualTreeAsset;
+            uiDocument.sortingOrder = 9999;
         }
 
         private void OnEnable()
