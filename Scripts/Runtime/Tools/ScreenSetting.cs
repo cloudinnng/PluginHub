@@ -14,7 +14,7 @@ using UnityEditor.SceneManagement;
 namespace PluginHub.Runtime
 {
     // 为应用程序提供统一的屏幕配置入口：分辨率/宽高比要求、帧率、休眠、多屏、自动窗口尺寸、自动切换场景
-    public class ScreenSetting : MonoBehaviour, IDebuggerCustomWindowUI
+    public class ScreenSetting : SceneSingleton<ScreenSetting>, IDebuggerCustomWindowUI
     {
         #region 枚举定义
 
@@ -105,6 +105,12 @@ namespace PluginHub.Runtime
         [Tooltip("打包后启动时自动切换到指定场景（按 Build Settings 中的索引）。\n" +
                  "-1 表示不自动切换。仅在非编辑器模式下生效。")]
         public int autoSwitchSceneIndex = -1;
+        public int autoSwitchSceneIndexRuntimeSpecify // 运行时指定自动切换场景的索引,优先使用这个值
+        {
+            get => PlayerPrefs.GetInt($"ScreenSetting_AutoSwitchSceneIndexRuntimeSpecify_{Application.companyName}_{Application.productName}", -1);
+            set => PlayerPrefs.SetInt($"ScreenSetting_AutoSwitchSceneIndexRuntimeSpecify_{Application.companyName}_{Application.productName}", value);
+        }
+        public int startUpScene => autoSwitchSceneIndexRuntimeSpecify >= 0 ? autoSwitchSceneIndexRuntimeSpecify : autoSwitchSceneIndex;
         public bool verboseLogs = false;
 
         #endregion
@@ -287,12 +293,12 @@ namespace PluginHub.Runtime
 
         private void ApplyAutoSwitchScene()
         {
-            if (autoSwitchSceneIndex < 0) return;
+            if (startUpScene < 0) return;
             if (Application.isEditor) return;
 
             if (verboseLogs)
-                Debug.Log($"[ScreenSetting] 自动切换到场景索引 {autoSwitchSceneIndex}");
-            SceneManager.LoadScene(autoSwitchSceneIndex);
+                Debug.Log($"[ScreenSetting] 自动切换到场景索引 {startUpScene},autoSwitchSceneIndexRuntimeSpecify {autoSwitchSceneIndexRuntimeSpecify} , autoSwitchSceneIndex {autoSwitchSceneIndex}");
+            SceneManager.LoadScene(startUpScene);
         }
 
         private IEnumerator ScreenRequirementCheckRoutine()

@@ -243,6 +243,11 @@ namespace PluginHub.Runtime
             set
             {
                 _showFullWindow = value;
+                if (_showFullWindow)
+                { 
+                    _customWindow.RefreshDebuggerClientRoutine();
+                    RefreshOnScreenUIClientList();
+                }
                 SetEventSystem();
             }
         }

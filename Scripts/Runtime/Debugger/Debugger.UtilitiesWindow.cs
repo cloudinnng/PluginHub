@@ -353,14 +353,21 @@ namespace PluginHub.Runtime
                         buildSceneNames[i] = $"{i} {scenePath}";
                     }
                 }
-
+                GUILayout.Label($"启动场景: {ScreenSetting.Instance.startUpScene}");
                 GUILayout.Label($"或者选择一个场景:{buildSceneNames.Length}");
                 for (int i = 0; i < buildSceneNames.Length; i++)
                 {
                     string name = Path.GetFileNameWithoutExtension(buildSceneNames[i]);
-                    if (GUILayout.Button($"{i}、{name}"))
+                    using (new GUILayout.HorizontalScope())
                     {
-                        SceneManager.LoadScene(i);
+                        if (GUILayout.Button($"{i}、{name}"))
+                        {
+                            SceneManager.LoadScene(i);
+                        }
+                        if (GUILayout.Button("设置为启动场景", GUILayout.ExpandWidth(false)))
+                        {
+                            ScreenSetting.Instance.autoSwitchSceneIndexRuntimeSpecify = i;
+                        }
                     }
                 }
             }
