@@ -394,7 +394,9 @@ namespace PluginHub.Editor
                     PluginHubEditor.IconBtnLayoutOptions[1]))
             {
                 Debug.Log($"RevealInFinder:{path}");
-                EditorUtility.RevealInFinder(path);
+                EditorApplication.delayCall += () => {
+                    EditorUtility.RevealInFinder(path);
+                };
             }
             GUI.enabled = true;
         }
