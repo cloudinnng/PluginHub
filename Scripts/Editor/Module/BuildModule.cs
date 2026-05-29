@@ -249,9 +249,9 @@ namespace PluginHub.Editor
                 string.IsNullOrWhiteSpace(packageResolvedPath)
                     ? ""
                     : Path.Combine(packageResolvedPath, "Files", "daemon-run.bat"),
-                Path.GetFullPath("Packages/com.hellottw.pluginhub/Files/daemon-run.bat"),
-                Path.GetFullPath("Assets/PluginHub/Files/daemon-run.bat"),
-                Path.GetFullPath("Files/daemon-run.bat")
+                Path.GetFullPath("Packages/com.hellottw.pluginhub/Plugins/daemon-run.bat"),
+                Path.GetFullPath("Assets/PluginHub/Plugins/daemon-run.bat"),
+                Path.GetFullPath("Plugins/daemon-run.bat")
             };
 
             string sourceFilePath = candidateSourcePaths.FirstOrDefault(File.Exists);
