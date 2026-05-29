@@ -1,0 +1,12 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:VisualElement style="flex-grow: 0; flex-direction: row;">
+            <ui:Button text="Clear"/>
+            <ui:VisualElement style="flex-grow: 1;"/>
+            <ui:Button text="Log"/>
+            <ui:Button text="Warning" name=""/>
+            <ui:Button text="Error" name=""/>
+        </ui:VisualElement>
+        <ui:ListView/>
+    </ui:VisualElement>
+</ui:UXML>
