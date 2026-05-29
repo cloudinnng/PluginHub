@@ -28,6 +28,9 @@ namespace PluginHub.Runtime
             private Vector2 _logScrollPosition = Vector2.zero;
             private Vector2 _stackScrollPosition = Vector2.zero;
             private LinkedListNode<LogNode> _selectedNode = null;
+            private bool _isInitStyles = false;
+            private GUIStyle _logToggleStyle;
+            private GUIStyle _logLabelStyle;
 
             //log 是否使用独立视图。独立视图中，日志详情会占据整个窗口
             // private bool _independentView = false;
@@ -37,10 +40,31 @@ namespace PluginHub.Runtime
             {
             }
 
+            private void InitStyles()
+            {
+                if (_isInitStyles)
+                    return;
+                _isInitStyles = true;
+                _logToggleStyle = new GUIStyle(GUI.skin.toggle)
+                {
+                    padding = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(0, 4, 0, 0),
+                    border = new RectOffset(0, 0, 0, 0),
+                };
+                _logLabelStyle = new GUIStyle(GUI.skin.label)
+                {
+                    padding = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(0, 4, 0, 0),
+                    border = new RectOffset(0, 0, 0, 0),
+                };
+            }
+
             private string searchText = "";
             private bool enableSearch = false;
             public void OnDraw()
             {
+                InitStyles();
+
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button("Clear", GUILayout.Width(70f)))
@@ -87,8 +111,8 @@ namespace PluginHub.Runtime
                     // }
                     // else
                     // {
-                        DrawLogList();
-                        DrawLogDetail(Debugger.Instance.realScreenSize.y / 3f);
+                    DrawLogList();
+                    DrawLogDetail(Debugger.Instance.realScreenSize.y / 3f);
                     // }
                 }
             }
@@ -149,7 +173,7 @@ namespace PluginHub.Runtime
                             GUILayout.BeginHorizontal();
                             {
                                 //前面的开关
-                                if (GUILayout.Toggle(_selectedNode == i,"",GUILayout.ExpandWidth(false),GUILayout.Height(30f)))
+                                if (GUILayout.Toggle(_selectedNode == i, "", _logToggleStyle, GUILayout.Width(19f), GUILayout.Height(19f)))
                                 {
                                     selected = true;
                                     if (_selectedNode != i)
@@ -159,7 +183,7 @@ namespace PluginHub.Runtime
                                     }
                                 }
                                 //绘制这个日志
-                                GUILayout.Label(GetLogString(i.Value));
+                                GUILayout.Label(GetLogString(i.Value), _logLabelStyle);
                             }
                             GUILayout.EndHorizontal();
                         }
@@ -176,48 +200,48 @@ namespace PluginHub.Runtime
 
             private void DrawLogDetail(float height)
             {
-                if(_selectedNode == null)
+                if (_selectedNode == null)
                     return;
-                if(height == 0)
+                if (height == 0)
                     GUILayout.BeginVertical("box");
                 else
-                    GUILayout.BeginVertical("box",GUILayout.Height(height));
+                    GUILayout.BeginVertical("box", GUILayout.Height(height));
+                {
+                    _stackScrollPosition = GUILayout.BeginScrollView(_stackScrollPosition);
                     {
-                        _stackScrollPosition = GUILayout.BeginScrollView(_stackScrollPosition);
+                        GUILayout.BeginHorizontal();
+                        Color32 color = GetLogStringColor(_selectedNode.Value.LogType);
+                        GUILayout.Label(string.Format("<color=#{0}{1}{2}{3}><b>{4}</b></color>",
+                            color.r.ToString("x2"),
+                            color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"),
+                            _selectedNode.Value.LogMessage));
+
+                        // if (GUILayout.Button("Maximize", GUILayout.Width(80f), GUILayout.Height(30f)))
+                        // {
+                        //     _maximize = !_maximize;
+                        // }
+
+                        // if (GUILayout.Button("Back", GUILayout.Width(60f), GUILayout.Height(30f)))
+                        // {
+                        //     _selectedNode = null;
+                        //     GUIUtility.ExitGUI();
+                        // }
+
+                        if (GUILayout.Button("COPY", GUILayout.Width(60f), GUILayout.Height(30f)))
                         {
-                            GUILayout.BeginHorizontal();
-                            Color32 color = GetLogStringColor(_selectedNode.Value.LogType);
-                            GUILayout.Label(string.Format("<color=#{0}{1}{2}{3}><b>{4}</b></color>",
-                                color.r.ToString("x2"),
-                                color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"),
-                                _selectedNode.Value.LogMessage));
-
-                            // if (GUILayout.Button("Maximize", GUILayout.Width(80f), GUILayout.Height(30f)))
-                            // {
-                            //     _maximize = !_maximize;
-                            // }
-
-                            // if (GUILayout.Button("Back", GUILayout.Width(60f), GUILayout.Height(30f)))
-                            // {
-                            //     _selectedNode = null;
-                            //     GUIUtility.ExitGUI();
-                            // }
-
-                            if (GUILayout.Button("COPY", GUILayout.Width(60f), GUILayout.Height(30f)))
-                            {
-                                TextEditor textEditor = new TextEditor();
-                                textEditor.text = string.Format("{0}\n\n{1}", _selectedNode.Value.LogMessage,
-                                    _selectedNode.Value.StackTrack);
-                                textEditor.OnFocus();
-                                textEditor.Copy();
-                            }
-
-                            GUILayout.EndHorizontal();
-                            GUILayout.Label(_selectedNode.Value.StackTrack);
+                            TextEditor textEditor = new TextEditor();
+                            textEditor.text = string.Format("{0}\n\n{1}", _selectedNode.Value.LogMessage,
+                                _selectedNode.Value.StackTrack);
+                            textEditor.OnFocus();
+                            textEditor.Copy();
                         }
-                        GUILayout.EndScrollView();
+
+                        GUILayout.EndHorizontal();
+                        GUILayout.Label(_selectedNode.Value.StackTrack);
                     }
-                    GUILayout.EndVertical();
+                    GUILayout.EndScrollView();
+                }
+                GUILayout.EndVertical();
             }
 
 
@@ -237,10 +261,10 @@ namespace PluginHub.Runtime
                         color = Color.white;
                         break;
                     case LogType.Warning:
-                        color = Color.yellow;
+                        color = Color.softYellow;
                         break;
                     case LogType.Error:
-                        color = Color.red;
+                        color = Color.softRed;
                         break;
                     case LogType.Exception:
                         color = new Color(0.7f, 0.2f, 0.2f);
