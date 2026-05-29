@@ -108,8 +108,14 @@ namespace PluginHub.Runtime
             set => PlayerPrefs.SetInt($"PH_{Application.companyName}_{Application.productName}_Debugger_DefaultOpen", value ? 1 : 0);
         }
 
+        //debugger有两种窗口，一种是仅显示FPS的小窗口，一种是有更多功能的大窗口
+        // 2026年5月29日起，该值不在检视面板上设置，而是存储在PlayerPrefs中
+        private bool defaultShowFullWindow
+        {
+            get => PlayerPrefs.GetInt($"PH_{Application.companyName}_{Application.productName}_Debugger_DefaultShowFullWindow", 0) == 1;
+            set => PlayerPrefs.SetInt($"PH_{Application.companyName}_{Application.productName}_Debugger_DefaultShowFullWindow", value ? 1 : 0);
+        }
         [Header("默认设置")]
-        public bool defaultShowFullWindow = false; //debugger有两种窗口，一种是仅显示FPS的小窗口，一种是有更多功能的大窗口
         public int defaultTab = 0; //默认打开的tab页
         public Vector2 defaultWindowPosition = new Vector2(10, 10);
 
@@ -243,6 +249,7 @@ namespace PluginHub.Runtime
             set
             {
                 _showFullWindow = value;
+                defaultShowFullWindow = _showFullWindow;
                 if (_showFullWindow)
                 { 
                     _customWindow.RefreshDebuggerClientRoutine();

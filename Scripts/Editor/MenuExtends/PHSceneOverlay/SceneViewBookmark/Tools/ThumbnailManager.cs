@@ -12,7 +12,7 @@ namespace PluginHub.Editor
 
         private static string ThumbnailPath
         {
-            get { return $"{BookmarkSettings.ASSET_DIR}/Thumbnails"; }
+            get { return $"{PluginHubConfig.ASSET_DIR}/Thumbnails"; }
         }
 
         public static Texture2D CreateThumbnail(Camera camera, string scenePath, string name)

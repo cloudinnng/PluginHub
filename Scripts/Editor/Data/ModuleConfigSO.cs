@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using PluginHub.Editor;
@@ -171,19 +172,77 @@ namespace PluginHub.Editor
         public List<ModuleTabConfig> tabConfigs = new List<ModuleTabConfig>();
         // public Object moduleFolder;
 
+        /// <summary>模块目录（项目相对路径，末尾带 /），兼容 UPM 与 Assets 安装。</summary>
+        private static string _moduleFolderCache;
 
+        private string moduleFolder
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_moduleFolderCache))
+                    _moduleFolderCache = ResolveModuleFolder();
+                return _moduleFolderCache;
+            }
+        }
 
-        //模块前缀
-        private string moduleFolder = "Packages/com.hellottw.pluginhub/Scripts/Editor/Module/";
+        /// <summary>
+        /// 解析 Scripts/Editor/Module/ 目录：优先 Package Manager，否则用锚点脚本，最后兜底 Assets 路径。
+        /// </summary>
+        private static string ResolveModuleFolder()
+        {
+            const string relative = "Scripts/Editor/Module/";
+
+            try
+            {
+                UnityEditor.PackageManager.PackageInfo packageInfo =
+                    UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(ModuleConfigSO).Assembly);
+                if (packageInfo != null && !string.IsNullOrEmpty(packageInfo.assetPath))
+                {
+                    string folder = $"{packageInfo.assetPath}/{relative}";
+                    Debug.Log($"[ModuleConfigSO] 模块目录（UPM 包 {packageInfo.name}）: {folder}");
+                    return folder;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[ModuleConfigSO] PackageManager 解析失败，改用 Assets 定位。异常: {e.Message}");
+            }
+
+            // 裸放在 Assets 下：通过 BuildModule.cs 反推 Module 文件夹
+            string[] guids = AssetDatabase.FindAssets("BuildModule t:MonoScript");
+            foreach (string guid in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (!assetPath.EndsWith("/BuildModule.cs", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string folderFromScript = Path.GetDirectoryName(assetPath)?.Replace('\\', '/') + "/";
+                Debug.Log($"[ModuleConfigSO] 模块目录（Assets 锚点）: {folderFromScript}");
+                return folderFromScript;
+            }
+
+            const string fallback = "Assets/PluginHub/Scripts/Editor/Module/";
+            Debug.LogWarning($"[ModuleConfigSO] 未找到锚点脚本，使用兜底路径: {fallback}");
+            return fallback;
+        }
 
         //获取所有模块的路径
-        //Packages/com.hellottw.pluginhub/Editor/Module/Base64TextureConvertModule.cs
         public string[] GetAllModulePath()
         {
-            //所有模块
-            string[] moduleFiles = System.IO.Directory.GetFiles(moduleFolder, "*.cs", System.IO.SearchOption.AllDirectories);
-            //过滤掉非模块文件, 无法将非模块类作为模块添加
-            moduleFiles = moduleFiles.Where(x => x.EndsWith("Module.cs")).ToArray();
+            string folder = moduleFolder;
+            if (!Directory.Exists(folder))
+            {
+                Debug.LogError($"[ModuleConfigSO] 模块目录不存在: {folder}");
+                return Array.Empty<string>();
+            }
+
+            // 所有模块（统一为 AssetDatabase 可用的正斜杠路径）
+            string[] moduleFiles = Directory.GetFiles(folder, "*.cs", SearchOption.AllDirectories);
+            moduleFiles = moduleFiles
+                .Select(p => p.Replace('\\', '/'))
+                .Where(x => x.EndsWith("Module.cs"))
+                .ToArray();
+            Debug.Log($"[ModuleConfigSO] 在 {folder} 扫描到 {moduleFiles.Length} 个模块。");
             return moduleFiles;
         }
 
