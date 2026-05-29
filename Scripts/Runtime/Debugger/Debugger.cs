@@ -284,7 +284,8 @@ namespace PluginHub.Runtime
         {
             _fps.Update();
             _consoleWindow.RefreshCount();
-            topstTabNames[0] = $"<color={GetTextColor()}>Console</color>";
+            if(topstTabNames != null && topstTabNames.Length > 0)
+                topstTabNames[0] = $"<color={GetTextColor()}>Console</color>";
 
             //快捷键
             //显示/隐藏调试器  1键左边那个键
