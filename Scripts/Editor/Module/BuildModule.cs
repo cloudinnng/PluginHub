@@ -738,6 +738,7 @@ namespace PluginHub.Editor
                 GUI.enabled = true;
             }
             GUILayout.EndHorizontal();
+            DrawZebraRowBackground(index);
         }
 
         private DateTime GetBuildTime(string buildDirectory)
@@ -853,6 +854,7 @@ namespace PluginHub.Editor
                 }
             }
             GUILayout.EndHorizontal();
+            DrawZebraRowBackground(index);
         }
 
         #endregion
@@ -860,6 +862,23 @@ namespace PluginHub.Editor
         #endregion
 
         #region 辅助绘制
+
+        /// <summary>
+        /// 行绘制完成后为奇数行叠加半透明背景。所有行均使用相同的 BeginHorizontal()，避免样式差异导致列对不齐。
+        /// </summary>
+        private static void DrawZebraRowBackground(int index)
+        {
+            if (Event.current.type != EventType.Repaint || index % 2 != 1)
+                return;
+
+            Rect rowRect = GUILayoutUtility.GetLastRect();
+            bool isDarkTheme = EditorGUIUtility.isProSkin;
+            float alpha = isDarkTheme ? 0.08f : 0.06f;
+            Color bgColor = isDarkTheme
+                ? new Color(1f, 1f, 1f, alpha)
+                : new Color(0f, 0f, 0f, alpha);
+            EditorGUI.DrawRect(rowRect, bgColor);
+        }
 
         private static void DrawItem(string title, string content)
         {
