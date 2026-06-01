@@ -14,8 +14,8 @@ namespace PluginHub.Runtime
     {
         private string expireDateForWriteFile
         {
-            get => EditorPrefs.GetString("ApplicationExpire_ExpireDateForWriteFile", "2099-12-31");
-            set => EditorPrefs.SetString("ApplicationExpire_ExpireDateForWriteFile", value);
+            get => EditorPrefs.GetString($"PH_{Application.companyName}_{Application.productName}_ApplicationExpire_ExpireDateForWriteFile", "2099-12-31");
+            set => EditorPrefs.SetString($"PH_{Application.companyName}_{Application.productName}_ApplicationExpire_ExpireDateForWriteFile", value);
         }
         public override void OnInspectorGUI()
         {
