@@ -161,7 +161,10 @@ namespace PluginHub.Runtime
             ApplySleepPolicy();
             ApplyFrameRate();
             ActivateDisplays();
-            ApplyAutoWindowSize();
+            if (autoWindowSize)
+            {
+                ApplyAutoWindowSize();
+            }
             ApplyAutoSwitchScene();
 
             // 如果屏幕要求不满足，启动持续检测协程
@@ -239,9 +242,8 @@ namespace PluginHub.Runtime
                     Debug.LogWarning($"[ScreenSetting] 请求激活 {activeDisplayCount} 个显示器，但系统仅检测到 {available} 个");
         }
 
-        private void ApplyAutoWindowSize()
+        public void ApplyAutoWindowSize()
         {
-            if (!autoWindowSize) return;
             if (!IsStandalonePlatform()) return;
             if (Screen.fullScreen)
             {

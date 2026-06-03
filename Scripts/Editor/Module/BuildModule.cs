@@ -423,6 +423,14 @@ namespace PluginHub.Editor
                         EditorApplication.delayCall += BuildStandaloneProject;
                     }
 
+                    if (GUILayout.Button("构建并运行", GUILayout.ExpandWidth(false)))
+                    {
+                        EditorApplication.delayCall += () =>
+                        {
+                            BuildStandaloneProject();
+                            ExecuteExe(path);
+                        };
+                    }
                     DrawIconBtnOpenFolder(path, true);
                     DrawRunButton(path);
                 }

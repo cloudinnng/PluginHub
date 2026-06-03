@@ -27,6 +27,15 @@ namespace PluginHub.Runtime
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetActiveWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        /// <summary>Win32 ShowWindow：最小化窗口</summary>
+        private const int SW_MINIMIZE = 6;
+
         // not used rigth now
         //const uint SWP_NOMOVE = 0x2;
         //const uint SWP_NOSIZE = 1;
@@ -78,6 +87,35 @@ namespace PluginHub.Runtime
 
             SetWindowLong(GetForegroundWindow(), GWL_STYLE, WS_BORDER);
             SetWindowPos(GetForegroundWindow(), 0, x, y, width, height, SWP_SHOWWINDOW);
+        }
+
+        /// <summary>
+        /// 最小化当前 Unity 应用程序窗口（Windows 独立构建有效，编辑器内无效果）
+        /// </summary>
+        public static void MinimizeApplicationWindow()
+        {
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                Debug.Log("[WindowDisplayHelper] 编辑器模式下无法最小化 Player 窗口，请在 Windows 独立构建中测试。");
+                return;
+            }
+
+            if (Application.platform != RuntimePlatform.WindowsPlayer)
+            {
+                Debug.LogWarning($"[WindowDisplayHelper] 最小化窗口仅支持 Windows 平台，当前平台: {Application.platform}");
+                return;
+            }
+
+            // 优先取当前线程活动窗口（IMGUI 按钮点击时更可靠），失败则回退到前台窗口
+            IntPtr hwnd = GetActiveWindow();
+            if (hwnd == IntPtr.Zero)
+            {
+                hwnd = GetForegroundWindow();
+                Debug.LogWarning("[WindowDisplayHelper] GetActiveWindow 返回空句柄，已回退到 GetForegroundWindow。");
+            }
+
+            bool success = ShowWindow(hwnd, SW_MINIMIZE);
+            Debug.Log($"[WindowDisplayHelper] 调用 ShowWindow(SW_MINIMIZE)，hwnd={hwnd}, success={success}");
         }
         // //设置为有标题的窗口模式
         // public static void SetWithTitle(int x,int y,int width,int height)

@@ -232,10 +232,7 @@ namespace PluginHub.Runtime
                 defaultOpen = _isShowDebugger;
                 if (_isShowDebugger) //显示的时候自动调整GUI缩放
                 {
-                    if (Screen.width > Screen.height) //根据高
-                        _debuggerWindowGUIScale = Screen.height / (_fullWindowRect.height + 20);
-                    else //根据宽
-                        _debuggerWindowGUIScale = Screen.width / (_fullWindowRect.width + 20);
+                    AdjustDebuggerWindowGUIScale();
                     //刷新客户端
                     _customWindow.RefreshDebuggerClientRoutine();
                     RefreshOnScreenUIClientList();
@@ -243,6 +240,15 @@ namespace PluginHub.Runtime
                 SetEventSystem();
             }
         }
+
+        private void AdjustDebuggerWindowGUIScale()
+        {
+            if (Screen.width > Screen.height) //根据高
+                _debuggerWindowGUIScale = Screen.height / (_fullWindowRect.height + 20);
+            else //根据宽
+                _debuggerWindowGUIScale = Screen.width / (_fullWindowRect.width + 20);
+        }
+
         public bool isShowFullWindow // call this
         {
             get { return _showFullWindow; }
@@ -251,7 +257,7 @@ namespace PluginHub.Runtime
                 _showFullWindow = value;
                 defaultShowFullWindow = _showFullWindow;
                 if (_showFullWindow)
-                { 
+                {
                     _customWindow.RefreshDebuggerClientRoutine();
                     RefreshOnScreenUIClientList();
                 }
@@ -284,7 +290,7 @@ namespace PluginHub.Runtime
         {
             _fps.Update();
             _consoleWindow.RefreshCount();
-            if(topstTabNames != null && topstTabNames.Length > 0)
+            if (topstTabNames != null && topstTabNames.Length > 0)
                 topstTabNames[0] = $"<color={GetTextColor()}>Console</color>";
 
             //快捷键
@@ -397,17 +403,18 @@ namespace PluginHub.Runtime
                     //绘制顶层Tab标签按钮
                     _selectIndex = GUILayout.Toolbar(_selectIndex, topstTabNames, GUILayout.Height(25f));
 
-                    //最小化按钮
+                    //显示关于页面按钮
                     if (GUILayout.Button("?", GUILayout.Height(25f), GUILayout.Width(30f)))
                         _showCreditsPage = !_showCreditsPage;
 
-                    //最小化按钮
+                    //最小化Debugger
                     if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))
                         isShowFullWindow = false;
 
                     //关闭调试器按钮
                     if (GUILayout.Button("X", GUILayout.Height(25f), GUILayout.Width(30f)))
                         isShowDebugger = false;
+
                 }
                 GUILayout.EndHorizontal();
                 //画出选择的窗口

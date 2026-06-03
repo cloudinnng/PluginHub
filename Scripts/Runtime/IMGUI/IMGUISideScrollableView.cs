@@ -73,7 +73,7 @@ namespace PluginHub.Runtime
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F4))
+            if (InputEx.GetKeyDown(KeyCode.F4))
                 showSidebarGUI = !showSidebarGUI;
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -84,17 +84,9 @@ namespace PluginHub.Runtime
                 GUILayout.EndVertical();
             }
 
-            Vector2Int[] resolution4by3 = new Vector2Int[]
+            Vector2Int[] commonResolution = new Vector2Int[]
             {
-                new Vector2Int(640, 480), new Vector2Int(800, 600), new Vector2Int(960, 720), new Vector2Int(1024, 768),
-                new Vector2Int(1152, 864), new Vector2Int(1280, 960), new Vector2Int(1400, 1050), new Vector2Int(1600, 1200),
-                new Vector2Int(2048, 1536),
-            };
-            Vector2Int[] resolution16by9 = new Vector2Int[]
-            {
-                new Vector2Int(640, 360), new Vector2Int(854, 480), new Vector2Int(960, 540), new Vector2Int(1024, 576),
-                new Vector2Int(1280, 720), new Vector2Int(1366, 768), new Vector2Int(1600, 900), new Vector2Int(1920, 1080),
-                new Vector2Int(2560, 1440), new Vector2Int(3840, 2160),
+                new Vector2Int(960, 540), new Vector2Int(1280, 720), new Vector2Int(1920, 1080), new Vector2Int(2560, 1440), new Vector2Int(3840, 2160),
             };
 
 
@@ -104,7 +96,39 @@ namespace PluginHub.Runtime
                 if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android)
                     return;
 
-                GUILayout.Label("Resolution / Screen");
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("Resolution / Screen");
+                    GUILayout.FlexibleSpace();
+                    if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer
+                        || Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor)
+                    {
+                        //最小化应用程序按钮（Windows 独立构建：调用 user32 ShowWindow 最小化 Player 窗口）
+                        if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))
+                            WindowDisplayHelper.MinimizeApplicationWindow();
+
+                        // 最大化应用程序按钮
+                        bool currentFullScreen = Screen.fullScreen;
+                        GUI.color = currentFullScreen ? Color.cyan : Color.white;
+                        if (GUILayout.Button(currentFullScreen ? "⧉" : "囗", GUILayout.Height(25f), GUILayout.Width(30f)))
+                        {
+                            if (currentFullScreen)
+                            {
+                                Screen.fullScreen = false;
+                                ScreenSetting.Instance?.ApplyAutoWindowSize();
+                            }
+                            else
+                            {
+                                Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, true);
+                            }
+                            Instance.StartCoroutine(PluginHubRuntime.DelayAction(0.1f, Instance.AdjustDebuggerWindowGUIScale));
+                        }
+                        GUI.color = Color.white;
+                        // 关闭应用程序按钮
+                        if (GUILayout.Button("X", GUILayout.Height(25f), GUILayout.Width(30f)))
+                            Application.Quit();
+                    }
+                }
 
                 GUILayout.BeginVertical("Box");
                 {
@@ -115,52 +139,48 @@ namespace PluginHub.Runtime
                     }
                     GUILayout.EndHorizontal();
 
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        GUILayout.Label($"Resolution Quick Selection ({Screen.width}x{Screen.height}):");
+                        GUILayout.FlexibleSpace();
+                        GUI.color = Screen.fullScreen ? Color.cyan : Color.white;
+                        if (GUILayout.Button("FullScreen"))
+                        {
+                            Screen.fullScreen = !Screen.fullScreen;
+                        }
+                        GUI.color = exchangeWidthHeight ? Color.cyan : Color.white;
+                        if (GUILayout.Button("Exchange Width/Height"))
+                        {
+                            exchangeWidthHeight = !exchangeWidthHeight;
+                        }
+                        GUI.color = Color.white;
+                    }
+
                     GUILayout.BeginHorizontal();
                     {
-                        if (GUILayout.Button($"NativeFullScreen ({Screen.currentResolution.width} x {Screen.currentResolution.height})"))
-                            Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, true);
-
-                        GUILayout.FlexibleSpace();
-                        bool newValue = GUILayout.Toggle(Screen.fullScreen, "FullScreen");
-                        if (newValue != Screen.fullScreen)
-                            Screen.fullScreen = newValue;
-                        exchangeWidthHeight = GUILayout.Toggle(exchangeWidthHeight, "交换宽高");
+                        // 显示所有分辨率
+                        string[] names = commonResolution.Select(v => exchangeWidthHeight ? $"{v.y} x {v.x}" : $"{v.x} x {v.y}").ToArray();
+                        int selected = GUILayout.SelectionGrid(-1, names, 5);
+                        if (selected != -1)
+                        {
+                            if (exchangeWidthHeight)
+                                Screen.SetResolution(commonResolution[selected].y, commonResolution[selected].x, false);
+                            else
+                                Screen.SetResolution(commonResolution[selected].x, commonResolution[selected].y, false);
+                            Instance.StartCoroutine(PluginHubRuntime.DelayAction(0.1f, Instance.AdjustDebuggerWindowGUIScale));
+                        }
                     }
                     GUILayout.EndHorizontal();
 
-                    // 显示所有分辨率
-                    string[] names4by3 = resolution4by3.Select(v => $"{v.x} x {v.y}").ToArray();
-                    string[] names16by9 = resolution16by9.Select(v => $"{v.x} x {v.y}").ToArray();
-                    int selected = GUILayout.SelectionGrid(-1, names4by3, 6);
-                    if (selected != -1)
-                    {
-                        if (exchangeWidthHeight)
-                            Screen.SetResolution(resolution4by3[selected].y, resolution4by3[selected].x, Screen.fullScreen);
-                        else
-                            Screen.SetResolution(resolution4by3[selected].x, resolution4by3[selected].y, Screen.fullScreen);
-                    }
-                    selected = GUILayout.SelectionGrid(-1, names16by9, 6);
-                    if (selected != -1)
-                    {
-                        if (exchangeWidthHeight)
-                            Screen.SetResolution(resolution16by9[selected].y, resolution16by9[selected].x, Screen.fullScreen);
-                        else
-                            Screen.SetResolution(resolution16by9[selected].x, resolution16by9[selected].y, Screen.fullScreen);
-                    }
-
                     GUILayout.BeginHorizontal();
                     {
-                        GUILayout.Label("移动设备预览快选:");
-                        GUILayout.FlexibleSpace();
-
-                    }
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginHorizontal();
-                    {
-                        if (GUILayout.Button($"12 Pro max"))
-                            TryResolutionWindowed(1284, 2778, exchangeWidthHeight);
+                        if (GUILayout.Button($"15 Pro max"))
+                            TryResolutionWindowed(1290, 2796, exchangeWidthHeight);
                         if (GUILayout.Button($"iPad Air 5"))
                             TryResolutionWindowed(1536, 2048, exchangeWidthHeight);
+                        if (GUILayout.Button($"Lenovo Xiaoxin Pad Pro 2025 edition"))
+                            TryResolutionWindowed(1840, 2944, exchangeWidthHeight);
+
                     }
                     GUILayout.EndHorizontal();
 
@@ -197,6 +217,7 @@ namespace PluginHub.Runtime
                     int useWidth = (int)(useHeight * windowedRatio);
                     Screen.SetResolution(useWidth, useHeight, false);
                 }
+                Instance.StartCoroutine(PluginHubRuntime.DelayAction(0.1f, Instance.AdjustDebuggerWindowGUIScale));
             }
 
             private void DrawDebugModule()

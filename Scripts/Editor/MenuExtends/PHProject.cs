@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using PluginHub.Runtime.Runtime;
+using PluginHub.Runtime;
 using UnityEditor;
 using UnityEngine;
 
