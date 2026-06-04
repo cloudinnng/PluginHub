@@ -424,58 +424,64 @@ namespace PluginHub.Runtime
 
         private void OnGUI()
         {
-            if (useOnScreenUI)
+            int previousDepth = GUI.depth;
+            GUI.depth = -1;
             {
-                Matrix4x4 tmp1 = GUI.matrix;
-                GUI.color = onScreenUIColor;
+                if (useOnScreenUI)
                 {
-                    GUI.matrix = Matrix4x4.Scale(new Vector3(onScreenUIGUIScale, onScreenUIGUIScale, 1));
+                    Matrix4x4 tmp1 = GUI.matrix;
+                    GUI.color = onScreenUIColor;
                     {
-                        foreach (IDebuggerOnScreenUI client in clientList)
+                        GUI.matrix = Matrix4x4.Scale(new Vector3(onScreenUIGUIScale, onScreenUIGUIScale, 1));
                         {
-                            client.OnScreenUIDraw(onScreenUIGUIScale);
-                        }
-                    }
-                    GUI.matrix = tmp1;
-                }
-                GUI.color = Color.white;
-            }
-
-
-            if (!isShowDebugger) return;
-
-            //整体缩放绘制
-            Matrix4x4 tmp = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(_debuggerWindowGUIScale, _debuggerWindowGUIScale, 1));
-            {
-                if (isShowFullWindow)
-                {
-                    if (fullScreenMode)
-                    {
-                        GUILayout.BeginArea(new Rect(0, 0, realScreenSize.x, realScreenSize.y));
-                        {
-                            if (fullScreenWidth)
-                                GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(realScreenSize.x));
-                            else
-                                GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(_fullWindowRect.width));
+                            foreach (IDebuggerOnScreenUI client in clientList)
                             {
-                                DrawBigWindow(1);
+                                client.OnScreenUIDraw(onScreenUIGUIScale);
                             }
-                            GUILayout.EndVertical();
                         }
-                        GUILayout.EndArea();
+                        GUI.matrix = tmp1;
                     }
-                    else
-                    {
-                        _fullWindowRect = GUILayout.Window(0, _fullWindowRect, DrawBigWindow, "<b>Debugger</b>");
-                    }
+                    GUI.color = Color.white;
                 }
-                else
+
+
+                if (isShowDebugger)
                 {
-                    _minWindowRect = GUILayout.Window(0, _minWindowRect, DrawMinWindow, "<b>Debugger</b>");
+                    //整体缩放绘制
+                    Matrix4x4 tmp = GUI.matrix;
+                    GUI.matrix = Matrix4x4.Scale(new Vector3(_debuggerWindowGUIScale, _debuggerWindowGUIScale, 1));
+                    {
+                        if (isShowFullWindow)
+                        {
+                            if (fullScreenMode)
+                            {
+                                GUILayout.BeginArea(new Rect(0, 0, realScreenSize.x, realScreenSize.y));
+                                {
+                                    if (fullScreenWidth)
+                                        GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(realScreenSize.x));
+                                    else
+                                        GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(_fullWindowRect.width));
+                                    {
+                                        DrawBigWindow(1);
+                                    }
+                                    GUILayout.EndVertical();
+                                }
+                                GUILayout.EndArea();
+                            }
+                            else
+                            {
+                                _fullWindowRect = GUILayout.Window(0, _fullWindowRect, DrawBigWindow, "<b>Debugger</b>");
+                            }
+                        }
+                        else
+                        {
+                            _minWindowRect = GUILayout.Window(0, _minWindowRect, DrawMinWindow, "<b>Debugger</b>");
+                        }
+                    }
+                    GUI.matrix = tmp; //记得设置回来 不然会有bug
                 }
             }
-            GUI.matrix = tmp; //记得设置回来 不然会有bug
+            GUI.depth = previousDepth;
         }
     }
 }
