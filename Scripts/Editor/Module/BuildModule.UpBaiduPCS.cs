@@ -4,13 +4,14 @@ using UnityEngine;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Text;
+using PluginHub.Runtime;
 
 namespace PluginHub.Editor
 {
     public partial class BuildModule : PluginHubModuleBase
     {
         // 获取 BaiduPCS-Go 文件夹在系统中的完整路径
-        private static string baiduPCSGoFolderFullPath => Path.GetFullPath("Packages/com.hellottw.pluginhub/Plugins/BaiduPCS-Go");
+        private static string baiduPCSGoFolderFullPath => PluginHubRuntime.ResolveRelativePath("Plugins/BaiduPCS-Go");
 
         private void DrawBaiduPCSSection()
         {
@@ -19,7 +20,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.FlexibleSpace();
 
-                DrawIconBtnOpenFolder(baiduPCSGoFolderFullPath, true);
+                DrawIconBtnOpenFolder(baiduPCSGoFolderFullPath);
 
                 if (GUILayout.Button("登录", GUILayout.ExpandWidth(false)))
                 {

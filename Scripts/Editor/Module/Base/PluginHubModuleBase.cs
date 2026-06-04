@@ -374,7 +374,13 @@ namespace PluginHub.Editor
             GUILayout.Space(5);
         }
 
-        public void DrawIconBtnOpenFolder(string path, bool checkExist, string buttonTxt = null)
+        
+        /// <summary>
+        /// 绘制"打开文件夹"的图标按钮，点击后在资源管理器或Finder中打开指定路径。
+        /// </summary>
+        /// <param name="path">要打开的文件夹路径</param>
+        /// <param name="buttonTxt">按钮显示文本（可选，为空则只显示icon）</param>
+        public void DrawIconBtnOpenFolder(string path,string buttonTxt = null)
         {
             // macOS下的路径是以/分隔的，而Windows下的路径是以\分隔的，因此需要处理一下
 #if UNITY_EDITOR_OSX
@@ -386,15 +392,16 @@ namespace PluginHub.Editor
 #endif
 
             string checkPath = Path.GetDirectoryName(path);
-            bool exist = checkExist ? Directory.Exists(checkPath) : true;
+            bool exist = Directory.Exists(checkPath);
             GUI.enabled = exist;
             //open folder button
             if (GUILayout.Button(PluginHubEditor.IconContent("FolderEmpty On Icon", buttonTxt, path),
-                    (string.IsNullOrWhiteSpace(buttonTxt)) ? PluginHubEditor.IconBtnLayoutOptions[0] : GUILayout.ExpandWidth(false),
+                    string.IsNullOrWhiteSpace(buttonTxt) ? PluginHubEditor.IconBtnLayoutOptions[0] : GUILayout.ExpandWidth(false),
                     PluginHubEditor.IconBtnLayoutOptions[1]))
             {
                 Debug.Log($"RevealInFinder:{path}");
-                EditorApplication.delayCall += () => {
+                EditorApplication.delayCall += () =>
+                {
                     EditorUtility.RevealInFinder(path);
                 };
             }

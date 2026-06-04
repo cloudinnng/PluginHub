@@ -11,7 +11,7 @@ namespace PluginHub.Runtime
     /// - 显示节奏：0.2s 渐入 + DefaultShowTime 全显 + 0.2s 渐出（默认总时长约 3.4s）。
     /// - 字号基准：1280x720 下 30px，按屏幕"对角线长度"等比缩放（每次 Show 重算）。
     /// - 不拦截下层 UI 的点击（root + Label 均设 PickingMode.Ignore）。
-    /// - 配套 UXML：Assets/PluginHub-dev/Scripts/Runtime/UITK/ToastOverlap.uxml
+    /// - 配套 UXML：PluginHubRuntime.ResolveRelativePath("Scripts/Runtime/UITK/ToastOverlap.uxml")
     /// </summary>
     [DefaultExecutionOrder(300)]
     public class ToastManager : SceneSingleton<ToastManager>

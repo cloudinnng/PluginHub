@@ -223,47 +223,14 @@ namespace PluginHub.Editor
                 return;
             }
 
-            // 按优先级尝试多个来源路径，兼容不同插件安装方式。
-            string packageResolvedPath = "";
-            try
+            string scriptPath = PluginHubRuntime.ResolveRelativePath("Plugins/daemon-run.bat");
+            if (string.IsNullOrWhiteSpace(scriptPath))
             {
-                UnityEditor.PackageManager.PackageInfo packageInfo =
-                    UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/com.hellottw.pluginhub");
-                if (packageInfo != null && !string.IsNullOrWhiteSpace(packageInfo.resolvedPath))
-                {
-                    packageResolvedPath = packageInfo.resolvedPath;
-                    Debug.Log($"[BuildModule] PackageManager resolvedPath={packageResolvedPath}");
-                }
-                else
-                {
-                    Debug.LogWarning("[BuildModule] PackageManager 未找到 com.hellottw.pluginhub，将使用回退路径。");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[BuildModule] 调用 PackageManager API 失败，将使用回退路径。异常：{e.Message}");
-            }
-
-            string[] candidateSourcePaths =
-            {
-                string.IsNullOrWhiteSpace(packageResolvedPath)
-                    ? ""
-                    : Path.Combine(packageResolvedPath, "Files", "daemon-run.bat"),
-                Path.GetFullPath("Packages/com.hellottw.pluginhub/Plugins/daemon-run.bat"),
-                Path.GetFullPath("Assets/PluginHub/Plugins/daemon-run.bat"),
-                Path.GetFullPath("Plugins/daemon-run.bat")
-            };
-
-            string sourceFilePath = candidateSourcePaths.FirstOrDefault(File.Exists);
-            if (string.IsNullOrWhiteSpace(sourceFilePath))
-            {
-                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：未找到源文件。已检查路径：" +
-                                 string.Join(" | ", candidateSourcePaths));
+                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：未找到源文件。已检查路径：" + scriptPath);
                 return;
             }
-
             string targetFilePath = Path.Combine(buildDirectory, "daemon-run.bat");
-            File.Copy(sourceFilePath, targetFilePath, true);
+            File.Copy(scriptPath, targetFilePath, true);
             Debug.Log($"[BuildModule] 已复制 daemon-run.bat 到构建目录：{targetFilePath}");
         }
 
@@ -431,7 +398,7 @@ namespace PluginHub.Editor
                             ExecuteExe(path);
                         };
                     }
-                    DrawIconBtnOpenFolder(path, true);
+                    DrawIconBtnOpenFolder(path);
                     DrawRunButton(path);
                 }
                 GUILayout.EndHorizontal();
@@ -461,7 +428,7 @@ namespace PluginHub.Editor
                         EditorApplication.delayCall += () => BuildStandaloneCurrScene(true);
                     }
 
-                    DrawIconBtnOpenFolder(path, true);
+                    DrawIconBtnOpenFolder(path);
                     DrawRunButton(path);
                 }
             }
@@ -551,7 +518,7 @@ namespace PluginHub.Editor
                     GUI.enabled = true;
                 }
 
-                DrawIconBtnOpenFolder(path, true);
+                DrawIconBtnOpenFolder(path);
                 DrawIconBtnCopy(path);
             }
             GUILayout.EndHorizontal();
@@ -581,7 +548,7 @@ namespace PluginHub.Editor
                     EditorApplication.delayCall += () => BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
                 }
 
-                DrawIconBtnOpenFolder(path, true);
+                DrawIconBtnOpenFolder(path);
             }
             GUILayout.EndHorizontal();
         }
@@ -610,7 +577,7 @@ namespace PluginHub.Editor
                     EditorApplication.delayCall += () => BuildWebGL($@"Build/WebGL/");
                 }
 
-                DrawIconBtnOpenFolder(path, true);
+                DrawIconBtnOpenFolder(path);
             }
             GUILayout.EndHorizontal();
         }
@@ -637,7 +604,7 @@ namespace PluginHub.Editor
                 {
                     EditorApplication.delayCall += () => BuildMacOS($@"Build/MacOS/{PlayerSettings.productName}.app");
                 }
-                DrawIconBtnOpenFolder(path, true);
+                DrawIconBtnOpenFolder(path);
             }
             GUILayout.EndHorizontal();
         }
@@ -690,7 +657,7 @@ namespace PluginHub.Editor
             {
                 GUILayout.Label(PluginHubEditor.IconContent("VerticalLayoutGroup Icon"));
                 GUILayout.FlexibleSpace();
-                DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"), true);
+                DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"));
             }
             GUILayout.EndHorizontal();
         }
@@ -721,10 +688,10 @@ namespace PluginHub.Editor
 
                 //打开StreamingAssets文件夹按钮
                 string streamingAssetsPath = Path.Combine(directory, $"{folderName}_Data/StreamingAssets/");
-                DrawIconBtnOpenFolder(streamingAssetsPath, true, "SA");
+                DrawIconBtnOpenFolder(streamingAssetsPath, "SA");
 
                 //打开文件夹按钮
-                DrawIconBtnOpenFolder(directory, true);
+                DrawIconBtnOpenFolder(directory);
 
                 //压缩这个构建到当前目录
                 if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))
@@ -851,7 +818,7 @@ namespace PluginHub.Editor
                     RunCmd(baiduPCSGoFolderFullPath, $"BaiduPCS-Go upload {zipFile} /apps/BaiduPCS-Go/{PlayerSettings.productName}");
                 }
 
-                DrawIconBtnOpenFolder(zipFile, true);
+                DrawIconBtnOpenFolder(zipFile);
 
                 // 复制文件到剪贴板
                 if (DrawIconBtn("d_TreeEditor.Duplicate", $"复制文件到剪贴板，方便粘贴到微信等其他软件"))
