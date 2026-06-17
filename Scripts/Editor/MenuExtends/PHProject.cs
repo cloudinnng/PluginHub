@@ -107,11 +107,20 @@ namespace PluginHub.Editor
                         }
                     }
                 }
-                else
+                else //项目是文件时
                 {
                     if (Selection.assetGUIDs.Contains(guid))
                     {
                         GUI.color = Color.yellow;
+                    }
+
+                    // 使用操作系统关联的默认程序打开磁盘文件（如 .psd → Photoshop、.txt → 记事本）
+                    btnRect.x -= width;
+                    Rect openAppBtnRect = new(btnRect.x, btnRect.y, width, height);
+                    if (GUI.Button(openAppBtnRect, PluginHubEditor.IconContent("BuildSettings.Metro On", "", "使用系统默认应用打开该文件"), EditorStyles.label))
+                    {
+                        Debug.Log($"[PHProject] 请求使用系统默认应用打开: {assetPath}");
+                        OpenFileWithDefaultApp(assetPath);
                     }
 
                     string extension = Path.GetExtension(assetPath);
@@ -119,23 +128,6 @@ namespace PluginHub.Editor
                     float labelWidth = GUI.skin.label.CalcSize(tmpGUIContent).x;
                     btnRect.x -= labelWidth;
                     Rect extensionBtnRect = new(btnRect.x, btnRect.y, labelWidth, height);
-                    // Ref按钮仅在按住Ctrl时显示，避免常态占用项目视图空间
-                    if (PluginHubRuntime.IsCtrlPressed)
-                    {
-                        Rect referenceBtnRect = new(
-                            extensionBtnRect.x - referenceBtnWidth - btnSpacing,
-                            btnRect.y,
-                            referenceBtnWidth,
-                            height
-                        );
-
-                        // 在扩展名按钮前增加引用统计按钮，用于快速检查该资源是否仍被项目引用
-                        if (GUI.Button(referenceBtnRect, new GUIContent("Ref", "统计该资源在项目中的引用个数"), EditorStyles.miniButton))
-                        {
-                            Debug.Log($"开始统计项目引用: {assetPath}");
-                            FindReferenceCountInProject(assetPath);
-                        }
-                    }
 
                     // 文件扩展名按钮
                     if (GUI.Button(extensionBtnRect, extension, EditorStyles.label))
@@ -161,6 +153,24 @@ namespace PluginHub.Editor
                             string fullPath = Path.Combine(Application.dataPath, assetPath.Substring(7)).Replace("/", "\\");
                             long fileSize = new FileInfo(fullPath).Length;
                             Debug.Log($"文件大小: {FormatFileSize(fileSize)}");
+                        }
+                    }
+
+                    // Ref按钮仅在按住Ctrl时显示，避免常态占用项目视图空间
+                    if (PluginHubRuntime.IsCtrlPressed)
+                    {
+                        Rect referenceBtnRect = new(
+                            extensionBtnRect.x - referenceBtnWidth - btnSpacing,
+                            btnRect.y,
+                            referenceBtnWidth,
+                            height
+                        );
+
+                        // 在扩展名按钮前增加引用统计按钮，用于快速检查该资源是否仍被项目引用
+                        if (GUI.Button(referenceBtnRect, new GUIContent("Ref", "统计该资源在项目中的引用个数"), EditorStyles.miniButton))
+                        {
+                            Debug.Log($"开始统计项目引用: {assetPath}");
+                            FindReferenceCountInProject(assetPath);
                         }
                     }
                 }
@@ -252,6 +262,32 @@ namespace PluginHub.Editor
             if (bytes < 1024) return $"{bytes} B";
             if (bytes < 1024 * 1024) return $"{bytes / 1024f:F1} KB";
             return $"{bytes / 1024f / 1024f:F1} MB";
+        }
+
+        // 调用操作系统默认关联程序打开磁盘上的文件（非 Unity 内置 Inspector 打开）
+        private static void OpenFileWithDefaultApp(string assetPath)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath))
+            {
+                Debug.LogWarning("[PHProject] 无法用外部应用打开: 资源路径为空");
+                return;
+            }
+
+            string fullPath = AssetPathToFullPath(assetPath);
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.LogWarning($"[PHProject] 无法用外部应用打开: 无法解析路径, assetPath={assetPath}");
+                return;
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                Debug.LogWarning($"[PHProject] 无法用外部应用打开: 文件不存在, path={fullPath}");
+                return;
+            }
+
+            Debug.Log($"[PHProject] 使用系统默认应用打开: {fullPath}");
+            EditorUtility.OpenWithDefaultApp(fullPath);
         }
 
         // 把 Unity 风格的 assetPath（如 "Assets/Foo/Bar"）转成 Windows 风格的绝对路径
