@@ -494,6 +494,36 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetString("PH_LastMklinkFolderPath", value); }
         }
 
+        /// <summary>
+        /// mklink 禁止作为 junction 目标的路径：位于 Assets / Library / Temp / Logs 内（含目录自身）。
+        /// </summary>
+        private static bool MklinkExternalPathIsForbidden(string folderPath, out string matchedForbiddenRoot)
+        {
+            matchedForbiddenRoot = null;
+            string projectRoot = Path.GetFullPath(Path.GetDirectoryName(Application.dataPath))
+                .Replace('/', '\\').TrimEnd('\\');
+            string[] forbiddenRoots =
+            {
+                Application.dataPath,
+                Path.Combine(projectRoot, "Library"),
+                Path.Combine(projectRoot, "Temp"),
+                Path.Combine(projectRoot, "Logs"),
+            };
+
+            foreach (string root in forbiddenRoots)
+            {
+                string forbidden = Path.GetFullPath(root).Replace('/', '\\').TrimEnd('\\');
+                if (folderPath.Equals(forbidden, System.StringComparison.OrdinalIgnoreCase)
+                    || folderPath.StartsWith(forbidden + "\\", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    matchedForbiddenRoot = forbidden;
+                    Debug.Log($"[mklink] 外部路径命中禁止区域：{folderPath} ⊂ {forbidden}");
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         // 在右键文件夹下创建以外部文件夹名命名的 junction，使外部资源被 Unity 索引
         // 命令: cmd.exe /c mklink /j "右键文件夹\外部文件夹名" "外部文件夹绝对路径"
@@ -527,17 +557,18 @@ namespace PluginHub.Editor
             }
             Debug.Log($"[mklink] 外部文件夹（junction 目标）：{externalFolderPath}");
 
-            // 3. 边界检查：外部文件夹不能位于当前项目内部，避免 Unity 重复/循环索引
-            string projectRoot = Path.GetFullPath(Path.GetDirectoryName(Application.dataPath))
-                .Replace('/', '\\').TrimEnd('\\');
-            if (externalFolderPath.Equals(projectRoot, System.StringComparison.OrdinalIgnoreCase)
-                || externalFolderPath.StartsWith(projectRoot + "\\", System.StringComparison.OrdinalIgnoreCase))
+            // 3. 边界检查：禁止指向 Assets / Library / Temp / Logs，其余项目根下目录允许
+            if (MklinkExternalPathIsForbidden(externalFolderPath, out string forbiddenRoot))
             {
-                string msg = $"外部文件夹位于当前 Unity 项目内部，会导致循环引用，操作已中止。\n\n外部：{externalFolderPath}\n项目：{projectRoot}";
+                string forbiddenName = Path.GetFileName(forbiddenRoot);
+                string msg =
+                    $"外部文件夹不能位于「{forbiddenName}」目录内（会导致重复索引或路径问题），操作已中止。\n\n" +
+                    $"外部：{externalFolderPath}\n禁止区域：{forbiddenRoot}";
                 EditorUtility.DisplayDialog("操作中止", msg, "确定");
                 Debug.LogError($"[mklink] {msg}");
                 return;
             }
+            Debug.Log("[mklink] 边界检查通过：外部路径不在 Assets / Library / Temp / Logs 内");
 
             // 4. 推导链接名（= 外部文件夹名），并拼出最终链接的完整路径
             string linkName = Path.GetFileName(externalFolderPath);

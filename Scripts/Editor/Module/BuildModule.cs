@@ -226,7 +226,42 @@ namespace PluginHub.Editor
             string scriptPath = PluginHubRuntime.ResolveRelativePath("Plugins/daemon-run.bat");
             if (string.IsNullOrWhiteSpace(scriptPath))
             {
+<<<<<<< HEAD
                 Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：未找到源文件。已检查路径：" + scriptPath);
+=======
+                UnityEditor.PackageManager.PackageInfo packageInfo =
+                    UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/com.hellottw.pluginhub");
+                if (packageInfo != null && !string.IsNullOrWhiteSpace(packageInfo.resolvedPath))
+                {
+                    packageResolvedPath = packageInfo.resolvedPath;
+                    Debug.Log($"[BuildModule] PackageManager resolvedPath={packageResolvedPath}");
+                }
+                else
+                {
+                    Debug.LogWarning("[BuildModule] PackageManager 未找到 com.hellottw.pluginhub，将使用回退路径。");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[BuildModule] 调用 PackageManager API 失败，将使用回退路径。异常：{e.Message}");
+            }
+
+            string[] candidateSourcePaths =
+            {
+                string.IsNullOrWhiteSpace(packageResolvedPath)
+                    ? ""
+                    : Path.Combine(packageResolvedPath, "Files", "daemon-run.bat"),
+                Path.GetFullPath("Packages/com.hellottw.pluginhub/Plugins/daemon-run.bat"),
+                Path.GetFullPath("Assets/PluginHub/Plugins/daemon-run.bat"),
+                Path.GetFullPath("Plugins/daemon-run.bat")
+            };
+
+            string sourceFilePath = candidateSourcePaths.FirstOrDefault(File.Exists);
+            if (string.IsNullOrWhiteSpace(sourceFilePath))
+            {
+                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：未找到源文件。已检查路径：" +
+                                 string.Join(" | ", candidateSourcePaths));
+>>>>>>> master
                 return;
             }
             string targetFilePath = Path.Combine(buildDirectory, "daemon-run.bat");
@@ -713,6 +748,7 @@ namespace PluginHub.Editor
                 GUI.enabled = true;
             }
             GUILayout.EndHorizontal();
+            DrawZebraRowBackground(index);
         }
 
         private DateTime GetBuildTime(string buildDirectory)
@@ -828,6 +864,7 @@ namespace PluginHub.Editor
                 }
             }
             GUILayout.EndHorizontal();
+            DrawZebraRowBackground(index);
         }
 
         #endregion
@@ -835,6 +872,23 @@ namespace PluginHub.Editor
         #endregion
 
         #region 辅助绘制
+
+        /// <summary>
+        /// 行绘制完成后为奇数行叠加半透明背景。所有行均使用相同的 BeginHorizontal()，避免样式差异导致列对不齐。
+        /// </summary>
+        private static void DrawZebraRowBackground(int index)
+        {
+            if (Event.current.type != EventType.Repaint || index % 2 != 1)
+                return;
+
+            Rect rowRect = GUILayoutUtility.GetLastRect();
+            bool isDarkTheme = EditorGUIUtility.isProSkin;
+            float alpha = isDarkTheme ? 0.08f : 0.06f;
+            Color bgColor = isDarkTheme
+                ? new Color(1f, 1f, 1f, alpha)
+                : new Color(0f, 0f, 0f, alpha);
+            EditorGUI.DrawRect(rowRect, bgColor);
+        }
 
         private static void DrawItem(string title, string content)
         {

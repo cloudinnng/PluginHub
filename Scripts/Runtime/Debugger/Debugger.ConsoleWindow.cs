@@ -261,10 +261,18 @@ namespace PluginHub.Runtime
                         color = Color.white;
                         break;
                     case LogType.Warning:
+#if UNITY_6000_3_OR_NEWER
                         color = Color.softYellow;
+#else
+                        color = Color.yellow;
+#endif
                         break;
                     case LogType.Error:
+#if UNITY_6000_3_OR_NEWER
                         color = Color.softRed;
+#else
+                        color = Color.red;
+#endif
                         break;
                     case LogType.Exception:
                         color = new Color(0.7f, 0.2f, 0.2f);
