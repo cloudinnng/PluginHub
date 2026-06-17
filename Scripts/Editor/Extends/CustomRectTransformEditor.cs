@@ -74,14 +74,18 @@
                     Debug.Log($"[CustomRectTransformEditor] 锚点贴合四角：成功处理 {applied}/{targets.Length} 个对象。");
                 }
 
-                EditorGUILayout.Vector3Field("Position", rectTransform.position);
+                rectTransform.position = EditorGUILayout.Vector3Field("Position", rectTransform.position);
                 rectTransform.localPosition = EditorGUILayout.Vector3Field("Local Position", rectTransform.localPosition);
                 rectTransform.anchoredPosition = EditorGUILayout.Vector2Field("Anchored Position", rectTransform.anchoredPosition);
                 rectTransform.sizeDelta = EditorGUILayout.Vector2Field("Size Delta", rectTransform.sizeDelta);
+                GUI.enabled = false;
                 EditorGUILayout.RectField("Rect", rectTransform.rect);
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+                GUI.enabled = true;
+                rectTransform.offsetMin = EditorGUILayout.Vector2Field("Offset Min", rectTransform.offsetMin);
+                rectTransform.offsetMax = EditorGUILayout.Vector2Field("Offset Max", rectTransform.offsetMax);
                 // Screen.width, Screen.height 不能在编辑器中调用，显示的是不正确的
                 // EditorGUILayout.Vector2Field("Screen.width/height", new Vector2(Screen.width, Screen.height));
+                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             }
         }
 

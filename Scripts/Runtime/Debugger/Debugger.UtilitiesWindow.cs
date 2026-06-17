@@ -144,6 +144,11 @@ namespace PluginHub.Runtime
                         GUILayout.Label($"Resolution Quick Selection ({Screen.width}x{Screen.height}):");
                         GUILayout.FlexibleSpace();
                         GUI.color = Screen.fullScreen ? Color.cyan : Color.white;
+                        Vector2Int designResolution = ScreenSetting.Instance.designResolution;
+                        if (GUILayout.Button($"Design Resolution ({designResolution.x}x{designResolution.y})"))
+                        {
+                            Screen.SetResolution(designResolution.x, designResolution.y, Screen.fullScreen);
+                        }
                         if (GUILayout.Button("FullScreen"))
                         {
                             Screen.fullScreen = !Screen.fullScreen;

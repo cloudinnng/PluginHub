@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using PluginHub.Runtime;
 using System.Text;
 using System.IO;
+using Microsoft.Win32;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 using Unity.CodeEditor;
@@ -304,45 +307,306 @@ namespace PluginHub.Editor
 
                 string currentEditor = Path.GetFileNameWithoutExtension(CodeEditor.CurrentEditorPath);
                 if (currentEditor == "Code") currentEditor = "VS Code";
-                if (GUILayout.Button(PluginHubEditor.GuiContent(currentEditor.Substring(0, 1).ToUpper(), $"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
+                string text = (currentEditor != null && currentEditor.Trim() != "") ? currentEditor.Substring(0, 1).ToUpper() : "N/A";
+                if (GUILayout.Button(PluginHubEditor.GuiContent(text, $"切换代码编辑器（当前{currentEditor}）\n{CodeEditor.CurrentEditorPath}"), iconBtnStyle, GUILayout.Width(_iconBtnSize.x), GUILayout.Height(_iconBtnSize.y)))
                 {
-                    var newEditorPath = "";
-                    // 循环切换三种编辑器
-                    switch (currentEditor)
+                    Debug.Log($"[编辑器切换] 当前: {currentEditor}, 路径: {CodeEditor.CurrentEditorPath}");
+                    string newEditorPath = GetNextEditorPath(currentEditor);
+                    Debug.Log("newEditorPath: " + newEditorPath);
+                    if (!string.IsNullOrEmpty(newEditorPath) && File.Exists(newEditorPath))
                     {
-                        case "VS Code":
-                            // 此路径是为系统安装的Cursor，不是为用户安装的
-                            newEditorPath = @"C:\Program Files\cursor\Cursor.exe";
-                            if(!File.Exists(newEditorPath)){
-                                newEditorPath = @"C:\Users\TTW\AppData\Local\Programs\cursor\Cursor.exe";
-                            }
-                            break;
-                        case "Cursor":
-                            // 切换到Rider，为了兼容自动升级后的路径，这里动态查找最新版本的Rider
-                            string[] listDir = Directory.GetDirectories(@"C:\Program Files\JetBrains");
-                            listDir = listDir.Where(dir => dir.Contains("JetBrains Rider")).ToArray();
-                            listDir = listDir.OrderBy(dir => dir).ToArray();
-                            // for (int i = 0; i < listDir.Length; i++)
-                            // {
-                            //     Debug.Log(listDir[i]);
-                            // }
-                            // 取最后一个，即最新版本
-                            newEditorPath = Path.Combine($@"{listDir[^1]}", @"bin\rider64.exe");
-                            break;
-                        case "rider64":
-                            // 此路径是为系统安装的vscode，不是为用户安装的
-                            newEditorPath = @"C:\Program Files\Microsoft VS Code\Code.exe";
-                            if(!File.Exists(newEditorPath)){
-                                newEditorPath = @"C:\Users\TTW\AppData\Local\Programs\Microsoft VS Code\Code.exe";
-                            }
-                            break;
+                        CodeEditor.SetExternalScriptEditor(newEditorPath);
+                        Debug.Log("CurrentEditorPath: " + CodeEditor.CurrentEditorPath);
                     }
-                    CodeEditor.SetExternalScriptEditor(newEditorPath);
-                    Debug.Log("CurrentEditorPath: " + CodeEditor.CurrentEditorPath);
+                    else
+                    {
+                        Debug.LogError("newEditorPath: " + newEditorPath + " 不存在");
+                    }
                 }
             }
             GUILayout.EndHorizontal();
         }
+
+        #region Rider 路径检测
+
+        private struct RiderInstallCandidate
+        {
+            public string SortKey;
+            public string Path;
+        }
+
+        /// <summary>
+        /// 根据当前编辑器名称，循环切换到下一个：VS Code → Cursor → Rider → VS Code
+        /// </summary>
+        private static string GetNextEditorPath(string currentEditor)
+        {
+            string editorName = (currentEditor ?? string.Empty).Trim();
+
+            // VS Code -> Cursor
+            if (string.Equals(editorName, "VS Code", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(editorName, "Code", StringComparison.OrdinalIgnoreCase))
+            {
+                string cursorPath = @"C:\Program Files\cursor\Cursor.exe";
+                if (!File.Exists(cursorPath))
+                {
+                    cursorPath = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "Programs", "cursor", "Cursor.exe");
+                }
+                return cursorPath;
+            }
+
+            // Cursor -> Rider
+            if (string.Equals(editorName, "Cursor", StringComparison.OrdinalIgnoreCase))
+            {
+                return TryFindRiderExecutablePath();
+            }
+
+            // Rider -> VS Code
+            if (IsRiderEditorName(editorName))
+            {
+                string vscodePath = @"C:\Program Files\Microsoft VS Code\Code.exe";
+                if (!File.Exists(vscodePath))
+                {
+                    vscodePath = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "Programs", "Microsoft VS Code", "Code.exe");
+                }
+                return vscodePath;
+            }
+
+            Debug.LogWarning($"[编辑器切换] 未识别编辑器 '{editorName}'，尝试切换到 Rider");
+            return TryFindRiderExecutablePath();
+        }
+
+        private static bool IsRiderEditorName(string editorName)
+        {
+            return string.Equals(editorName, "rider64", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(editorName, "Rider", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 查找 rider64.exe：优先读注册表，再扫描安装目录。
+        /// </summary>
+        private static string TryFindRiderExecutablePath()
+        {
+            string fromRegistry = TryFindRiderFromRegistry();
+            if (!string.IsNullOrEmpty(fromRegistry))
+            {
+                return fromRegistry;
+            }
+
+            string fromDirectory = TryFindRiderFromInstallDirectories();
+            if (!string.IsNullOrEmpty(fromDirectory))
+            {
+                return fromDirectory;
+            }
+
+            Debug.LogError("[Rider检测] 注册表与目录扫描均未找到 rider64.exe");
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// 从 HKLM\SOFTWARE\JetBrains\JetBrains Rider 读取安装路径（JetBrains 官方写入）。
+        /// </summary>
+        private static string TryFindRiderFromRegistry()
+        {
+            string[] registryRoots = new string[]
+            {
+                @"SOFTWARE\JetBrains\JetBrains Rider",
+                @"SOFTWARE\WOW6432Node\JetBrains\JetBrains Rider",
+            };
+
+            List<RiderInstallCandidate> candidates = new List<RiderInstallCandidate>();
+
+            for (int r = 0; r < registryRoots.Length; r++)
+            {
+                string registryRoot = registryRoots[r];
+                try
+                {
+                    using RegistryKey riderRootKey = Registry.LocalMachine.OpenSubKey(registryRoot);
+                    if (riderRootKey == null)
+                    {
+                        Debug.Log($"[Rider检测] 注册表项不存在: HKLM\\{registryRoot}");
+                        continue;
+                    }
+
+                    string[] buildKeys = riderRootKey.GetSubKeyNames();
+                    for (int i = 0; i < buildKeys.Length; i++)
+                    {
+                        string buildKey = buildKeys[i];
+                        using RegistryKey buildRegKey = riderRootKey.OpenSubKey(buildKey);
+                        if (buildRegKey == null)
+                        {
+                            continue;
+                        }
+
+                        object installDirValue = buildRegKey.GetValue(string.Empty);
+                        if (installDirValue == null)
+                        {
+                            Debug.LogWarning($"[Rider检测] 注册表 {buildKey} 无安装路径");
+                            continue;
+                        }
+
+                        string installDir = installDirValue.ToString();
+                        string riderExe = Path.Combine(installDir, "bin", "rider64.exe");
+                        Debug.Log($"[Rider检测] 注册表: build={buildKey}, dir={installDir}, exists={File.Exists(riderExe)}");
+
+                        if (!File.Exists(riderExe))
+                        {
+                            continue;
+                        }
+
+                        candidates.Add(new RiderInstallCandidate
+                        {
+                            SortKey = buildKey,
+                            Path = riderExe,
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[Rider检测] 读取注册表 {registryRoot} 失败: {ex.Message}");
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            string latestPath = candidates
+                .OrderByDescending(c => c.SortKey, StringComparer.Ordinal)
+                .First()
+                .Path;
+
+            Debug.Log($"[Rider检测] 注册表选用: {latestPath}");
+            return latestPath;
+        }
+
+        /// <summary>
+        /// 扫描 Program Files 下各子目录的 bin\rider64.exe。
+        /// </summary>
+        private static string TryFindRiderFromInstallDirectories()
+        {
+            List<RiderInstallCandidate> candidates = new List<RiderInstallCandidate>();
+            string[] jetBrainsRoots = new string[]
+            {
+                @"C:\Program Files\JetBrains",
+                @"C:\Program Files (x86)\JetBrains",
+            };
+
+            for (int r = 0; r < jetBrainsRoots.Length; r++)
+            {
+                string jetBrainsRoot = jetBrainsRoots[r];
+                if (!Directory.Exists(jetBrainsRoot))
+                {
+                    Debug.Log($"[Rider检测] 目录不存在: {jetBrainsRoot}");
+                    continue;
+                }
+
+                try
+                {
+                    string[] installDirs = Directory.GetDirectories(jetBrainsRoot);
+                    for (int i = 0; i < installDirs.Length; i++)
+                    {
+                        string installDir = installDirs[i];
+                        string riderExe = Path.Combine(installDir, "bin", "rider64.exe");
+                        if (!File.Exists(riderExe))
+                        {
+                            continue;
+                        }
+
+                        string dirName = Path.GetFileName(installDir);
+                        candidates.Add(new RiderInstallCandidate
+                        {
+                            SortKey = TryParseRiderVersionFromName(dirName).ToString(),
+                            Path = riderExe,
+                        });
+                        Debug.Log($"[Rider检测] 目录候选: {riderExe}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[Rider检测] 扫描 {jetBrainsRoot} 失败: {ex.Message}");
+                }
+            }
+
+            // Toolbox: .../apps/Rider/ch-0/<hash>/bin/rider64.exe
+            string toolboxRoot = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "JetBrains", "Toolbox", "apps", "Rider");
+            if (Directory.Exists(toolboxRoot))
+            {
+                try
+                {
+                    string[] riderExes = Directory.GetFiles(toolboxRoot, "rider64.exe", SearchOption.AllDirectories);
+                    for (int i = 0; i < riderExes.Length; i++)
+                    {
+                        string riderExe = riderExes[i];
+                        string parentDirName = Path.GetFileName(Path.GetDirectoryName(riderExe));
+                        if (!string.Equals(parentDirName, "bin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        candidates.Add(new RiderInstallCandidate
+                        {
+                            SortKey = TryParseRiderVersionFromPath(riderExe).ToString(),
+                            Path = riderExe,
+                        });
+                        Debug.Log($"[Rider检测] Toolbox 候选: {riderExe}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[Rider检测] 扫描 Toolbox 失败: {ex.Message}");
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            string latestPath = candidates
+                .OrderByDescending(c => c.SortKey, StringComparer.Ordinal)
+                .First()
+                .Path;
+
+            Debug.Log($"[Rider检测] 目录扫描选用: {latestPath}");
+            return latestPath;
+        }
+
+        /// <summary>
+        /// 从安装目录名解析版本，例如 JetBrains Rider 2025.3.3、Rider2024.3。
+        /// </summary>
+        private static Version TryParseRiderVersionFromName(string dirName)
+        {
+            Match match = Regex.Match(dirName, @"(?:JetBrains\s+)?Rider\s*(\d{4}\.\d+(?:\.\d+)?)", RegexOptions.IgnoreCase);
+            if (match.Success && Version.TryParse(match.Groups[1].Value, out Version version))
+            {
+                return version;
+            }
+
+            return new Version(0, 0);
+        }
+
+        /// <summary>
+        /// 从完整路径解析版本（主要用于 Toolbox 安装）。
+        /// </summary>
+        private static Version TryParseRiderVersionFromPath(string path)
+        {
+            Match match = Regex.Match(path, @"(?:JetBrains\s+)?Rider\s*(\d{4}\.\d+(?:\.\d+)?)", RegexOptions.IgnoreCase);
+            if (match.Success && Version.TryParse(match.Groups[1].Value, out Version version))
+            {
+                return version;
+            }
+
+            return new Version(0, 0);
+        }
+
+        #endregion
 
         private static void SelectionObjToGround()
         {
