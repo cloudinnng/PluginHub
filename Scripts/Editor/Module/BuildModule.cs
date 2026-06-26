@@ -545,7 +545,14 @@ namespace PluginHub.Editor
                 string path = fullPath;
                 if (GUILayout.Button(PluginHubEditor.GuiContent("构建 Android 项目", $"将构建到{path}")))
                 {
-                    EditorApplication.delayCall += () => BuildAndroid($"Build/Android/{PlayerSettings.applicationIdentifier}.apk");
+                    string apkPath = $"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
+                    EditorApplication.delayCall += () => BuildAndroid(apkPath);
+                }
+
+                if (GUILayout.Button("构建并运行", GUILayout.ExpandWidth(false)))
+                {
+                    string apkPath = $"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
+                    EditorApplication.delayCall += () => BuildAndroid(apkPath, autoRun: true);
                 }
 
                 DrawIconBtnOpenFolder(path);
@@ -1103,9 +1110,9 @@ namespace PluginHub.Editor
             LogBuildResult(summary);
         }
 
-        private static void BuildAndroid(string locationPathName)
+        private static void BuildAndroid(string locationPathName, bool autoRun = false)
         {
-            Debug.Log($"BuildAndroid: {locationPathName}");
+            Debug.Log($"BuildAndroid: {locationPathName}, autoRun={autoRun}");
             if (!DeleteOldBuildConfirm(locationPathName))
                 return;
 
@@ -1115,7 +1122,10 @@ namespace PluginHub.Editor
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.Android;
-            buildPlayerOptions.options = GetBuildOptions();
+            BuildOptions options = GetBuildOptions();
+            if (autoRun)
+                options |= BuildOptions.AutoRunPlayer;
+            buildPlayerOptions.options = options;
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
