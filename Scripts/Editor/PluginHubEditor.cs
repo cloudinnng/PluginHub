@@ -13,7 +13,7 @@ namespace PluginHub.Editor
 
         //选中的颜色
         public static readonly Color SelectedColor = new Color(0.572549f, 0.7960784f, 1f, 1f);
-        public static readonly Color Red = new Color(0.8f, 0.2f, 0.2f, 1f);
+        public static readonly Color Red = new Color(1.0f, 0.5f, 0.5f, 1f);
         public static readonly float NormalBtnHeight = 19f;
         private static readonly Vector2 IconBtnSize = new Vector2(28f, 19f);
 

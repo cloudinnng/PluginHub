@@ -307,6 +307,7 @@ namespace PluginHub.Editor
         private void DrawQuickBuildSection()
         {
             DrawSplitLine("快捷构建");
+            HandleBuildButtonCtrlRepaint();
 
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
@@ -385,19 +386,15 @@ namespace PluginHub.Editor
                 GUILayout.BeginHorizontal();
                 {
                     string path = CurrProjectBuildFullPath();
-                    if (GUILayout.Button(PluginHubEditor.GuiContent("构建项目", $"将构建到{path}")))
-                    {
-                        EditorApplication.delayCall += BuildStandaloneProject;
-                    }
-
-                    if (GUILayout.Button("构建并运行", GUILayout.ExpandWidth(false)))
-                    {
-                        EditorApplication.delayCall += () =>
+                    DrawBuildButton(
+                        "构建项目",
+                        $"将构建到{path}",
+                        BuildStandaloneProject,
+                        () =>
                         {
                             BuildStandaloneProject();
                             ExecuteExe(path);
-                        };
-                    }
+                        });
                     DrawIconBtnOpenFolder(path);
                     DrawRunButton(path);
                 }
@@ -416,18 +413,25 @@ namespace PluginHub.Editor
                 using(new GUILayout.HorizontalScope())
                 {
                     string path = CurrSceneBuildFullPath();
-                    if (GUILayout.Button(PluginHubEditor.GuiContent("构建当前场景", $"将会直接构建到{path}。")))
-                    {
-                        EditorApplication.delayCall += () => BuildStandaloneCurrScene(false);
-                    }
-
-                    if (GUILayout.Button(
-                            PluginHubEditor.GuiContent("仅构建当前场景", $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。"),
-                            GUILayout.ExpandWidth(false)))
-                    {
-                        EditorApplication.delayCall += () => BuildStandaloneCurrScene(true);
-                    }
-
+                    DrawBuildButton(
+                        "构建当前场景",
+                        $"将会直接构建到{path}。",
+                        () => BuildStandaloneCurrScene(false),
+                        () =>
+                        {
+                            BuildStandaloneCurrScene(false);
+                            ExecuteExe(path);
+                        });
+                    DrawBuildButton(
+                        "仅构建当前场景",
+                        $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。",
+                        () => BuildStandaloneCurrScene(true),
+                        () =>
+                        {
+                            BuildStandaloneCurrScene(true);
+                            ExecuteExe(path);
+                        },
+                        GUILayout.ExpandWidth(false));
                     DrawIconBtnOpenFolder(path);
                     DrawRunButton(path);
                 }
@@ -499,10 +503,12 @@ namespace PluginHub.Editor
                 if (Application.platform == RuntimePlatform.OSXEditor)
                     path = $"Build/IOS/{PlayerSettings.applicationIdentifier}_xcode";
 
-                if (GUILayout.Button(PluginHubEditor.GuiContent("构建 IOS 项目", $"将构建到{path}"), GUILayout.Height(PluginHubEditor.NormalBtnHeight)))
-                {
-                    EditorApplication.delayCall += () => BuildIOS(path);
-                }
+                DrawBuildButton(
+                    "构建 IOS 项目",
+                    $"将构建到{path}",
+                    () => BuildIOS(path),
+                    () => BuildIOS(path, autoRun: true),
+                    GUILayout.Height(PluginHubEditor.NormalBtnHeight));
 
                 // 快捷打开xCode项目的icon按钮
                 if (Application.platform == RuntimePlatform.OSXEditor)
@@ -543,17 +549,12 @@ namespace PluginHub.Editor
                 fullPath = Path.Combine(fullPath, $"Build/Android/");
                 fullPath = fullPath.Replace('/', '\\');
                 string path = fullPath;
-                if (GUILayout.Button(PluginHubEditor.GuiContent("构建 Android 项目", $"将构建到{path}")))
-                {
-                    string apkPath = $"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
-                    EditorApplication.delayCall += () => BuildAndroid(apkPath);
-                }
-
-                if (GUILayout.Button("构建并运行", GUILayout.ExpandWidth(false)))
-                {
-                    string apkPath = $"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
-                    EditorApplication.delayCall += () => BuildAndroid(apkPath, autoRun: true);
-                }
+                string apkPath = $"Build/Android/{PlayerSettings.applicationIdentifier}.apk";
+                DrawBuildButton(
+                    "构建 Android 项目",
+                    $"将构建到{path}",
+                    () => BuildAndroid(apkPath),
+                    () => BuildAndroid(apkPath, autoRun: true));
 
                 DrawIconBtnOpenFolder(path);
             }
@@ -579,10 +580,11 @@ namespace PluginHub.Editor
                 fullPath = Path.Combine(fullPath, $"Build/WebGL/");
                 fullPath = fullPath.Replace('/', '\\');
                 string path = fullPath;
-                if (GUILayout.Button(PluginHubEditor.GuiContent("构建 WebGL 项目", $"将构建到{path}")))
-                {
-                    EditorApplication.delayCall += () => BuildWebGL($@"Build/WebGL/");
-                }
+                DrawBuildButton(
+                    "构建 WebGL 项目",
+                    $"将构建到{path}",
+                    () => BuildWebGL(@"Build/WebGL/"),
+                    () => BuildWebGL(@"Build/WebGL/", autoRun: true));
 
                 DrawIconBtnOpenFolder(path);
             }
@@ -607,10 +609,12 @@ namespace PluginHub.Editor
                 fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
                 fullPath = Path.Combine(fullPath, $"Build/MacOS/{PlayerSettings.productName}.app");
                 string path = fullPath;
-                if (GUILayout.Button(PluginHubEditor.GuiContent("构建 MacOS 项目", $"将构建到{path}")))
-                {
-                    EditorApplication.delayCall += () => BuildMacOS($@"Build/MacOS/{PlayerSettings.productName}.app");
-                }
+                string macBuildPath = $@"Build/MacOS/{PlayerSettings.productName}.app";
+                DrawBuildButton(
+                    "构建 MacOS 项目",
+                    $"将构建到{path}",
+                    () => BuildMacOS(macBuildPath),
+                    () => BuildMacOS(macBuildPath, autoRun: true));
                 DrawIconBtnOpenFolder(path);
             }
             GUILayout.EndHorizontal();
@@ -844,6 +848,51 @@ namespace PluginHub.Editor
         #endregion
 
         #region 辅助绘制
+
+        #region Ctrl 修饰构建按钮
+
+        /// <summary>
+        /// Ctrl 键按下/释放时刷新窗口，使构建按钮能即时切换红色「并运行」样式。
+        /// </summary>
+        private static void HandleBuildButtonCtrlRepaint()
+        {
+            Event e = Event.current;
+            if (e.type == EventType.KeyDown || e.type == EventType.KeyUp)
+            {
+                if (e.keyCode == KeyCode.LeftControl || e.keyCode == KeyCode.RightControl || e.control)
+                    PluginHubWindow.Window?.Repaint();
+            }
+        }
+
+        /// <summary>
+        /// 绘制构建按钮。按住 Ctrl 时按钮变红、文案追加「并运行」；Ctrl+点击执行构建并运行。
+        /// </summary>
+        private static void DrawBuildButton(string label, string tooltip, Action onBuild, Action onBuildAndRun, params GUILayoutOption[] options)
+        {
+            bool ctrlHeld = PluginHubRuntime.IsCtrlPressed;
+            if (ctrlHeld && Event.current.type == EventType.Layout)
+                PluginHubWindow.Window?.Repaint();
+
+            Color oldColor = GUI.color;
+            if (ctrlHeld)
+                GUI.color = PluginHubEditor.Red;
+
+            string buttonLabel = ctrlHeld ? $"{label}并运行" : label;
+            string ctrlHint = ctrlHeld ? "Ctrl+点击：构建完成后运行" : "按住 Ctrl 可构建并运行";
+            string fullTooltip = string.IsNullOrEmpty(tooltip) ? ctrlHint : $"{tooltip}\n{ctrlHint}";
+
+            if (GUILayout.Button(PluginHubEditor.GuiContent(buttonLabel, fullTooltip), options))
+            {
+                if (ctrlHeld)
+                    EditorApplication.delayCall += () => onBuildAndRun?.Invoke();
+                else
+                    EditorApplication.delayCall += () => onBuild?.Invoke();
+            }
+
+            GUI.color = oldColor;
+        }
+
+        #endregion
 
         /// <summary>
         /// 行绘制完成后为奇数行叠加半透明背景。所有行均使用相同的 BeginHorizontal()，避免样式差异导致列对不齐。
@@ -1094,8 +1143,9 @@ namespace PluginHub.Editor
             LogBuildResult(summary);
         }
 
-        private static void BuildIOS(string locationPathName)
+        private static void BuildIOS(string locationPathName, bool autoRun = false)
         {
+            Debug.Log($"BuildIOS: {locationPathName}, autoRun={autoRun}");
             if (!DeleteOldBuildConfirm(locationPathName))
                 return;
 
@@ -1103,7 +1153,10 @@ namespace PluginHub.Editor
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.iOS;
-            buildPlayerOptions.options = GetBuildOptions();
+            BuildOptions options = GetBuildOptions();
+            if (autoRun)
+                options |= BuildOptions.AutoRunPlayer;
+            buildPlayerOptions.options = options;
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
@@ -1132,8 +1185,9 @@ namespace PluginHub.Editor
             LogBuildResult(summary);
         }
 
-        private static void BuildWebGL(string locationPathName)
+        private static void BuildWebGL(string locationPathName, bool autoRun = false)
         {
+            Debug.Log($"BuildWebGL: {locationPathName}, autoRun={autoRun}");
             if (!DeleteOldBuildConfirm(locationPathName))
                 return;
 
@@ -1141,15 +1195,19 @@ namespace PluginHub.Editor
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.WebGL;
-            buildPlayerOptions.options = GetBuildOptions();
+            BuildOptions options = GetBuildOptions();
+            if (autoRun)
+                options |= BuildOptions.AutoRunPlayer;
+            buildPlayerOptions.options = options;
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
             LogBuildResult(summary);
         }
 
-        private static void BuildMacOS(string locationPathName)
+        private static void BuildMacOS(string locationPathName, bool autoRun = false)
         {
+            Debug.Log($"BuildMacOS: {locationPathName}, autoRun={autoRun}");
             if (!DeleteOldBuildConfirm(locationPathName))
                 return;
 
@@ -1157,7 +1215,10 @@ namespace PluginHub.Editor
             buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
             buildPlayerOptions.locationPathName = locationPathName;
             buildPlayerOptions.target = BuildTarget.StandaloneOSX;
-            buildPlayerOptions.options = GetBuildOptions();
+            BuildOptions options = GetBuildOptions();
+            if (autoRun)
+                options |= BuildOptions.AutoRunPlayer;
+            buildPlayerOptions.options = options;
             //开始构建
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;

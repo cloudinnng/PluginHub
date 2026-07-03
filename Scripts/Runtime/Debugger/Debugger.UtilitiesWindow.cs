@@ -20,6 +20,12 @@ namespace PluginHub.Runtime
             private string currentPath;
 
             private string tempText = "";
+            // WindowDisplayHelper 自定义窗口位置与尺寸（x/y/w/h 文本输入，首次打开时用当前窗口 rect 初始化）
+            private string _windowXText = "";
+            private string _windowYText = "";
+            private string _windowWidthText = "";
+            private string _windowHeightText = "";
+            private bool _windowRectFieldsInitialized = false;
             // 存储飞书云文件的<文件token,文件名>
             private Dictionary<string, string> feiShuCloudFiles = new Dictionary<string, string>();
             // private float resolutionScale = 1;
@@ -185,13 +191,166 @@ namespace PluginHub.Runtime
                             TryResolutionWindowed(1536, 2048, exchangeWidthHeight);
                         if (GUILayout.Button($"Lenovo Xiaoxin Pad Pro 2025 edition"))
                             TryResolutionWindowed(1840, 2944, exchangeWidthHeight);
-
                     }
                     GUILayout.EndHorizontal();
+
+                    DrawWindowDisplayHelperSection();
 
                 }
                 GUILayout.EndVertical();
             }
+
+            #region WindowDisplayHelper
+
+            /// <summary>
+            /// 解析 x/y/w/h 输入框；无效时打 log 并返回 false。
+            /// </summary>
+            private bool TryGetWindowRectInput(out int x, out int y, out int width, out int height)
+            {
+                x = 0;
+                y = 0;
+                width = 0;
+                height = 0;
+                if (!int.TryParse(_windowXText, out x))
+                {
+                    Debug.LogWarning($"[UtilitiesWindow] 窗口 X 无效: \"{_windowXText}\"，请输入整数。");
+                    return false;
+                }
+
+                if (!int.TryParse(_windowYText, out y))
+                {
+                    Debug.LogWarning($"[UtilitiesWindow] 窗口 Y 无效: \"{_windowYText}\"，请输入整数。");
+                    return false;
+                }
+
+                if (!int.TryParse(_windowWidthText, out width) || width <= 0)
+                {
+                    Debug.LogWarning($"[UtilitiesWindow] 窗口宽度无效: \"{_windowWidthText}\"，请输入正整数。");
+                    return false;
+                }
+
+                if (!int.TryParse(_windowHeightText, out height) || height <= 0)
+                {
+                    Debug.LogWarning($"[UtilitiesWindow] 窗口高度无效: \"{_windowHeightText}\"，请输入正整数。");
+                    return false;
+                }
+
+                return true;
+            }
+
+            /// <summary>
+            /// 接入 WindowDisplayHelper 全部能力：x/y/w/h 输入 + 各 Win32 窗口操作按钮（Windows 独立构建有效）。
+            /// </summary>
+            private void DrawWindowDisplayHelperSection()
+            {
+                if (!_windowRectFieldsInitialized)
+                {
+                    if (WindowDisplayHelper.TryGetApplicationWindowRect(out int initX, out int initY, out int initW, out int initH))
+                    {
+                        _windowXText = initX.ToString();
+                        _windowYText = initY.ToString();
+                        _windowWidthText = initW.ToString();
+                        _windowHeightText = initH.ToString();
+                        Debug.Log($"[UtilitiesWindow] WindowDisplayHelper 输入框已初始化为 ({initX}, {initY}) {initW}x{initH}");
+                    }
+                    else
+                    {
+                        _windowXText = "0";
+                        _windowYText = "0";
+                        _windowWidthText = Screen.width.ToString();
+                        _windowHeightText = Screen.height.ToString();
+                        Debug.Log($"[UtilitiesWindow] WindowDisplayHelper 输入框已初始化为 (0, 0) {Screen.width}x{Screen.height}（无法读取 Win32 窗口 rect，已回退 Screen 尺寸）");
+                    }
+
+                    _windowRectFieldsInitialized = true;
+                }
+
+                using (new GUILayout.VerticalScope("Box"))
+                {
+                    GUILayout.Label("WindowDisplayHelper (Windows Player):");
+
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        GUILayout.Label("X", GUILayout.Width(18f));
+                        _windowXText = GUILayout.TextField(_windowXText, GUILayout.Width(72f));
+                        GUILayout.Label("Y", GUILayout.Width(18f));
+                        _windowYText = GUILayout.TextField(_windowYText, GUILayout.Width(72f));
+                        GUILayout.Label("W", GUILayout.Width(18f));
+                        _windowWidthText = GUILayout.TextField(_windowWidthText, GUILayout.Width(72f));
+                        GUILayout.Label("H", GUILayout.Width(18f));
+                        _windowHeightText = GUILayout.TextField(_windowHeightText, GUILayout.Width(72f));
+                        if (GUILayout.Button("Sync", GUILayout.Width(48f)))
+                        {
+                            if (WindowDisplayHelper.TryGetApplicationWindowRect(out int syncX, out int syncY, out int syncW, out int syncH))
+                            {
+                                _windowXText = syncX.ToString();
+                                _windowYText = syncY.ToString();
+                                _windowWidthText = syncW.ToString();
+                                _windowHeightText = syncH.ToString();
+                                Debug.Log($"[UtilitiesWindow] 已同步当前窗口 rect 为 ({syncX}, {syncY}) {syncW}x{syncH}");
+                            }
+                            else
+                            {
+                                _windowWidthText = Screen.width.ToString();
+                                _windowHeightText = Screen.height.ToString();
+                                Debug.Log($"[UtilitiesWindow] 无法读取 Win32 窗口 rect，已同步尺寸为 {Screen.width}x{Screen.height}");
+                            }
+                        }
+                    }
+
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        if (GUILayout.Button("WithoutTitle"))
+                        {
+                            if (TryGetWindowRectInput(out int x, out int y, out int w, out int h))
+                            {
+                                Debug.Log($"[UtilitiesWindow] WithoutTitle({x}, {y}, {w}, {h})");
+                                WindowDisplayHelper.WithoutTitle(x, y, w, h);
+                                Instance.StartCoroutine(PluginHubRuntime.DelayAction(0.1f, Instance.AdjustDebuggerWindowGUIScale));
+                            }
+                        }
+
+                        if (GUILayout.Button("WithTitle"))
+                        {
+                            if (TryGetWindowRectInput(out int x, out int y, out int w, out int h))
+                            {
+                                Debug.Log($"[UtilitiesWindow] WithTitle({w}, {h})，位置 ({x}, {y}) 由 WithTitle 固定为 (0, 0)");
+                                WindowDisplayHelper.WithTitle(w, h);
+                                Instance.StartCoroutine(PluginHubRuntime.DelayAction(0.1f, Instance.AdjustDebuggerWindowGUIScale));
+                            }
+                        }
+
+                        if (GUILayout.Button("SetNoTitle"))
+                        {
+                            if (TryGetWindowRectInput(out int x, out int y, out int w, out int h))
+                            {
+                                Debug.Log($"[UtilitiesWindow] SetNoTitle({x}, {y}, {w}, {h})");
+                                WindowDisplayHelper.SetNoTitle(x, y, w, h);
+                            }
+                        }
+
+                        if (GUILayout.Button("SetWindowRect"))
+                        {
+                            if (TryGetWindowRectInput(out int x, out int y, out int w, out int h))
+                            {
+                                Debug.Log($"[UtilitiesWindow] SetWindowRect({x}, {y}, {w}, {h})");
+                                WindowDisplayHelper.SetWindowRect(x, y, w, h);
+                            }
+                        }
+                    }
+
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        if (GUILayout.Button("Minimize"))
+                        {
+                            Debug.Log("[UtilitiesWindow] MinimizeApplicationWindow");
+                            WindowDisplayHelper.MinimizeApplicationWindow();
+                        }
+                    }
+                }
+            }
+
+            #endregion
 
             // 将游戏分辨率设置成以给定分辨率尽可能大的分辨率保持宽高比的窗口模式。（给任务栏留出空间）
             // 这在PC端快速预览移动设备的屏幕比例时非常有用

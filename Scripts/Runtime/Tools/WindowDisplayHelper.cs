@@ -33,6 +33,18 @@ namespace PluginHub.Runtime
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+        [DllImport("user32.dll")]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
         /// <summary>Win32 ShowWindow：最小化窗口</summary>
         private const int SW_MINIMIZE = 6;
 
@@ -87,6 +99,45 @@ namespace PluginHub.Runtime
 
             SetWindowLong(GetForegroundWindow(), GWL_STYLE, WS_BORDER);
             SetWindowPos(GetForegroundWindow(), 0, x, y, width, height, SWP_SHOWWINDOW);
+        }
+
+        /// <summary>
+        /// 读取当前 Unity 应用程序窗口的屏幕坐标与尺寸（Windows 独立构建有效）。
+        /// </summary>
+        public static bool TryGetApplicationWindowRect(out int x, out int y, out int width, out int height)
+        {
+            x = 0;
+            y = 0;
+            width = 0;
+            height = 0;
+
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+                return false;
+
+            if (Application.platform != RuntimePlatform.WindowsPlayer)
+                return false;
+
+            IntPtr hwnd = GetActiveWindow();
+            if (hwnd == IntPtr.Zero)
+                hwnd = GetForegroundWindow();
+            if (hwnd == IntPtr.Zero)
+            {
+                Debug.LogWarning("[WindowDisplayHelper] TryGetApplicationWindowRect: 无法获取窗口句柄。");
+                return false;
+            }
+
+            if (!GetWindowRect(hwnd, out RECT rect))
+            {
+                Debug.LogWarning($"[WindowDisplayHelper] TryGetApplicationWindowRect: GetWindowRect 失败，hwnd={hwnd}");
+                return false;
+            }
+
+            x = rect.Left;
+            y = rect.Top;
+            width = rect.Right - rect.Left;
+            height = rect.Bottom - rect.Top;
+            Debug.Log($"[WindowDisplayHelper] TryGetApplicationWindowRect: ({x}, {y}) {width}x{height}");
+            return true;
         }
 
         /// <summary>
