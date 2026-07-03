@@ -53,7 +53,6 @@ namespace PluginHub.Runtime
             long expireTicks = DateTime.Parse(expireDateStr).Ticks;
             Debug.Log($"[ApplicationExpire] GenerateDataFile: 到期日期={expireDateStr}");
             WriteDataToFile(dataFilePath, currTicks, expireTicks);
-            Debug.Log($"[ApplicationExpire] GenerateDataFile: 构建数据已保存到 {dataFilePath}");
         }
 
         /// <summary>
@@ -64,14 +63,15 @@ namespace PluginHub.Runtime
             try
             {
                 // 转换为字节数组
-                byte[] bytes = BitConverter.GetBytes(buildTicks);
-                byte[] expireBytes = BitConverter.GetBytes(expireTicks);
-                byte[] dataBytes = new byte[bytes.Length + expireBytes.Length];
+                byte[] buildTimeBytes = BitConverter.GetBytes(buildTicks);
+                byte[] expireTimeBytes = BitConverter.GetBytes(expireTicks);
+                byte[] dataBytes = new byte[buildTimeBytes.Length + expireTimeBytes.Length];
                 Assert.IsTrue(dataBytes.Length == 16);
-                Buffer.BlockCopy(bytes, 0, dataBytes, 0, bytes.Length);
-                Buffer.BlockCopy(expireBytes, 0, dataBytes, bytes.Length, expireBytes.Length);
+                Buffer.BlockCopy(buildTimeBytes, 0, dataBytes, 0, buildTimeBytes.Length);
+                Buffer.BlockCopy(expireTimeBytes, 0, dataBytes, buildTimeBytes.Length, expireTimeBytes.Length);
                 // 写入文件
                 File.WriteAllBytes(dataFilePath, dataBytes);
+                Debug.Log($"[ApplicationExpire] WriteDataToFile: 构建数据已保存到 {dataFilePath}");
             }
             catch (Exception e)
             {
