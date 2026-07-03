@@ -12,17 +12,12 @@ namespace PluginHub.Runtime
     [CustomEditor(typeof(ApplicationExpire))]
     public class ApplicationExpireEditor : Editor
     {
-        private string expireDateForWriteFile
-        {
-            get => EditorPrefs.GetString($"PH_{Application.companyName}_{Application.productName}_ApplicationExpire_ExpireDateForWriteFile", "2099-12-31");
-            set => EditorPrefs.SetString($"PH_{Application.companyName}_{Application.productName}_ApplicationExpire_ExpireDateForWriteFile", value);
-        }
+
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
             GUILayout.Label($"Current Time: {System.DateTime.Now}");
-
 
             ApplicationExpire appExpire = target as ApplicationExpire;
 
@@ -34,9 +29,6 @@ namespace PluginHub.Runtime
             bool isExpired = appExpire.expireStatus != ApplicationExpireStatus.NotExpired;
             string statusEmoji = isExpired ? "❌" : "✅";
             GUILayout.Label($"Status: {statusEmoji} {(isExpired ? "Expired" : "Not Expired")} ({appExpire.expireStatus})");
-
-            // 
-            expireDateForWriteFile = EditorGUILayout.TextField("到期日期", expireDateForWriteFile);
 
             if (GUILayout.Button("生成数据文件"))
             {
@@ -56,8 +48,10 @@ namespace PluginHub.Runtime
 
         private void GenerateDataFile(string dataFilePath)
         {
+            string expireDateStr = (target as ApplicationExpire).expireDateForWriteFile;
             long currTicks = DateTime.Now.Ticks;
-            long expireTicks = DateTime.Parse(expireDateForWriteFile).Ticks;
+            long expireTicks = DateTime.Parse(expireDateStr).Ticks;
+            Debug.Log($"[ApplicationExpire] GenerateDataFile: 到期日期={expireDateStr}");
             WriteDataToFile(dataFilePath, currTicks, expireTicks);
             Debug.Log($"[ApplicationExpire] GenerateDataFile: 构建数据已保存到 {dataFilePath}");
         }
@@ -120,6 +114,11 @@ namespace PluginHub.Runtime
     {
         public string dataFilePath => Path.Combine(Application.streamingAssetsPath, "ApplicationExpire.data");
         public bool verboseLogs = false;
+
+        /// <summary>
+        /// 生成 ApplicationExpire.data 时写入的到期日期（yyyy-MM-dd），序列化保存在场景/预制体上
+        /// </summary>
+        public string expireDateForWriteFile = "2099-12-31";
 
         private DateTime _expireDate;
         private DateTime _buildDate;
