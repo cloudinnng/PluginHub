@@ -47,15 +47,15 @@ namespace PluginHub.Runtime
                 _isInitStyles = true;
                 _logToggleStyle = new GUIStyle(GUI.skin.toggle)
                 {
-                    padding = new RectOffset(0, 0, 0, 0),
-                    margin = new RectOffset(0, 4, 0, 0),
-                    border = new RectOffset(0, 0, 0, 0),
+                    // padding = new RectOffset(0, 0, 0, 0),
+                    // margin = new RectOffset(0, 4, 0, 0),
+                    // border = new RectOffset(0, 0, 0, 0),
                 };
                 _logLabelStyle = new GUIStyle(GUI.skin.label)
                 {
-                    padding = new RectOffset(0, 0, 0, 0),
-                    margin = new RectOffset(0, 4, 0, 0),
-                    border = new RectOffset(0, 0, 0, 0),
+                    // padding = new RectOffset(0, 0, 0, 0),
+                    // margin = new RectOffset(0, 4, 0, 0),
+                    // border = new RectOffset(0, 0, 0, 0),
                 };
             }
 

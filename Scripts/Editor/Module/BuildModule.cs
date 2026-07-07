@@ -9,7 +9,6 @@ using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,7 +16,7 @@ using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Editor
 {
-    public partial class BuildModule : PluginHubModuleBase, IPreprocessBuildWithReport
+    public partial class BuildModule : PluginHubModuleBase
     {
         #region 模块信息
 
@@ -138,121 +137,8 @@ namespace PluginHub.Editor
 
         #endregion
 
-        #region 构建预处理
-
-        public int callbackOrder => -999999;
-
-        public static string BuildInfoFilePath => Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt");
-
-        //构建预处理
-        public void OnPreprocessBuild(BuildReport report)
-        {
-            CreateStreamingAssetsIfNotExists();
-            WriteBuildInfo();
-            ClearStreamingAssetsIfNeeded();
-        }
-
-        private void CreateStreamingAssetsIfNotExists()
-        {
-            if (!Directory.Exists(Application.streamingAssetsPath))
-                Directory.CreateDirectory(Application.streamingAssetsPath);
-        }
-
-        private void WriteBuildInfo()
-        {
-            Debug.Log($"[BuildModule] Write build info to {BuildInfoFilePath}");
-            Directory.CreateDirectory(Path.GetDirectoryName(BuildInfoFilePath));
-            INIParser iniParser = new INIParser();
-            iniParser.Open(BuildInfoFilePath);
-            iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n", "\\n").Trim());
-            iniParser.WriteValue("BuildInfo", "BuildTime", CurrentDateTimeString());
-            iniParser.Close();
-        }
-
-        private void ClearStreamingAssetsIfNeeded()
-        {
-            if (clearStreamingAssetsBeforeBuild)
-            {
-                if (EditorUtility.DisplayDialog("清空StreamingAssets", "您选择了 clearStreamingAssetsBeforeBuild 是否删除 StreamingAssets 文件夹下的所有文件？", "是", "否"))
-                {
-                    string path = Application.streamingAssetsPath;
-                    string[] files = System.IO.Directory.GetFiles(path);
-                    foreach (var file in files)
-                    {
-                        System.IO.File.Delete(file);
-                    }
-                }
-            }
-        }
-        #endregion
-
-        #region 构建后处理
-
-        [PostProcessBuild]
-        public static void PostProcessBuild(BuildTarget buildTarget, string pathToBuiltProject)
-        {
-            if (buildTarget == BuildTarget.iOS)
-            {
-                IncrementIOSBuildNumber();
-            }
-            else if (buildTarget == BuildTarget.StandaloneWindows64)
-            {
-                IncrementPCVersionNumber();// 增加版本号
-                CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);// 复制 daemon-run.bat 到构建目录
-                ExecutePostCopyFolders(buildTarget, pathToBuiltProject);// 执行构建后复制文件夹到构建目录
-            }
-        }
-
-        /// <summary>
-        /// Windows 构建完成后，将 daemon-run.bat 复制到构建目录（exe 同级目录）。
-        /// 优先通过 Package Manager API 解析包真实路径，再回退到多个候选路径，
-        /// 兼容插件放在 Packages/Assets/工程根目录等不同场景。
-        /// </summary>
-        private static void CopyDaemonRunBatToWindowsBuildDirectory(string pathToBuiltProject)
-        {
-            if (string.IsNullOrWhiteSpace(pathToBuiltProject))
-            {
-                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：pathToBuiltProject 为空。");
-                return;
-            }
-
-            string buildDirectory = Path.GetDirectoryName(pathToBuiltProject);
-            if (string.IsNullOrWhiteSpace(buildDirectory) || !Directory.Exists(buildDirectory))
-            {
-                Debug.LogWarning($"[BuildModule] 跳过复制 daemon-run.bat：构建目录无效，pathToBuiltProject={pathToBuiltProject}");
-                return;
-            }
-
-            string scriptPath = PluginHubRuntime.ResolveRelativePath("Plugins/daemon-run.bat");
-            if (string.IsNullOrWhiteSpace(scriptPath))
-            {
-                Debug.LogWarning("[BuildModule] 跳过复制 daemon-run.bat：未找到源文件。已检查路径：" + scriptPath);
-                return;
-            }
-            string targetFilePath = Path.Combine(buildDirectory, "daemon-run.bat");
-            File.Copy(scriptPath, targetFilePath, true);
-            Debug.Log($"[BuildModule] 已复制 daemon-run.bat 到构建目录：{targetFilePath}");
-        }
-
-        private static void IncrementIOSBuildNumber()
-        {
-            string oldBuildNumber = PlayerSettings.iOS.buildNumber;
-            PlayerSettings.iOS.buildNumber = (int.Parse(PlayerSettings.iOS.buildNumber) + 1).ToString();
-            Debug.Log($"Build ID从{oldBuildNumber}自增到{PlayerSettings.iOS.buildNumber}");
-        }
-
-        private static void IncrementPCVersionNumber()
-        {
-            string oldVersion = PlayerSettings.bundleVersion;
-            int lastIndex = oldVersion.LastIndexOf('.');
-            string majorVersion = oldVersion.Substring(0, lastIndex);
-            string minorVersion = oldVersion.Substring(lastIndex + 1);
-            minorVersion = (int.Parse(minorVersion) + 1).ToString();
-            PlayerSettings.bundleVersion = $"{majorVersion}.{minorVersion}";
-            Debug.Log($"版本号从{oldVersion}自增到{PlayerSettings.bundleVersion}");
-        }
-
-        #endregion
+        
+        
 
         #region 界面绘制
 
@@ -1113,10 +999,10 @@ namespace PluginHub.Editor
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"✅Build succeeded");
+                    Debug.Log($"[BuildModule] ✅Build succeeded");
                     break;
                 case BuildResult.Failed:
-                    Debug.LogError("❌Build failed");
+                    Debug.LogError($"[BuildModule] ❌Build failed");
                     break;
             }
         }

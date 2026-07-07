@@ -121,6 +121,10 @@ namespace PluginHub.Runtime
 
         [Header("窗口分辨率（移动设备推荐使用较小的分辨率）")]
         public DebuggerResolutionType resolutionType = DebuggerResolutionType.LARGE_800x600;
+        [Tooltip("在自动计算的窗口 GUI 缩放基础上叠加的微调偏移，正值放大、负值缩小")]
+        public float debuggerWindowGUIScaleOffset = 0f;
+        [Tooltip("是否使用键盘调整窗口GUI缩放")]
+        public bool usePlusMinusKeyToAdjustDebuggerWindowGUIScale = true;
         private Vector2Int MIN_WINDOW_SIZE = new Vector2Int(60, 60);
         private Vector2Int NORMAL_WINDOW_SIZE;
 
@@ -241,12 +245,22 @@ namespace PluginHub.Runtime
             }
         }
 
+        private float _lastLoggedDebuggerWindowGUIScale = -1f;
+
         private void AdjustDebuggerWindowGUIScale()
         {
+            float baseScale;
             if (Screen.width > Screen.height) //根据高
-                _debuggerWindowGUIScale = Screen.height / (_fullWindowRect.height + 20);
+                baseScale = Screen.height / (_fullWindowRect.height + 20);
             else //根据宽
-                _debuggerWindowGUIScale = Screen.width / (_fullWindowRect.width + 20);
+                baseScale = Screen.width / (_fullWindowRect.width + 20);
+
+            _debuggerWindowGUIScale = baseScale + debuggerWindowGUIScaleOffset;
+            if (Mathf.Abs(_debuggerWindowGUIScale - _lastLoggedDebuggerWindowGUIScale) > 0.0001f)
+            {
+                Debug.Log($"[Debugger] 窗口 GUI 缩放: 自动={baseScale:F3}, 偏移={debuggerWindowGUIScaleOffset:F3}, 最终={_debuggerWindowGUIScale:F3}");
+                _lastLoggedDebuggerWindowGUIScale = _debuggerWindowGUIScale;
+            }
         }
 
         public bool isShowFullWindow // call this
@@ -311,8 +325,30 @@ namespace PluginHub.Runtime
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             }
+
+            // 调整窗口GUI缩放（仅在调试器窗口显示时有效）
+            if (isShowDebugger && usePlusMinusKeyToAdjustDebuggerWindowGUIScale)
+            {
+                if (InputEx.GetKeyDown(KeyCode.Equals) || InputEx.GetKeyDown(KeyCode.KeypadPlus))
+                {
+                    IncreaseDebuggerWindowGUIScaleOffset();
+                }
+                if (InputEx.GetKeyDown(KeyCode.Minus) || InputEx.GetKeyDown(KeyCode.KeypadMinus))
+                {
+                    DecreaseDebuggerWindowGUIScaleOffset();
+                }
+            }
         }
 
+        private void IncreaseDebuggerWindowGUIScaleOffset()
+        {
+            debuggerWindowGUIScaleOffset += 0.5f;
+        }
+
+        private void DecreaseDebuggerWindowGUIScaleOffset()
+        {
+            debuggerWindowGUIScaleOffset -= 0.5f;
+        }
 
         private void DrawMinWindow(int windowId)
         {
@@ -334,53 +370,57 @@ namespace PluginHub.Runtime
             return _consoleWindow.ErrorCount <= 0 ? "white" : "red";
         }
 
-
+        private Vector2 creditsPageScrollPosition = Vector2.zero;
         private void DrawCreditsPage()
         {
-            GUILayout.BeginVertical("box");
-            GUILayout.BeginVertical("box");
+            creditsPageScrollPosition = GUILayout.BeginScrollView(creditsPageScrollPosition);
             {
-                if (GUILayout.Button("Back to Debugger"))
-                    _showCreditsPage = false;
-
-                GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
-                titleStyle.fontSize = 50;
-                titleStyle.alignment = TextAnchor.MiddleCenter;
-                GUILayout.Label("Credits", titleStyle);
-
-                GUIStyle headerStyle = new GUIStyle(GUI.skin.label);
-                headerStyle.fontSize = 20;
-
-                GUILayout.Label("致用户：", headerStyle);
-                GUILayout.Label("使用`键（键盘左上角ESC键下面）显示/隐藏调试器，移动设备也可以用旋转手势呼出，只需手指按下在屏幕中画圈即可。");
-                GUILayout.Label("Debugger有两种窗口模式，仅显示FPS信息的小窗口和全功能大窗口。按Tab键切换小窗口/正常窗口，也可以点击FPS文本和右上角的最小化按钮来切换。");
-                GUILayout.Label("通常，您只需要关注 Console 标签页和 Custom 标签页。");
-                GUILayout.Label("当互动软件发生错误和功能异常时，请携带Console标签页中的信息联系开发者。");
-                GUILayout.Label("在Custom标签页中，您可以看到互动软件的自定义界面，这些功能是由开发者为您定制的，每款互动软件各不相同，您可以在这里查看互动软件的状态与管理互动软件的运行。");
-                GUILayout.Space(20);
-                GUILayout.Label("致开发者：", headerStyle);
-
-                GUILayout.Label("您正在使用的 GUI 覆盖层 Debugger 是开源项目 PluginHub 的一部分。");
-                GUILayout.Label("开发者可以在 Custom 页面为每个互动软件添加自定义的 GUI 界面，这在制作系统后台时非常有用。");
-                GUILayout.Label("新 PluginHub 现在是一份加速 Unity3D 项目开发的代码模板。包含 Runtime(运行时) 和 Editor(编辑器) 功能");
-                GUILayout.Label("目前 PluginHub 由我一人维护，您可以进入 PluginHub 开源主页点击右上角的 Star 按钮来支持我的开发。");
-
-                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical("box");
+                GUILayout.BeginVertical("box");
                 {
-                    GUILayout.Label("开源页面：https://github.com/cloudinnng/PluginHub");
-                    if (GUILayout.Button("带我去 PluginHub 开源主页", GUILayout.Width(200)))
-                        Application.OpenURL("https://github.com/cloudinnng/PluginHub");
+                    if (GUILayout.Button("Back to Debugger"))
+                        _showCreditsPage = false;
+
+                    GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
+                    titleStyle.fontSize = 50;
+                    titleStyle.alignment = TextAnchor.MiddleCenter;
+                    GUILayout.Label("Credits", titleStyle);
+
+                    GUIStyle headerStyle = new GUIStyle(GUI.skin.label);
+                    headerStyle.fontSize = 20;
+
+                    GUILayout.Label("致用户：", headerStyle);
+                    GUILayout.Label("使用`键（键盘左上角ESC键下面）显示/隐藏调试器，移动设备也可以用旋转手势呼出，只需手指按下在屏幕中画圈即可。");
+                    GUILayout.Label("Debugger有两种窗口模式，仅显示FPS信息的小窗口和全功能大窗口。按Tab键切换小窗口/正常窗口，也可以点击FPS文本和右上角的最小化按钮来切换。");
+                    GUILayout.Label("通常，您只需要关注 Console 标签页和 Custom 标签页。");
+                    GUILayout.Label("当互动软件发生错误和功能异常时，请携带Console标签页中的信息联系开发者。");
+                    GUILayout.Label("在Custom标签页中，您可以看到互动软件的自定义界面，这些功能是由开发者为您定制的，每款互动软件各不相同，您可以在这里查看互动软件的状态与管理互动软件的运行。");
+                    GUILayout.Space(20);
+                    GUILayout.Label("致开发者：", headerStyle);
+
+                    GUILayout.Label("您正在使用的 GUI 覆盖层 Debugger 是开源项目 PluginHub 的一部分。");
+                    GUILayout.Label("开发者可以在 Custom 页面为每个互动软件添加自定义的 GUI 界面，这在制作系统后台时非常有用。");
+                    GUILayout.Label("新 PluginHub 现在是一份加速 Unity3D 项目开发的代码模板。包含 Runtime(运行时) 和 Editor(编辑器) 功能");
+                    GUILayout.Label("目前 PluginHub 由我一人维护，您可以进入 PluginHub 开源主页点击右上角的 Star 按钮来支持我的开发。");
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label("开源页面：https://github.com/cloudinnng/PluginHub");
+                        if (GUILayout.Button("带我去 PluginHub 开源主页", GUILayout.Width(200)))
+                            Application.OpenURL("https://github.com/cloudinnng/PluginHub");
+                    }
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("Back to Debugger", GUILayout.Height(50)))
+                        _showCreditsPage = false;
+
                 }
-                GUILayout.EndHorizontal();
-
-                GUILayout.FlexibleSpace();
-
-                if (GUILayout.Button("Back to Debugger", GUILayout.Height(50)))
-                    _showCreditsPage = false;
-
+                GUILayout.EndVertical();
+                GUILayout.EndVertical();
             }
-            GUILayout.EndVertical();
-            GUILayout.EndVertical();
+            GUILayout.EndScrollView();
         }
 
         private void DrawBigWindow(int windowId)
@@ -406,6 +446,12 @@ namespace PluginHub.Runtime
                     //显示关于页面按钮
                     if (GUILayout.Button("?", GUILayout.Height(25f), GUILayout.Width(30f)))
                         _showCreditsPage = !_showCreditsPage;
+
+                    //调整窗口GUI缩放按钮
+                    if (GUILayout.Button("-", GUILayout.Height(25f), GUILayout.Width(30f)))
+                        DecreaseDebuggerWindowGUIScaleOffset();
+                    if (GUILayout.Button("+", GUILayout.Height(25f), GUILayout.Width(30f)))
+                        IncreaseDebuggerWindowGUIScaleOffset();
 
                     //最小化Debugger
                     if (GUILayout.Button("_", GUILayout.Height(25f), GUILayout.Width(30f)))
@@ -447,6 +493,7 @@ namespace PluginHub.Runtime
 
                 if (isShowDebugger)
                 {
+                    AdjustDebuggerWindowGUIScale(); // 每帧重算，支持运行时微调偏移与屏幕尺寸变化
                     //整体缩放绘制
                     Matrix4x4 tmp = GUI.matrix;
                     GUI.matrix = Matrix4x4.Scale(new Vector3(_debuggerWindowGUIScale, _debuggerWindowGUIScale, 1));
