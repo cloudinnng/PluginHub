@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -10,7 +11,8 @@ namespace PluginHub.Editor
     public static class PluginHubEditor
     {
         #region 常量定义 (Constants)
-
+        
+        public static string ProjectRoot => Path.GetDirectoryName(Application.dataPath);
         //选中的颜色
         public static readonly Color SelectedColor = new Color(0.572549f, 0.7960784f, 1f, 1f);
         public static readonly Color Red = new Color(1.0f, 0.5f, 0.5f, 1f);

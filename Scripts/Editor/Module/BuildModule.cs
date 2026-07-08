@@ -77,8 +77,6 @@ namespace PluginHub.Editor
         }
 
         //PC平台场景构建时,构建项目时用于exe执行文件的名称和构建目录名，如果为空，则使用项目文件夹名称
-        // eg: 溪洛渡水电站机电设备三维可视化平台
-        // eg: XLDHydropowerStation
         private static string projectBuildName
         {
             get
@@ -94,9 +92,6 @@ namespace PluginHub.Editor
                 PluginHubConfig.WriteConfig("BuildModule", "projectBuildName", value);
             }
         }
-
-        //实际的构建名
-        private static string realProjectBuildName => devBuild ? $"{projectBuildName}_Dev" : projectBuildName;
 
         //PC平台场景构建时,用于exe执行文件的名称和构建目录名，如果为空，则使用场景名称
         // eg: 00.MainScene
@@ -190,11 +185,17 @@ namespace PluginHub.Editor
                 GUILayout.Label("更多选项:", GUILayout.Width(titleWidth));
                 GUILayout.BeginVertical();
                 {
+                    if (GUILayout.Button("打开场景列表"))
+                    {
+                        // 打开 Unity 自带的场景构建选择界面（Build Settings / Build Profiles）
+                        Debug.Log("[BuildModule] 打开 Unity 场景构建选择界面");
+                        BuildPlayerWindow.ShowBuildPlayerWindow();
+                    }
                     devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
-                    buildAndRun = GUILayout.Toggle(buildAndRun, new GUIContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
-                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动打包", "勾选后，Windows 构建成功时将自动压缩构建目录并复制 zip 到剪贴板。"));
                     deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
                     clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
+                    buildAndRun = GUILayout.Toggle(buildAndRun, new GUIContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
+                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动打包", "勾选后，Windows 构建成功时将自动压缩构建目录并复制 zip 到剪贴板。"));
                     enablePostCopy = GUILayout.Toggle(enablePostCopy, new GUIContent("构建后复制文件夹到构建目录"));
                     if (enablePostCopy)
                     {
@@ -286,18 +287,18 @@ namespace PluginHub.Editor
                 projectBuildName = EditorGUILayout.TextField("项目构建名称:", projectBuildName);
                 GUILayout.BeginHorizontal();
                 {
-                    string path = CurrProjectBuildFullPath();
+                    string exePath = $"Build/{projectBuildName}/{projectBuildName}.exe";
                     DrawBuildButton(
                         "构建项目",
-                        $"将构建到{path}",
-                        BuildStandaloneProject,
+                        $"将构建到{exePath}",
                         () =>
                         {
-                            BuildStandaloneProject();
-                            ExecuteExe(path);
+                            SceneManage_AddCurrSceneToBuildSetting();
+                            SceneManage_SetBuildSceneEnable(false);
+                            ExecuteBuild(BuildTarget.StandaloneWindows64, exePath);
                         });
-                    DrawIconBtnOpenFolder(path);
-                    DrawRunButton(path);
+                    DrawIconBtnOpenFolder(exePath);
+                    DrawRunButton(exePath);
                 }
                 GUILayout.EndHorizontal();
             }
@@ -313,28 +314,19 @@ namespace PluginHub.Editor
 
                 using (new GUILayout.HorizontalScope())
                 {
-                    string path = CurrSceneBuildFullPath();
-                    DrawBuildButton(
-                        "构建当前场景",
-                        $"将会直接构建到{path}。",
-                        () => BuildStandaloneCurrScene(false),
-                        () =>
-                        {
-                            BuildStandaloneCurrScene(false);
-                            ExecuteExe(path);
-                        });
+                    GUILayout.FlexibleSpace();
+                    string exePath = $"Build/{sceneBuildName}/{sceneBuildName}.exe";
                     DrawBuildButton(
                         "仅构建当前场景",
-                        $"程序将先在构建设置中取消激活其它已添加的场景\n然后构建到{path}。",
-                        () => BuildStandaloneCurrScene(true),
+                        $"将构建到{exePath}",
                         () =>
                         {
-                            BuildStandaloneCurrScene(true);
-                            ExecuteExe(path);
-                        },
-                        GUILayout.ExpandWidth(false));
-                    DrawIconBtnOpenFolder(path);
-                    DrawRunButton(path);
+                            SceneManage_AddCurrSceneToBuildSetting();
+                            SceneManage_SetBuildSceneEnable(true);
+                            ExecuteBuild(BuildTarget.StandaloneWindows64, exePath);
+                        });
+                    DrawIconBtnOpenFolder(exePath);
+                    DrawRunButton(exePath);
                 }
             }
         }
@@ -407,8 +399,7 @@ namespace PluginHub.Editor
                 DrawBuildButton(
                     "构建 IOS 项目",
                     $"将构建到{path}",
-                    () => BuildIOS(path),
-                    () => BuildIOS(path, autoRun: true),
+                    () => ExecuteBuild(BuildTarget.iOS, path),
                     GUILayout.Height(PluginHubEditor.NormalBtnHeight));
 
                 // 快捷打开xCode项目的icon按钮
@@ -454,8 +445,7 @@ namespace PluginHub.Editor
                 DrawBuildButton(
                     "构建 Android 项目",
                     $"将构建到{path}",
-                    () => BuildAndroid(apkPath),
-                    () => BuildAndroid(apkPath, autoRun: true));
+                    () => ExecuteBuild(BuildTarget.Android, apkPath));
 
                 DrawIconBtnOpenFolder(path);
             }
@@ -484,9 +474,7 @@ namespace PluginHub.Editor
                 DrawBuildButton(
                     "构建 WebGL 项目",
                     $"将构建到{path}",
-                    () => BuildWebGL(@"Build/WebGL/"),
-                    () => BuildWebGL(@"Build/WebGL/", autoRun: true));
-
+                    () => ExecuteBuild(BuildTarget.WebGL, @"Build/WebGL/"));
                 DrawIconBtnOpenFolder(path);
             }
             GUILayout.EndHorizontal();
@@ -514,8 +502,7 @@ namespace PluginHub.Editor
                 DrawBuildButton(
                     "构建 MacOS 项目",
                     $"将构建到{path}",
-                    () => BuildMacOS(macBuildPath),
-                    () => BuildMacOS(macBuildPath, autoRun: true));
+                    () => ExecuteBuild(BuildTarget.StandaloneOSX, macBuildPath));
                 DrawIconBtnOpenFolder(path);
             }
             GUILayout.EndHorizontal();
@@ -612,12 +599,7 @@ namespace PluginHub.Editor
                 }
 
                 //运行按钮
-                GUI.enabled = File.Exists(executeFullpath);
-                if (GUILayout.Button("运行", GUILayout.ExpandWidth(false)))
-                {
-                    ExecuteExe(executeFullpath);
-                }
-                GUI.enabled = true;
+                DrawRunButton(executeFullpath);
             }
             GUILayout.EndHorizontal();
             DrawZebraRowBackground(index);
@@ -761,36 +743,6 @@ namespace PluginHub.Editor
 
         #region 辅助绘制
 
-        #region 构建按钮
-
-        /// <summary>
-        /// 绘制构建按钮。勾选「构建后运行」时按钮变红、文案追加「并运行」，点击后执行构建并运行。
-        /// </summary>
-        private static void DrawBuildButton(string label, string tooltip, Action onBuild, Action onBuildAndRun, params GUILayoutOption[] options)
-        {
-            Color oldColor = GUI.color;
-            if (buildAndRun)
-                GUI.color = PluginHubEditor.Red;
-
-            string buttonLabel = buildAndRun ? $"{label}并运行" : label;
-            string runHint = buildAndRun
-                ? "已勾选「构建后运行」，构建完成后自动运行"
-                : "可在「更多选项」中勾选「构建后运行」";
-            string fullTooltip = string.IsNullOrEmpty(tooltip) ? runHint : $"{tooltip}\n{runHint}";
-
-            if (GUILayout.Button(PluginHubEditor.GuiContent(buttonLabel, fullTooltip), options))
-            {
-                if (buildAndRun)
-                    EditorApplication.delayCall += () => onBuildAndRun?.Invoke();
-                else
-                    EditorApplication.delayCall += () => onBuild?.Invoke();
-            }
-
-            GUI.color = oldColor;
-        }
-
-        #endregion
-
         /// <summary>
         /// 行绘制完成后为奇数行叠加半透明背景。所有行均使用相同的 BeginHorizontal()，避免样式差异导致列对不齐。
         /// </summary>
@@ -927,244 +879,6 @@ namespace PluginHub.Editor
             {
                 Debug.LogError($"打开文件失败: {e.Message}");
             }
-        }
-
-        #endregion
-
-        #region PC构建辅助
-
-        //E:\ProjectFolder\ProjectName\Build\folderName\exeName.exe
-        private static string GetBuildFullPath(string folderName, string exeName)
-        {
-            string fullPath = Application.dataPath;
-            fullPath = fullPath.Substring(0, fullPath.LastIndexOf('/') + 1);
-            fullPath = Path.Combine(fullPath, $"Build/{folderName}/{exeName}.exe");
-            fullPath = fullPath.Replace('/', '\\');
-            return fullPath;
-        }
-
-        private static string CurrSceneBuildFullPath()
-        {
-            string buildName = sceneBuildName;
-            return GetBuildFullPath(buildName, buildName);
-        }
-
-        private static string CurrProjectBuildFullPath()
-        {
-            string currProjectName = realProjectBuildName;
-            return GetBuildFullPath(currProjectName, currProjectName);
-        }
-
-        private static void BuildStandaloneProject()
-        {
-            string buildName = realProjectBuildName;
-            AddCurrSceneToBuildSetting();
-            SetBuildSceneEnable(false);
-            BuildStandalone(buildName, buildName);
-        }
-
-        private static void BuildStandaloneCurrScene(bool uncheckOtherScene)
-        {
-            AddCurrSceneToBuildSetting();
-            if (uncheckOtherScene)
-                SetBuildSceneEnable(true);
-            BuildStandalone(sceneBuildName, sceneBuildName);
-        }
-
-        #endregion
-
-        #region 通用构建
-
-        private static BuildOptions GetBuildOptions()
-        {
-            BuildOptions options = BuildOptions.None;
-            if (devBuild)
-                options |= BuildOptions.Development;
-            return options;
-        }
-
-        //删除旧构建的确认
-        private static bool DeleteOldBuildConfirm(string folder)
-        {
-            bool continueBuild = true;
-            if (!deleteOldBuildBeforeBuild)
-                return true;
-
-            if (Directory.Exists(folder))
-            {
-                if (EditorUtility.DisplayDialog("删除旧构建", $"是否在构建前删除旧构建目录{folder} ?", "是,继续构建", "否,取消构建"))
-                {
-                    try
-                    {
-                        Directory.Delete(folder, true);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError($"删除旧构建目录失败: {e.Message}");
-                        throw e;
-                    }
-                    continueBuild = true;
-                }
-                else
-                {
-                    continueBuild = false;
-                }
-            }
-            return continueBuild;
-        }
-
-        private static void LogBuildResult(BuildSummary summary)
-        {
-            switch (summary.result)
-            {
-                case BuildResult.Succeeded:
-                    Debug.Log($"[BuildModule] ✅Build succeeded");
-                    break;
-                case BuildResult.Failed:
-                    Debug.LogError($"[BuildModule] ❌Build failed");
-                    break;
-            }
-        }
-
-        private static void BuildStandalone(string folderName, string exeName)
-        {
-            string folder = Path.GetDirectoryName(GetBuildFullPath(folderName, exeName));
-            if (!DeleteOldBuildConfirm(folder))
-                return;
-
-            PlayerSettings.productName = exeName;// 这样会将打包后程序的窗口标题设置为exeName
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-            buildPlayerOptions.locationPathName = $"Build/{folderName}/{exeName}.exe";
-            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
-            buildPlayerOptions.target = BuildTarget.StandaloneWindows64;
-            buildPlayerOptions.options = GetBuildOptions();
-            //开始构建
-            //当没有项目名称文件夹的时候如（TimePuzzle），Unity 2021.3.16f1可能会在这里有个bug。需要在Build目录建立TimePuzzle文件夹后才能构建到时间拼图文件夹里。
-            //构建的时候如果这里报一个警告，说用户脚本引用了WinForm。
-            //可以尝试将Other Settings里的Scripting Define Symbols里的PH_WINFORMS去掉。
-            //或者删除代码中的System.Windows.Forms
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-            LogBuildResult(summary);
-        }
-
-        private static void BuildIOS(string locationPathName, bool autoRun = false)
-        {
-            Debug.Log($"BuildIOS: {locationPathName}, autoRun={autoRun}");
-            if (!DeleteOldBuildConfirm(locationPathName))
-                return;
-
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
-            buildPlayerOptions.locationPathName = locationPathName;
-            buildPlayerOptions.target = BuildTarget.iOS;
-            BuildOptions options = GetBuildOptions();
-            if (autoRun)
-                options |= BuildOptions.AutoRunPlayer;
-            buildPlayerOptions.options = options;
-            //开始构建
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-            LogBuildResult(summary);
-        }
-
-        private static void BuildAndroid(string locationPathName, bool autoRun = false)
-        {
-            Debug.Log($"BuildAndroid: {locationPathName}, autoRun={autoRun}");
-            if (!DeleteOldBuildConfirm(locationPathName))
-                return;
-
-            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, $"com.{Application.companyName}.{Application.productName}");
-
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
-            buildPlayerOptions.locationPathName = locationPathName;
-            buildPlayerOptions.target = BuildTarget.Android;
-            BuildOptions options = GetBuildOptions();
-            if (autoRun)
-                options |= BuildOptions.AutoRunPlayer;
-            buildPlayerOptions.options = options;
-            //开始构建
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-            LogBuildResult(summary);
-        }
-
-        private static void BuildWebGL(string locationPathName, bool autoRun = false)
-        {
-            Debug.Log($"BuildWebGL: {locationPathName}, autoRun={autoRun}");
-            if (!DeleteOldBuildConfirm(locationPathName))
-                return;
-
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
-            buildPlayerOptions.locationPathName = locationPathName;
-            buildPlayerOptions.target = BuildTarget.WebGL;
-            BuildOptions options = GetBuildOptions();
-            if (autoRun)
-                options |= BuildOptions.AutoRunPlayer;
-            buildPlayerOptions.options = options;
-            //开始构建
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-            LogBuildResult(summary);
-        }
-
-        private static void BuildMacOS(string locationPathName, bool autoRun = false)
-        {
-            Debug.Log($"BuildMacOS: {locationPathName}, autoRun={autoRun}");
-            if (!DeleteOldBuildConfirm(locationPathName))
-                return;
-
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-            buildPlayerOptions.scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
-            buildPlayerOptions.locationPathName = locationPathName;
-            buildPlayerOptions.target = BuildTarget.StandaloneOSX;
-            BuildOptions options = GetBuildOptions();
-            if (autoRun)
-                options |= BuildOptions.AutoRunPlayer;
-            buildPlayerOptions.options = options;
-            //开始构建
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-            LogBuildResult(summary);
-        }
-
-        #endregion
-
-        #region 场景管理
-
-        private static void AddCurrSceneToBuildSetting()
-        {
-            EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-            string currScenePath = SceneManager.GetActiveScene().path;
-            int count = scenes.Where(scene => scene.path == currScenePath).Count();
-            if (count == 0) //如果构建设置中没有，添加当前场景到构建设置中
-            {
-                EditorBuildSettingsScene scene = new EditorBuildSettingsScene();
-                scene.path = currScenePath;
-                List<EditorBuildSettingsScene> scenesList = scenes.ToList();
-                scenesList.Add(scene);
-                scenes = scenesList.ToArray();
-            }
-
-            EditorBuildSettings.scenes = scenes;
-        }
-
-        // 设置构建设置中各场景的启用状态
-        // 如果 onlyCurrentScene 为 true，则只启用当前活动场景，其余场景禁用
-        // 如果 onlyCurrentScene 为 false，则启用所有场景
-        private static void SetBuildSceneEnable(bool onlyCurrentScene)
-        {
-            List<EditorBuildSettingsScene> scenes = EditorBuildSettings.scenes.ToList();
-            foreach (var scene in scenes)
-            {
-                if (onlyCurrentScene)
-                    scene.enabled = scene.path == SceneManager.GetActiveScene().path;
-                else
-                    scene.enabled = true;
-            }
-            EditorBuildSettings.scenes = scenes.ToArray();
         }
 
         #endregion

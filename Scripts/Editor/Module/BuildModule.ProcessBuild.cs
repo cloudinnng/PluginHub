@@ -1,31 +1,144 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEditor.Callbacks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 namespace PluginHub.Editor
 {
-    public partial class BuildModule : PluginHubModuleBase, IPreprocessBuildWithReport
+    // 处理构建
+    public partial class BuildModule : PluginHubModuleBase
     {
+        #region Build
+
+        /// <summary>
+        /// 绘制构建按钮
+        /// </summary>
+        private static void DrawBuildButton(string label, string tooltip, Action onBuild, params GUILayoutOption[] options)
+        {
+            if (GUILayout.Button(PluginHubEditor.GuiContent(label, tooltip), options))
+            {
+                EditorApplication.delayCall += () => onBuild?.Invoke();
+            }
+        }
+
+        private void ExecuteBuild(BuildTarget buildTarget, string locationPathName)
+        {
+            if(!OnPreprocessBuild(buildTarget, locationPathName))//构建前预处理
+                return;//构建前预处理失败，取消构建
+            BuildReport report = null;
+            {
+                BuildPlayerOptions buildPlayerOptions = new()
+                {
+                    scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray(),
+                    locationPathName = locationPathName,
+                    target = buildTarget,
+                    options = GetBuildOptions(devBuild, buildAndRun)
+                };
+                report = BuildPipeline.BuildPlayer(buildPlayerOptions);//构建
+                LogBuildResult(report.summary);
+            }
+            if (report != null && report.summary.result == BuildResult.Succeeded)
+                OnBuildSucceeded(report.summary);//构建成功后续处理
+        }
+
+        #endregion
+
+        #region 通用构建
+
+        // 各平台 BuildXxx 统一调用顺序：
+        // 1. DeleteOldBuildConfirm（用户可取消）
+        // 2. 平台专属前置设置（如 Windows 设 productName、Android 设包名）
+        // 3. ExecuteBuild → OnPreprocessBuild → BuildPipeline.BuildPlayer → OnBuildSucceeded
+
+        private BuildOptions GetBuildOptions(bool developmentBuild, bool autoRunPlayer)
+        {
+            BuildOptions options = BuildOptions.None;
+            if (developmentBuild)
+                options |= BuildOptions.Development;
+            if (autoRunPlayer)
+                options |= BuildOptions.AutoRunPlayer;
+            return options;
+        }
+
+        //删除旧构建的确认
+        private bool DeleteOldBuildConfirm(string folder)
+        {
+            if (!deleteOldBuildBeforeBuild)
+                return true;
+
+            // Debug.Log($"[BuildModule] folder: {folder} : {AssetDatabase.IsValidFolder(folder)}");
+            if (Directory.Exists(folder))
+            {
+                if (EditorUtility.DisplayDialog("删除旧构建", $"是否在构建前删除旧构建目录{folder} ?", "是,继续构建", "否,取消构建"))
+                {
+                    try
+                    {
+                        Directory.Delete(folder, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"删除旧构建目录失败: {e.Message}");
+                        return false;//删除失败，取消构建
+                    }
+                    return true;//继续构建
+                }
+                else
+                {
+                    return false;//取消构建
+                }
+            }
+            return true;//目录不存在，继续构建
+        }
+
+        private void LogBuildResult(BuildSummary summary)
+        {
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"[BuildModule] ✅Build succeeded");
+                    break;
+                case BuildResult.Failed:
+                    Debug.LogError($"[BuildModule] ❌Build failed");
+                    break;
+            }
+        }
+
+
+
+        #endregion
         #region 构建预处理
 
-        public int callbackOrder => -999999;
+        public string BuildInfoFilePath => Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt");
 
-        public static string BuildInfoFilePath => Path.Combine(Application.streamingAssetsPath, "BuildInfo.txt");
-
-        //构建预处理
-        public void OnPreprocessBuild(BuildReport report)
+        /// <summary>
+        /// 构建前统一预处理（在 BuildPlayer 之前由各平台 BuildXxx 显式调用，不再走 IPreprocessBuildWithReport 回调）。
+        /// 顺序：确保 StreamingAssets 存在 → 写入 BuildInfo → 按需清空 StreamingAssets。
+        /// </summary>
+        private bool OnPreprocessBuild(BuildTarget buildTarget, string locationPathName)
         {
+            Debug.Log($"[BuildModule] 构建前预处理，平台: {buildTarget}");
+
+            if (buildTarget == BuildTarget.StandaloneWindows64)
+            {
+                string buildDirectory = Path.Combine(PluginHubEditor.ProjectRoot, locationPathName);
+                buildDirectory = Path.GetDirectoryName(buildDirectory);
+                Debug.Log(buildDirectory);
+                if (!DeleteOldBuildConfirm(buildDirectory))
+                    return false;
+            }
             CreateStreamingAssetsIfNotExists();
             WriteBuildInfo();
             ClearStreamingAssetsIfNeeded();
+            return true;
         }
 
         private void CreateStreamingAssetsIfNotExists()
@@ -36,11 +149,12 @@ namespace PluginHub.Editor
 
         private void WriteBuildInfo()
         {
+            string updateInfoText = EditorPrefs.GetString($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_updateInfo", "");
             Debug.Log($"[BuildModule] Write build info to {BuildInfoFilePath}");
             Directory.CreateDirectory(Path.GetDirectoryName(BuildInfoFilePath));
             INIParser iniParser = new INIParser();
             iniParser.Open(BuildInfoFilePath);
-            iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfo.Replace("\n", "\\n").Trim());
+            iniParser.WriteValue("BuildInfo", "UpdateInfo", updateInfoText.Replace("\n", "\\n").Trim());
             iniParser.WriteValue("BuildInfo", "BuildTime", CurrentDateTimeString());
             iniParser.Close();
         }
@@ -64,25 +178,35 @@ namespace PluginHub.Editor
 
         #region 构建后处理
 
-        [PostProcessBuild]
-        public static void PostProcessBuild(BuildTarget buildTarget, string pathToBuiltProject)
+        private void OnBuildSucceeded(BuildSummary summary)
         {
-            if (buildTarget == BuildTarget.iOS)
+            Debug.Log($"[BuildModule] 构建成功后续处理，平台: {summary.platform}，输出: {summary.outputPath}");
+            switch (summary.platform)
             {
-                IncrementIOSBuildNumber();
+                case BuildTarget.StandaloneWindows64:
+                    OnWindowsBuildSucceeded(summary.outputPath);
+                    break;
+                case BuildTarget.iOS:
+                    IncrementIOSBuildNumber();
+                    break;
             }
-            else if (buildTarget == BuildTarget.StandaloneWindows64)
+        }
+
+        /// <summary>
+        /// Windows 构建成功后的统一后处理入口（由 OnBuildSucceeded 按平台分发调用，不再走 PostProcessBuild 回调）。
+        /// </summary>
+        private void OnWindowsBuildSucceeded(string pathToBuiltProject)
+        {
+            IncrementPCVersionNumber();// 增加版本号
+            CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);// 复制 daemon-run.bat 到构建目录
+            CreateSteamingAssetsShortcutToBuildDirectory(pathToBuiltProject);// 创建SteamingAssets快捷方式到构建根目录
+            ExecutePostCopyFolders(BuildTarget.StandaloneWindows64, pathToBuiltProject);// 执行构建后复制文件夹到构建目录
+
+            if (autoZipAfterBuild)
             {
-                IncrementPCVersionNumber();// 增加版本号
-                CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);// 复制 daemon-run.bat 到构建目录
-                CreateSteamingAssetsShortcutToBuildDirectory(pathToBuiltProject);// 创建SteamingAssets快捷方式到构建根目录
-                ExecutePostCopyFolders(buildTarget, pathToBuiltProject);// 执行构建后复制文件夹到构建目录
-                if (autoZipAfterBuild)
-                {
-                    string buildDirectory = Path.GetDirectoryName(pathToBuiltProject);
-                    Debug.Log($"[BuildModule] 构建后自动打包，目录: {buildDirectory}");
-                    ZipBuildDirectoryAndCopyToClipboard(buildDirectory);
-                }
+                string buildDirectory = Path.GetDirectoryName(pathToBuiltProject);
+                Debug.Log($"[BuildModule] 构建后自动打包，目录: {buildDirectory}");
+                ZipBuildDirectoryAndCopyToClipboard(buildDirectory);
             }
         }
 
@@ -90,7 +214,7 @@ namespace PluginHub.Editor
         /// Windows 构建完成后，在 exe 同级目录创建指向包体 StreamingAssets 的快捷方式（StreamingAssets.lnk），
         /// 便于部署后直接打开资源目录，无需进入 _Data 子目录。
         /// </summary>
-        private static void CreateSteamingAssetsShortcutToBuildDirectory(string pathToBuiltProject)
+        private void CreateSteamingAssetsShortcutToBuildDirectory(string pathToBuiltProject)
         {
             if (string.IsNullOrWhiteSpace(pathToBuiltProject))
             {
@@ -133,7 +257,7 @@ namespace PluginHub.Editor
         /// 通过 PowerShell 调用 WScript.Shell 在 Windows 上创建文件夹快捷方式（.lnk）。
         /// ponytail: Unity 进程内 COM 激活会报 Unmanaged activation is not supported，故外包给 PowerShell。
         /// </summary>
-        private static bool TryCreateWindowsFolderShortcut(string shortcutFilePath, string targetFolderPath, string description)
+        private bool TryCreateWindowsFolderShortcut(string shortcutFilePath, string targetFolderPath, string description)
         {
             if (string.IsNullOrWhiteSpace(shortcutFilePath) || string.IsNullOrWhiteSpace(targetFolderPath))
             {
@@ -193,7 +317,7 @@ namespace PluginHub.Editor
         }
 
         /// <summary>PowerShell 单引号字符串转义：' → ''</summary>
-        private static string EscapePowerShellSingleQuotedString(string value)
+        private string EscapePowerShellSingleQuotedString(string value)
         {
             return value.Replace("'", "''");
         }
@@ -202,7 +326,7 @@ namespace PluginHub.Editor
         /// 优先通过 Package Manager API 解析包真实路径，再回退到多个候选路径，
         /// 兼容插件放在 Packages/Assets/工程根目录等不同场景。
         /// </summary>
-        private static void CopyDaemonRunBatToWindowsBuildDirectory(string pathToBuiltProject)
+        private void CopyDaemonRunBatToWindowsBuildDirectory(string pathToBuiltProject)
         {
             if (string.IsNullOrWhiteSpace(pathToBuiltProject))
             {
@@ -228,14 +352,14 @@ namespace PluginHub.Editor
             Debug.Log($"[BuildModule] 已复制 daemon-run.bat 到构建目录：{targetFilePath}");
         }
 
-        private static void IncrementIOSBuildNumber()
+        private void IncrementIOSBuildNumber()
         {
             string oldBuildNumber = PlayerSettings.iOS.buildNumber;
             PlayerSettings.iOS.buildNumber = (int.Parse(PlayerSettings.iOS.buildNumber) + 1).ToString();
             Debug.Log($"Build ID从{oldBuildNumber}自增到{PlayerSettings.iOS.buildNumber}");
         }
 
-        private static void IncrementPCVersionNumber()
+        private void IncrementPCVersionNumber()
         {
             string oldVersion = PlayerSettings.bundleVersion;
             int lastIndex = oldVersion.LastIndexOf('.');
@@ -243,7 +367,44 @@ namespace PluginHub.Editor
             string minorVersion = oldVersion.Substring(lastIndex + 1);
             minorVersion = (int.Parse(minorVersion) + 1).ToString();
             PlayerSettings.bundleVersion = $"{majorVersion}.{minorVersion}";
-            Debug.Log($"版本号从{oldVersion}自增到{PlayerSettings.bundleVersion}");
+            Debug.Log($"[BuildModule] 版本号从{oldVersion}自增到{PlayerSettings.bundleVersion}");
+        }
+
+        #endregion
+
+        #region 场景管理
+
+        private static void SceneManage_AddCurrSceneToBuildSetting()
+        {
+            EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
+            string currScenePath = SceneManager.GetActiveScene().path;
+            int count = scenes.Count(scene => scene.path == currScenePath);
+            if (count == 0) //如果构建设置中没有，添加当前场景到构建设置中
+            {
+                EditorBuildSettingsScene scene = new EditorBuildSettingsScene();
+                scene.path = currScenePath;
+                List<EditorBuildSettingsScene> scenesList = scenes.ToList();
+                scenesList.Add(scene);
+                scenes = scenesList.ToArray();
+            }
+
+            EditorBuildSettings.scenes = scenes;
+        }
+
+        // 设置构建设置中各场景的启用状态
+        // 如果 onlyCurrentScene 为 true，则只启用当前活动场景，其余场景禁用
+        // 如果 onlyCurrentScene 为 false，则启用所有场景
+        private static void SceneManage_SetBuildSceneEnable(bool onlyCurrentScene)
+        {
+            List<EditorBuildSettingsScene> scenes = EditorBuildSettings.scenes.ToList();
+            foreach (var scene in scenes)
+            {
+                if (onlyCurrentScene)
+                    scene.enabled = scene.path == SceneManager.GetActiveScene().path;
+                else
+                    scene.enabled = true;
+            }
+            EditorBuildSettings.scenes = scenes.ToArray();
         }
 
         #endregion
