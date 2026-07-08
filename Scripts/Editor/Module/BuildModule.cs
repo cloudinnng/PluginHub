@@ -195,7 +195,7 @@ namespace PluginHub.Editor
                     deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
                     clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
                     buildAndRun = GUILayout.Toggle(buildAndRun, new GUIContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
-                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动打包", "勾选后，Windows 构建成功时将自动压缩构建目录并复制 zip 到剪贴板。"));
+                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动压缩", "勾选后，Windows 构建成功后将自动压缩构建目录（时间命名）并复制 zip 到剪贴板。"));
                     enablePostCopy = GUILayout.Toggle(enablePostCopy, new GUIContent("构建后复制文件夹到构建目录"));
                     if (enablePostCopy)
                     {
@@ -628,19 +628,19 @@ namespace PluginHub.Editor
         }
 
         /// <summary>
-        /// 压缩构建目录并将 zip 复制到剪贴板（构建库「zip」按钮与「构建后自动打包」共用）。
+        /// 压缩构建目录并将 zip 复制到剪贴板（构建库「zip」按钮与「构建后自动压缩」共用）。
         /// </summary>
         private static void ZipBuildDirectoryAndCopyToClipboard(string directory)
         {
             if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
             {
-                Debug.LogWarning($"[BuildModule] 跳过打包：构建目录无效，directory={directory}");
+                Debug.LogWarning($"[BuildModule] 跳过压缩：构建目录无效，directory={directory}");
                 return;
             }
 
             string zipFilePath = ZipBuildDirectory(directory);
             WinClipboard.CopyFiles(new[] { zipFilePath });
-            Debug.Log($"[BuildModule] 已打包并复制到剪贴板: {zipFilePath}");
+            Debug.Log($"[BuildModule] 已压缩并复制到剪贴板: {zipFilePath}");
         }
 
         private void DrawZipFilesSection()
@@ -860,7 +860,7 @@ namespace PluginHub.Editor
             if (admin)
                 proc.StartInfo.Verb = "runas"; //使用管理员运行
             proc.Start();
-            Debug.Log($"[BuildModule] Run exe {exeFullPath}");
+            Debug.Log($"[BuildModule] ▶️Run exe {exeFullPath}");
         }
 
         //macos 可用

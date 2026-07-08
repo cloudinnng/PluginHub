@@ -22,18 +22,18 @@ namespace PluginHub.Editor
         /// <summary>
         /// 绘制构建按钮
         /// </summary>
-        private static void DrawBuildButton(string label, string tooltip, Action onBuild, params GUILayoutOption[] options)
+        private static void DrawBuildButton(string label, string tooltip, Action buildAction, params GUILayoutOption[] options)
         {
             if (GUILayout.Button(PluginHubEditor.GuiContent(label, tooltip), options))
             {
-                EditorApplication.delayCall += () => onBuild?.Invoke();
+                EditorApplication.delayCall += () => buildAction?.Invoke();
             }
         }
 
         private void ExecuteBuild(BuildTarget buildTarget, string locationPathName)
         {
-            if(!OnPreprocessBuild(buildTarget, locationPathName))//构建前预处理
-                return;//构建前预处理失败，取消构建
+            if(!OnPreprocessBuild(buildTarget, locationPathName))//构建预处理
+                return;//构建预处理失败，取消构建
             BuildReport report = null;
             {
                 BuildPlayerOptions buildPlayerOptions = new()
@@ -47,7 +47,7 @@ namespace PluginHub.Editor
                 LogBuildResult(report.summary);
             }
             if (report != null && report.summary.result == BuildResult.Succeeded)
-                OnBuildSucceeded(report.summary);//构建成功后续处理
+                OnBuildSucceeded(report.summary);//构建成功后处理
         }
 
         #endregion
