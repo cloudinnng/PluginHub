@@ -5,6 +5,7 @@ using System.Linq;
 using ICSharpCode.SharpZipLib.Zip;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static PluginHub.Runtime.ScreenSetting;
 
 
 namespace PluginHub.Runtime
@@ -104,7 +105,7 @@ namespace PluginHub.Runtime
 
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUILayout.Label("Resolution / Screen");
+                    GUILayout.Label($"Resolution / Screen  ({Screen.width}x{Screen.height})");
                     GUILayout.FlexibleSpace();
                     if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer
                         || Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor)
@@ -147,7 +148,7 @@ namespace PluginHub.Runtime
 
                     using (new GUILayout.HorizontalScope())
                     {
-                        GUILayout.Label($"Resolution Quick Selection ({Screen.width}x{Screen.height}):");
+                        GUILayout.Label($"Resolution Quick Selection :");
                         GUILayout.FlexibleSpace();
                         GUI.color = Screen.fullScreen ? Color.cyan : Color.white;
                         Vector2Int designResolution = ScreenSetting.Instance.designResolution;
@@ -193,11 +194,39 @@ namespace PluginHub.Runtime
                             TryResolutionWindowed(1840, 2944, exchangeWidthHeight);
                     }
                     GUILayout.EndHorizontal();
-
-                    DrawWindowDisplayHelperSection();
-
                 }
                 GUILayout.EndVertical();
+
+
+                // 与 ScreenSetting 组件的联动
+                using (new GUILayout.VerticalScope("Box"))
+                {
+                    ScreenSetting screenSetting = ScreenSetting.Instance;
+                    GUILayout.Label(screenSetting != null ? "ScreenSetting Component are in the scene :" : "ScreenSetting Component are not in the scene");
+                    if (screenSetting != null)
+                    {
+                        using (new GUILayout.HorizontalScope())
+                        {
+                            using (new GUILayout.VerticalScope())
+                            {
+                                GUILayout.Label($"\tScreenRequirement: {screenSetting.screenRequirement}");
+                                GUILayout.Label($"\tDesignResolution: {screenSetting.designResolution}");
+                            }
+                            using (new GUILayout.VerticalScope("Box", GUILayout.ExpandHeight(true)))
+                            {
+                                GUI.enabled = screenSetting.screenRequirement != ScreenRequirementLevel.None;
+                                if (GUILayout.Button("ApplyAutoWindowSize"))
+                                {
+                                    Screen.fullScreen = false;
+                                    screenSetting.ApplyAutoWindowSize();
+                                }
+                                GUI.enabled = true;
+                            }
+                        }
+                    }
+                }
+
+                DrawWindowDisplayHelperSection();
             }
 
             #region WindowDisplayHelper

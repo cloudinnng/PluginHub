@@ -77,6 +77,12 @@ namespace PluginHub.Editor
                 CopyDaemonRunBatToWindowsBuildDirectory(pathToBuiltProject);// 复制 daemon-run.bat 到构建目录
                 CreateSteamingAssetsShortcutToBuildDirectory(pathToBuiltProject);// 创建SteamingAssets快捷方式到构建根目录
                 ExecutePostCopyFolders(buildTarget, pathToBuiltProject);// 执行构建后复制文件夹到构建目录
+                if (autoZipAfterBuild)
+                {
+                    string buildDirectory = Path.GetDirectoryName(pathToBuiltProject);
+                    Debug.Log($"[BuildModule] 构建后自动打包，目录: {buildDirectory}");
+                    ZipBuildDirectoryAndCopyToClipboard(buildDirectory);
+                }
             }
         }
 

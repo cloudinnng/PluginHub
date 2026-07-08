@@ -62,6 +62,20 @@ namespace PluginHub.Editor
             set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_clearStreamingAssetsBeforeBuild", value); }
         }
 
+        //是否构建完成后自动运行（替代原先按住 Ctrl 点击构建按钮的行为）
+        private static bool buildAndRun
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_buildAndRun", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_buildAndRun", value); }
+        }
+
+        //是否构建完成后自动压缩构建目录（与构建库「zip」按钮逻辑一致）
+        private static bool autoZipAfterBuild
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_autoZipAfterBuild", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_autoZipAfterBuild", value); }
+        }
+
         //PC平台场景构建时,构建项目时用于exe执行文件的名称和构建目录名，如果为空，则使用项目文件夹名称
         // eg: 溪洛渡水电站机电设备三维可视化平台
         // eg: XLDHydropowerStation
@@ -137,8 +151,8 @@ namespace PluginHub.Editor
 
         #endregion
 
-        
-        
+
+
 
         #region 界面绘制
 
@@ -177,6 +191,8 @@ namespace PluginHub.Editor
                 GUILayout.BeginVertical();
                 {
                     devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
+                    buildAndRun = GUILayout.Toggle(buildAndRun, new GUIContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
+                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动打包", "勾选后，Windows 构建成功时将自动压缩构建目录并复制 zip 到剪贴板。"));
                     deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
                     clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
                     enablePostCopy = GUILayout.Toggle(enablePostCopy, new GUIContent("构建后复制文件夹到构建目录"));
@@ -193,7 +209,6 @@ namespace PluginHub.Editor
         private void DrawQuickBuildSection()
         {
             DrawSplitLine("快捷构建");
-            HandleBuildButtonCtrlRepaint();
 
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
@@ -245,7 +260,7 @@ namespace PluginHub.Editor
         private void DrawPCBuildButtons()
         {
             //PC平台快捷构建按钮
-            using(new GUILayout.VerticalScope("Box"))
+            using (new GUILayout.VerticalScope("Box"))
             {
                 DrawPlatformHeader("BuildSettings.Standalone On", BuildTarget.StandaloneWindows64.ToString());
                 DrawPCProjectBuildSection();
@@ -291,12 +306,12 @@ namespace PluginHub.Editor
 
         private void DrawPCSceneBuildSection()
         {
-            using(new GUILayout.VerticalScope("Box"))
+            using (new GUILayout.VerticalScope("Box"))
             {
                 GUILayout.Label("场景构建:");
                 sceneBuildName = EditorGUILayout.TextField("场景构建名称:", sceneBuildName);
 
-                using(new GUILayout.HorizontalScope())
+                using (new GUILayout.HorizontalScope())
                 {
                     string path = CurrSceneBuildFullPath();
                     DrawBuildButton(
@@ -593,12 +608,7 @@ namespace PluginHub.Editor
                 //压缩这个构建到当前目录
                 if (GUILayout.Button("zip", GUILayout.ExpandWidth(false)))
                 {
-                    EditorApplication.delayCall += () =>
-                    {
-                        string zipFilePath = ZipBuildDirectory(directory);
-                        WinClipboard.CopyFiles(new[] { zipFilePath });
-                        Debug.Log($"已复制: {zipFilePath}");
-                    };
+                    EditorApplication.delayCall += () => ZipBuildDirectoryAndCopyToClipboard(directory);
                 }
 
                 //运行按钮
@@ -627,12 +637,28 @@ namespace PluginHub.Editor
             return GetDateTimeFromFileName(Path.GetFileName(buildTime));
         }
 
-        private string ZipBuildDirectory(string directory)
+        private static string ZipBuildDirectory(string directory)
         {
             string timeStr = CurrentDateTimeString();
             string destZipPath = Path.Combine(directory + $"_{timeStr}.zip");
             CreateZip(directory, destZipPath);
             return destZipPath;
+        }
+
+        /// <summary>
+        /// 压缩构建目录并将 zip 复制到剪贴板（构建库「zip」按钮与「构建后自动打包」共用）。
+        /// </summary>
+        private static void ZipBuildDirectoryAndCopyToClipboard(string directory)
+        {
+            if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+            {
+                Debug.LogWarning($"[BuildModule] 跳过打包：构建目录无效，directory={directory}");
+                return;
+            }
+
+            string zipFilePath = ZipBuildDirectory(directory);
+            WinClipboard.CopyFiles(new[] { zipFilePath });
+            Debug.Log($"[BuildModule] 已打包并复制到剪贴板: {zipFilePath}");
         }
 
         private void DrawZipFilesSection()
@@ -735,41 +761,26 @@ namespace PluginHub.Editor
 
         #region 辅助绘制
 
-        #region Ctrl 修饰构建按钮
+        #region 构建按钮
 
         /// <summary>
-        /// Ctrl 键按下/释放时刷新窗口，使构建按钮能即时切换红色「并运行」样式。
-        /// </summary>
-        private static void HandleBuildButtonCtrlRepaint()
-        {
-            Event e = Event.current;
-            if (e.type == EventType.KeyDown || e.type == EventType.KeyUp)
-            {
-                if (e.keyCode == KeyCode.LeftControl || e.keyCode == KeyCode.RightControl || e.control)
-                    PluginHubWindow.Window?.Repaint();
-            }
-        }
-
-        /// <summary>
-        /// 绘制构建按钮。按住 Ctrl 时按钮变红、文案追加「并运行」；Ctrl+点击执行构建并运行。
+        /// 绘制构建按钮。勾选「构建后运行」时按钮变红、文案追加「并运行」，点击后执行构建并运行。
         /// </summary>
         private static void DrawBuildButton(string label, string tooltip, Action onBuild, Action onBuildAndRun, params GUILayoutOption[] options)
         {
-            bool ctrlHeld = PluginHubRuntime.IsCtrlPressed;
-            if (ctrlHeld && Event.current.type == EventType.Layout)
-                PluginHubWindow.Window?.Repaint();
-
             Color oldColor = GUI.color;
-            if (ctrlHeld)
+            if (buildAndRun)
                 GUI.color = PluginHubEditor.Red;
 
-            string buttonLabel = ctrlHeld ? $"{label}并运行" : label;
-            string ctrlHint = ctrlHeld ? "Ctrl+点击：构建完成后运行" : "按住 Ctrl 可构建并运行";
-            string fullTooltip = string.IsNullOrEmpty(tooltip) ? ctrlHint : $"{tooltip}\n{ctrlHint}";
+            string buttonLabel = buildAndRun ? $"{label}并运行" : label;
+            string runHint = buildAndRun
+                ? "已勾选「构建后运行」，构建完成后自动运行"
+                : "可在「更多选项」中勾选「构建后运行」";
+            string fullTooltip = string.IsNullOrEmpty(tooltip) ? runHint : $"{tooltip}\n{runHint}";
 
             if (GUILayout.Button(PluginHubEditor.GuiContent(buttonLabel, fullTooltip), options))
             {
-                if (ctrlHeld)
+                if (buildAndRun)
                     EditorApplication.delayCall += () => onBuildAndRun?.Invoke();
                 else
                     EditorApplication.delayCall += () => onBuild?.Invoke();
@@ -897,7 +908,7 @@ namespace PluginHub.Editor
             if (admin)
                 proc.StartInfo.Verb = "runas"; //使用管理员运行
             proc.Start();
-            Debug.Log($"Run exe {exeFullPath}");
+            Debug.Log($"[BuildModule] Run exe {exeFullPath}");
         }
 
         //macos 可用
@@ -983,7 +994,15 @@ namespace PluginHub.Editor
             {
                 if (EditorUtility.DisplayDialog("删除旧构建", $"是否在构建前删除旧构建目录{folder} ?", "是,继续构建", "否,取消构建"))
                 {
-                    Directory.Delete(folder, true);
+                    try
+                    {
+                        Directory.Delete(folder, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"删除旧构建目录失败: {e.Message}");
+                        throw e;
+                    }
                     continueBuild = true;
                 }
                 else
@@ -1153,7 +1172,7 @@ namespace PluginHub.Editor
         #region 压缩
 
         // https://www.cnblogs.com/rainbow70626/p/4559691.html
-        private void CreateZip(string sourceFolderPath, string destinationZipFilePath)
+        private static void CreateZip(string sourceFolderPath, string destinationZipFilePath)
         {
             //解决中文乱码
             Encoding gbk = Encoding.GetEncoding("gbk");
@@ -1164,7 +1183,7 @@ namespace PluginHub.Editor
         #endregion
 
         #region 日期时间处理
-        private string CurrentDateTimeString()
+        private static string CurrentDateTimeString()
         {
             return DateTime.Now.ToString("yyyyMMddHHmm");
         }
