@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using PluginHub.Runtime;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace PluginHub.Editor
 {
@@ -148,6 +149,19 @@ namespace PluginHub.Editor
                             else
                                 Debug.LogWarning("无法获取图片导入信息: " + assetPath);
                         }
+                        else if (IsVideoExtension(extension))
+                        {
+                            // 点击视频扩展名时打印分辨率/时长/帧率/文件大小，风格对齐图片分支
+                            VideoClip clip = AssetDatabase.LoadAssetAtPath<VideoClip>(assetPath);
+                            string fullPath = Path.Combine(Application.dataPath, assetPath.Substring(7)).Replace("/", "\\");
+                            long fileSize = new FileInfo(fullPath).Length;
+                            if (clip != null)
+                            {
+                                Debug.Log($"[PHProject] 视频: {clip.width} x {clip.height} 时长: {clip.length:F2}s 帧率: {clip.frameRate:F2}fps 帧数: {clip.frameCount} 音轨: {clip.audioTrackCount} 文件大小: {FormatFileSize(fileSize)}", clip);
+                            }
+                            else
+                                Debug.LogWarning($"[PHProject] 无法加载 VideoClip: {assetPath} 文件大小: {FormatFileSize(fileSize)}");
+                        }
                         else
                         {
                             string fullPath = Path.Combine(Application.dataPath, assetPath.Substring(7)).Replace("/", "\\");
@@ -255,6 +269,12 @@ namespace PluginHub.Editor
         {
             ext = ext?.ToLowerInvariant();
             return ext is ".png" or ".jpg" or ".jpeg" or ".gif" or ".tga" or ".psd" or ".bmp" or ".exr" or ".hdr" or ".tif" or ".tiff" or ".iff";
+        }
+
+        private static bool IsVideoExtension(string ext)
+        {
+            ext = ext?.ToLowerInvariant();
+            return ext is ".mp4" or ".avi" or ".mov" or ".wmv" or ".flv" or ".mkv" or ".webm" or ".mpg" or ".mpeg" or ".m4v" or ".m4p" or ".m4b" or ".m4r" or ".m4a";
         }
 
         private static string FormatFileSize(long bytes)

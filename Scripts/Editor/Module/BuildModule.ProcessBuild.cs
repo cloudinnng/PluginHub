@@ -32,22 +32,30 @@ namespace PluginHub.Editor
 
         private void ExecuteBuild(BuildTarget buildTarget, string locationPathName)
         {
-            if(!OnPreprocessBuild(buildTarget, locationPathName))//构建预处理
-                return;//构建预处理失败，取消构建
-            BuildReport report = null;
+            try
             {
-                BuildPlayerOptions buildPlayerOptions = new()
+                if (!OnPreprocessBuild(buildTarget, locationPathName))//构建预处理
+                    return;//构建预处理失败，取消构建
+                BuildReport report = null;
                 {
-                    scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray(),
-                    locationPathName = locationPathName,
-                    target = buildTarget,
-                    options = GetBuildOptions(devBuild, buildAndRun)
-                };
-                report = BuildPipeline.BuildPlayer(buildPlayerOptions);//构建
-                LogBuildResult(report.summary);
+                    BuildPlayerOptions buildPlayerOptions = new()
+                    {
+                        scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray(),
+                        locationPathName = locationPathName,
+                        target = buildTarget,
+                        options = GetBuildOptions(devBuild, buildAndRun)
+                    };
+                    report = BuildPipeline.BuildPlayer(buildPlayerOptions);//构建
+                    LogBuildResult(report.summary);
+                }
+                if (report != null && report.summary.result == BuildResult.Succeeded)
+                    OnBuildSucceeded(report.summary);//构建成功后处理
             }
-            if (report != null && report.summary.result == BuildResult.Succeeded)
-                OnBuildSucceeded(report.summary);//构建成功后处理
+            finally
+            {
+                // 无论成功/失败/异常，都还原临时改写的 Product Name
+                RestoreProductNameIfNeeded();
+            }
         }
 
         #endregion
@@ -135,10 +143,51 @@ namespace PluginHub.Editor
                 if (!DeleteOldBuildConfirm(buildDirectory))
                     return false;
             }
+            ApplySceneNameAsProductNameIfNeeded();
             CreateStreamingAssetsIfNotExists();
             WriteBuildInfo();
             ClearStreamingAssetsIfNeeded();
             return true;
+        }
+
+        // 临时改写 Product Name 时的备份；null 表示无需还原
+        private static string _productNameBackup;
+
+        /// <summary>
+        /// 勾选「使用场景名作为产品名称」时，将当前激活场景名写入 PlayerSettings.productName（构建结束后自动还原）。
+        /// </summary>
+        private void ApplySceneNameAsProductNameIfNeeded()
+        {
+            if (!useSceneNameAsProductName)
+                return;
+
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                Debug.LogWarning("[BuildModule] 已勾选「使用场景名作为产品名称」，但当前激活场景名称为空，跳过设置 Product Name。");
+                return;
+            }
+
+            // 已备份则不重复覆盖，避免异常路径下丢失原始值
+            if (_productNameBackup == null)
+                _productNameBackup = PlayerSettings.productName;
+
+            PlayerSettings.productName = sceneName;
+            Debug.Log($"[BuildModule] 使用场景名作为产品名称: \"{_productNameBackup}\" -> \"{sceneName}\"（构建后将自动还原）");
+        }
+
+        /// <summary>
+        /// 还原 ApplySceneNameAsProductNameIfNeeded 临时改写的 Product Name。
+        /// </summary>
+        private void RestoreProductNameIfNeeded()
+        {
+            if (_productNameBackup == null)
+                return;
+
+            string restored = _productNameBackup;
+            _productNameBackup = null;
+            PlayerSettings.productName = restored;
+            Debug.Log($"[BuildModule] 已还原产品名称: \"{restored}\"");
         }
 
         private void CreateStreamingAssetsIfNotExists()

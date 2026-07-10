@@ -47,6 +47,7 @@ namespace PluginHub.Editor
             get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_devBuild", false); }
             set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_devBuild", value); }
         }
+        
 
         //是否构建前删除旧的构建目录
         private static bool deleteOldBuildBeforeBuild
@@ -74,6 +75,13 @@ namespace PluginHub.Editor
         {
             get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_autoZipAfterBuild", false); }
             set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_autoZipAfterBuild", value); }
+        }
+
+        //是否在打包前将当前激活场景名称写入 PlayerSettings.productName
+        private static bool useSceneNameAsProductName
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_useSceneNameAsProductName", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_useSceneNameAsProductName", value); }
         }
 
         //PC平台场景构建时,构建项目时用于exe执行文件的名称和构建目录名，如果为空，则使用项目文件夹名称
@@ -196,6 +204,7 @@ namespace PluginHub.Editor
                     clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
                     buildAndRun = GUILayout.Toggle(buildAndRun, new GUIContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
                     autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动压缩", "勾选后，Windows 构建成功后将自动压缩构建目录（时间命名）并复制 zip 到剪贴板。"));
+                    useSceneNameAsProductName = GUILayout.Toggle(useSceneNameAsProductName, new GUIContent("使用场景名作为产品名称", "勾选后，打包前将当前激活场景名称临时写入 Product Name，构建结束后自动还原。"));
                     enablePostCopy = GUILayout.Toggle(enablePostCopy, new GUIContent("构建后复制文件夹到构建目录"));
                     if (enablePostCopy)
                     {
