@@ -727,10 +727,11 @@ namespace PluginHub.Editor
                 }
 
                 // 上传到百度网盘
-                if (DrawIconBtn("Update-Available@2x", "上传到百度网盘,需要先配置BaiduPCS-Go,登录"))
+                if (DrawIconBtn("Update-Available@2x", "上传到百度网盘,需要先配置BaiduPCS-Go,登录（已存在会跳过）"))
                 {
                     Debug.Log("上传到百度网盘");
-                    RunCmd(baiduPCSGoFolderFullPath, $"BaiduPCS-Go upload {zipFile} /apps/BaiduPCS-Go/{PlayerSettings.productName}");
+                    // 显式指定 skip：网盘已有同名文件时跳过，不覆盖
+                    RunCmd(baiduPCSGoFolderFullPath, $"BaiduPCS-Go upload {zipFile} /apps/BaiduPCS-Go/{PlayerSettings.productName} --policy skip");
                 }
 
                 DrawIconBtnOpenFolder(zipFile);
