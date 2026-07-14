@@ -6,6 +6,8 @@ namespace PluginHub.Runtime
 {
     public partial class Debugger
     {
+        // public GUIStyle logToggleStyle;
+        // public GUIStyle logLabelStyle;
         /// <summary>
         /// 控制台窗口
         /// </summary>
@@ -28,13 +30,14 @@ namespace PluginHub.Runtime
             private Vector2 _logScrollPosition = Vector2.zero;
             private Vector2 _stackScrollPosition = Vector2.zero;
             private LinkedListNode<LogNode> _selectedNode = null;
-            private bool _isInitStyles = false;
-            private GUIStyle _logToggleStyle;
-            private GUIStyle _logLabelStyle;
 
             //log 是否使用独立视图。独立视图中，日志详情会占据整个窗口
             // private bool _independentView = false;
             // private bool _maximize = false;
+
+            private bool _isInitStyles = false;
+            private GUIStyle _logToggleStyle;
+            private GUIStyle _logLabelStyle;
 
             public void OnStart()
             {
@@ -47,15 +50,18 @@ namespace PluginHub.Runtime
                 _isInitStyles = true;
                 _logToggleStyle = new GUIStyle(GUI.skin.toggle)
                 {
-                    // padding = new RectOffset(0, 0, 0, 0),
-                    // margin = new RectOffset(0, 4, 0, 0),
-                    // border = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(0, 0, 0, 0),
+                    padding = new RectOffset(0, 0, 0, 0),
+                    overflow = new RectOffset(-5, 0, -6, 0),
+                    alignment = TextAnchor.MiddleLeft,
                 };
                 _logLabelStyle = new GUIStyle(GUI.skin.label)
                 {
-                    // padding = new RectOffset(0, 0, 0, 0),
-                    // margin = new RectOffset(0, 4, 0, 0),
-                    // border = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(4, 4, 0, 0),
+                    padding = new RectOffset(0, 0, 0, 0),
+                    overflow = new RectOffset(0, 0, 0, 0),
+                    alignment = TextAnchor.MiddleLeft,
+                    clipping = TextClipping.Ellipsis,
                 };
             }
 
@@ -173,7 +179,7 @@ namespace PluginHub.Runtime
                             GUILayout.BeginHorizontal();
                             {
                                 //前面的开关
-                                if (GUILayout.Toggle(_selectedNode == i, "", _logToggleStyle, GUILayout.Width(19f), GUILayout.Height(19f)))
+                                if (GUILayout.Toggle(_selectedNode == i, "", _logToggleStyle, GUILayout.Width(22f), GUILayout.Height(22f)))
                                 {
                                     selected = true;
                                     if (_selectedNode != i)
@@ -183,7 +189,7 @@ namespace PluginHub.Runtime
                                     }
                                 }
                                 //绘制这个日志
-                                GUILayout.Label(GetLogString(i.Value), _logLabelStyle);
+                                GUILayout.Label(GetLogString(i.Value), _logLabelStyle,GUILayout.Height(22f));
                             }
                             GUILayout.EndHorizontal();
                         }
