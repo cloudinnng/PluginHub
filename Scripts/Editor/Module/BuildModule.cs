@@ -152,6 +152,20 @@ namespace PluginHub.Editor
             set => EditorPrefs.SetString($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_BuildNote", value);
         }
 
+        //是否标记为不应使用项目构建
+        private static bool isMarkShouldNotUseProjectBuild
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_isMarkShouldNotUseProjectBuild", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_isMarkShouldNotUseProjectBuild", value); }
+        }
+
+        //是否标记为不应使用场景构建
+        private static bool isMarkShouldNotUseSceneBuild
+        {
+            get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_isMarkShouldNotUseSceneBuild", false); }
+            set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_isMarkShouldNotUseSceneBuild", value); }
+        }
+
         #endregion
 
 
@@ -199,13 +213,13 @@ namespace PluginHub.Editor
                         Debug.Log("[BuildModule] 打开 Unity 场景构建选择界面");
                         BuildPlayerWindow.ShowBuildPlayerWindow();
                     }
-                    devBuild = GUILayout.Toggle(devBuild, new GUIContent("开发构建"));
-                    deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, new GUIContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
-                    clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, new GUIContent("构建前清空StreamingAssets"));
-                    buildAndRun = GUILayout.Toggle(buildAndRun, new GUIContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
-                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, new GUIContent("构建后自动压缩", "勾选后，Windows 构建成功后将自动压缩构建目录（时间命名）并复制 zip 到剪贴板。"));
-                    useSceneNameAsProductName = GUILayout.Toggle(useSceneNameAsProductName, new GUIContent("使用场景名作为产品名称", "勾选后，打包前将当前激活场景名称临时写入 Product Name，构建结束后自动还原。"));
-                    enablePostCopy = GUILayout.Toggle(enablePostCopy, new GUIContent("构建后复制文件夹到构建目录"));
+                    devBuild = GUILayout.Toggle(devBuild, PluginHubEditor.GuiContent("开发构建"));
+                    deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, PluginHubEditor.GuiContent("构建前删除旧的构建", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
+                    clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, PluginHubEditor.GuiContent("构建前清空StreamingAssets"));
+                    buildAndRun = GUILayout.Toggle(buildAndRun, PluginHubEditor.GuiContent("构建后运行", "勾选后，点击构建按钮将在构建完成后自动运行。"));
+                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, PluginHubEditor.GuiContent("构建后自动压缩", "勾选后，Windows 构建成功后将自动压缩构建目录（时间命名）并复制 zip 到剪贴板。"));
+                    useSceneNameAsProductName = GUILayout.Toggle(useSceneNameAsProductName, PluginHubEditor.GuiContent("使用场景名作为产品名称", "勾选后，打包前将当前激活场景名称临时写入 Product Name，构建结束后自动还原。"));
+                    enablePostCopy = GUILayout.Toggle(enablePostCopy, PluginHubEditor.GuiContent("构建后复制文件夹到构建目录"));
                     if (enablePostCopy)
                     {
                         DrawPostCopyFolderPathsUI();
@@ -290,9 +304,22 @@ namespace PluginHub.Editor
 
         private void DrawPCProjectBuildSection()
         {
+            // 标记为不应使用时，整块区域背景染红，提醒优先用另一构建方式
+            Color oldBg = GUI.backgroundColor;
+            if (isMarkShouldNotUseProjectBuild)
+                GUI.backgroundColor = new Color(1f, 0.35f, 0.35f, 1f);
+
             GUILayout.BeginVertical("Box");
             {
-                GUILayout.Label("项目构建:");
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label("项目构建:");
+                    GUILayout.FlexibleSpace();
+                    isMarkShouldNotUseProjectBuild = GUILayout.Toggle(
+                        isMarkShouldNotUseProjectBuild,
+                        PluginHubEditor.GuiContent("不应使用", "勾选后此区域标红，提醒本项目不应使用「项目构建」。"));
+                }
+                GUILayout.EndHorizontal();
                 projectBuildName = EditorGUILayout.TextField("项目构建名称:", projectBuildName);
                 GUILayout.BeginHorizontal();
                 {
@@ -312,13 +339,27 @@ namespace PluginHub.Editor
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
+
+            GUI.backgroundColor = oldBg;
         }
 
         private void DrawPCSceneBuildSection()
         {
+            // 标记为不应使用时，整块区域背景染红，提醒优先用另一构建方式
+            Color oldBg = GUI.backgroundColor;
+            if (isMarkShouldNotUseSceneBuild)
+                GUI.backgroundColor = new Color(1f, 0.35f, 0.35f, 1f);
+
             using (new GUILayout.VerticalScope("Box"))
             {
-                GUILayout.Label("场景构建:");
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("场景构建:");
+                    GUILayout.FlexibleSpace();
+                    isMarkShouldNotUseSceneBuild = GUILayout.Toggle(
+                        isMarkShouldNotUseSceneBuild,
+                        PluginHubEditor.GuiContent("不应使用", "勾选后此区域标红，提醒本项目不应使用「场景构建」。"));
+                }
                 sceneBuildName = EditorGUILayout.TextField("场景构建名称:", sceneBuildName);
 
                 using (new GUILayout.HorizontalScope())
@@ -338,6 +379,8 @@ namespace PluginHub.Editor
                     DrawRunButton(exePath);
                 }
             }
+
+            GUI.backgroundColor = oldBg;
         }
 
         private void DrawRunButton(string exePath)
@@ -384,7 +427,7 @@ namespace PluginHub.Editor
 
                 GUI.enabled = Application.platform == RuntimePlatform.WindowsEditor;
                 iosUseShortBuildPath = GUILayout.Toggle(iosUseShortBuildPath,
-                    new GUIContent("使用短小的构建路径", "当由于路径过长导致构建失败时，可以尝试勾选此选项。"));
+                    PluginHubEditor.GuiContent("使用短小的构建路径", "当由于路径过长导致构建失败时，可以尝试勾选此选项。"));
                 GUI.enabled = true;
             }
             GUILayout.EndHorizontal();

@@ -13,6 +13,7 @@ namespace PluginHub.Editor
         #region 常量定义 (Constants)
         
         public static string ProjectRoot => Path.GetDirectoryName(Application.dataPath);
+        public static string ProjectFolderName => Path.GetFileName(ProjectRoot);
         //选中的颜色
         public static readonly Color SelectedColor = new Color(0.572549f, 0.7960784f, 1f, 1f);
         public static readonly Color Red = new Color(1.0f, 0.5f, 0.5f, 1f);
@@ -24,7 +25,7 @@ namespace PluginHub.Editor
         public static readonly GUILayoutOption[] IconBtnLayoutOptions = new[] { GUILayout.Width(IconBtnSize.x), GUILayout.Height(IconBtnSize.y) };
 
         //项目唯一前缀(每个项目不一样，这样可以为每个项目存储不同的偏好)，用于存储 EditorPrefs
-        public static readonly string ProjectUniquePrefix = $"PH_{Application.companyName}_{Application.productName}";
+        public static readonly string ProjectUniquePrefix = $"PH_{ProjectFolderName}";
 
         #endregion
 
