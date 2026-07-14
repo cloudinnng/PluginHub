@@ -21,11 +21,11 @@ namespace PluginHub.Editor
                 ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE
                 : Color.white;
             //画行首的图标
-            GUILayout.Label(EditorGUIUtility.IconContent("d_FolderFavorite Icon").image, 
-                GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), 
+            GUILayout.Label(EditorGUIUtility.IconContent("d_FolderFavorite Icon").image,
+                GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x),
                 GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
             GUI.color = Color.white;
-            
+
             for (int i = 0; i < BookmarkSettings.BOOKMARK_COUNT; i++)
             {
                 AssetObjectBookmark assetBookmark = group.assetPaths[i];
@@ -34,7 +34,7 @@ namespace PluginHub.Editor
                         ? BookmarkSettings.COLOR_BOOKMARK_BUTTON_ACTIVE
                         : BookmarkSettings.COLOR_BOOKMARK_BUTTON_NORMAL)
                     : BookmarkSettings.COLOR_BOOKMARK_BUTTON_EMPTY;
-                
+
 
                 bool click = false;
                 if (assetBookmark.hasContentSaved && !string.IsNullOrWhiteSpace(assetBookmark.iconName))
@@ -47,11 +47,11 @@ namespace PluginHub.Editor
                     click = GUILayout.Button("", BookmarkButtonStyle, GUILayout.Width(BookmarkSettings.BUTTON_SIZE.x), GUILayout.Height(BookmarkSettings.BUTTON_SIZE.y));
                     Rect lastRect = GUILayoutUtility.GetLastRect();
                     // texture
-                    Rect textureRect = new Rect(lastRect.x + 13, lastRect.y+2,16,16);
+                    Rect textureRect = new Rect(lastRect.x + 13, lastRect.y + 2, 16, 16);
                     GUI.DrawTexture(textureRect, EditorGUIUtility.IconContent(assetBookmark.iconName).image, ScaleMode.ScaleToFit);
                     // label
                     Rect labelRect = new Rect(lastRect.x, lastRect.y + 15, BookmarkSettings.BUTTON_SIZE.x, 15);
-                    GUI.Label(labelRect, showName,bottomLabel);
+                    GUI.Label(labelRect, showName, bottomLabel);
                 }
                 else
                 {
@@ -102,7 +102,7 @@ namespace PluginHub.Editor
                     assetBookmark.iconName = "";
                     BookmarkAssetSO.Instance.Save();
                 }
-                
+
             }
             else//没按ctrl
             {
@@ -111,7 +111,8 @@ namespace PluginHub.Editor
                     if (Event.current.button == 0)// 左键选中
                     {
                         Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(assetBookmark.text);
-                    }else if (Event.current.button == 2)//中键进入
+                    }
+                    else if (Event.current.button == 2)//中键进入
                     {
                         if (assetBookmark.text.EndsWith(".prefab"))
                         {
@@ -146,6 +147,8 @@ namespace PluginHub.Editor
                 return "Animation Icon";
             if (path.EndsWith(".unity"))
                 return "SceneAsset Icon";
+            if (path.EndsWith(".guiskin"))
+                return "GUISkin Icon";
             if (path.EndsWith(".asset"))
                 return "ScriptableObject Icon";
             if (path.EndsWith(".cs"))
