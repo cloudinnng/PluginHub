@@ -719,8 +719,8 @@ namespace PluginHub.Editor
             {
                 DateTime zipTime = GetDateTimeFromFileName(Path.GetFileName(zipFiles[i]));
                 bool isLatest = zipTime == latestZipTime && latestZipTime != DateTime.MinValue;
-                bool isProjectZipFile = zipFiles[i].Contains(PlayerSettings.productName);
-                DrawZipFileItem(zipFiles[i], i, isLatest, isProjectZipFile);
+                bool isSceneBuildZipFile = zipFiles[i].Contains(SceneManager.GetActiveScene().name);
+                DrawZipFileItem(zipFiles[i], i, isLatest, isSceneBuildZipFile);
             }
         }
 

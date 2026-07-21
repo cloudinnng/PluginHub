@@ -212,7 +212,7 @@ namespace PluginHub.Runtime
                                 GUILayout.Label($"\tScreenRequirement: {screenSetting.screenRequirement}");
                                 GUILayout.Label($"\tDesignResolution: {screenSetting.designResolution}");
                             }
-                            using (new GUILayout.VerticalScope("Box", GUILayout.ExpandHeight(true)))
+                            using (new GUILayout.VerticalScope())
                             {
                                 GUI.enabled = screenSetting.screenRequirement != ScreenRequirementLevel.None;
                                 if (GUILayout.Button("ApplyAutoWindowSize"))
@@ -221,6 +221,10 @@ namespace PluginHub.Runtime
                                     screenSetting.ApplyAutoWindowSize();
                                 }
                                 GUI.enabled = true;
+                                if (GUILayout.Button("Design Resolution"))
+                                {
+                                    Screen.SetResolution(screenSetting.designResolution.x, screenSetting.designResolution.y, Screen.fullScreen);
+                                }
                             }
                         }
                     }
