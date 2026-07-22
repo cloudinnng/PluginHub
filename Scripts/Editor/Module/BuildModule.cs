@@ -195,7 +195,16 @@ namespace PluginHub.Editor
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label("更新内容:", GUILayout.Width(titleWidth));
+                // 生成中禁用文本框旁的 AI 按钮，避免重复触发
+                EditorGUI.BeginDisabledGroup(isGeneratingUpdateInfo);
                 updateInfo = GUILayout.TextArea(updateInfo);
+                string aiBtnLabel = isGeneratingUpdateInfo ? "生成中…" : "AI";
+                if (GUILayout.Button(PluginHubEditor.GuiContent(aiBtnLabel, "根据手选 git 区间的整仓 diff，用本机 Cursor Agent 润色成更新说明"), GUILayout.Width(56), GUILayout.ExpandHeight(true)))
+                {
+                    Debug.Log("[BuildModule.UpdateInfoAI] 打开 commit 区间选择窗口");
+                    UpdateInfoCommitRangeWindow.Open(OnUpdateInfoCommitRangeConfirmed);
+                }
+                EditorGUI.EndDisabledGroup();
             }
             GUILayout.EndHorizontal();
         }

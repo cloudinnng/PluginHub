@@ -156,6 +156,8 @@ namespace PluginHub.Runtime
         private bool _showFullWindow = false; //dont call this
         private Rect _minWindowRect;
         private Rect _fullWindowRect;
+        // 全屏模式下内容宽于可视区域时的滚动位置（放大后常见）
+        private Vector2 _fullWindowScrollPosition = Vector2.zero;
         private float _debuggerWindowGUIScale = 1;
         private int _selectIndex = 0; //选择的tab索引
         private readonly FpsCounter _fps = new FpsCounter(0.5f);
@@ -502,16 +504,37 @@ namespace PluginHub.Runtime
                         {
                             if (fullScreenMode)
                             {
+                                // BeginArea 超出即裁切；仅当内容确比可视区更宽时才套 ScrollView，避免默认就出滚动条
+                                float boxWidth = fullScreenWidth ? realScreenSize.x : _fullWindowRect.width;
+                                bool needHorizontalScroll = boxWidth > realScreenSize.x + 0.5f;
+                                // 预留横向滚动条高度，避免底边被条挡住
+                                float boxHeight = needHorizontalScroll
+                                    ? realScreenSize.y - GUI.skin.horizontalScrollbar.fixedHeight
+                                    : realScreenSize.y;
+
                                 GUILayout.BeginArea(new Rect(0, 0, realScreenSize.x, realScreenSize.y));
                                 {
-                                    if (fullScreenWidth)
-                                        GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(realScreenSize.x));
+                                    if (needHorizontalScroll)
+                                    {
+                                        // 外层只允许横向滚；竖向条样式置空，避免几像素高度差冒出“能细微移动”的竖条
+                                        _fullWindowScrollPosition = GUILayout.BeginScrollView(
+                                            _fullWindowScrollPosition, false, false,
+                                            GUI.skin.horizontalScrollbar, GUIStyle.none);
+                                        _fullWindowScrollPosition.y = 0f;
+                                    }
                                     else
-                                        GUILayout.BeginVertical("Box", GUILayout.Height(realScreenSize.y), GUILayout.Width(_fullWindowRect.width));
+                                    {
+                                        _fullWindowScrollPosition = Vector2.zero;
+                                    }
+
+                                    GUILayout.BeginVertical("Box", GUILayout.Height(boxHeight), GUILayout.Width(boxWidth));
                                     {
                                         DrawBigWindow(1);
                                     }
                                     GUILayout.EndVertical();
+
+                                    if (needHorizontalScroll)
+                                        GUILayout.EndScrollView();
                                 }
                                 GUILayout.EndArea();
                             }
