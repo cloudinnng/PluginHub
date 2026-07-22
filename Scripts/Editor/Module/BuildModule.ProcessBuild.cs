@@ -53,8 +53,9 @@ namespace PluginHub.Editor
             }
             finally
             {
-                // 无论成功/失败/异常，都还原临时改写的 Product Name
+                // 无论成功/失败/异常，都还原临时改写的 Product Name，以及 StreamingAssets 隔离目录
                 RestoreProductNameIfNeeded();
+                RestoreParkedStreamingAssetsIfNeeded();
             }
         }
 
@@ -129,7 +130,7 @@ namespace PluginHub.Editor
 
         /// <summary>
         /// 构建前统一预处理（在 BuildPlayer 之前由各平台 BuildXxx 显式调用，不再走 IPreprocessBuildWithReport 回调）。
-        /// 顺序：确保 StreamingAssets 存在 → 写入 BuildInfo → 按需清空 StreamingAssets。
+        /// 顺序：确保 StreamingAssets 存在 → 写入 BuildInfo → 按需清空 StreamingAssets → 按场景排除隔离。
         /// </summary>
         private bool OnPreprocessBuild(BuildTarget buildTarget, string locationPathName)
         {
@@ -147,6 +148,9 @@ namespace PluginHub.Editor
             CreateStreamingAssetsIfNotExists();
             WriteBuildInfo();
             ClearStreamingAssetsIfNeeded();
+            // 开关开启时：按「当前打开场景」的配置隔离 StreamingAssets（所有构建入口统一）
+            if (!ApplyStreamingAssetsExcludeIfNeeded())
+                return false;
             return true;
         }
 

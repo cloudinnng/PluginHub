@@ -198,6 +198,11 @@ namespace PluginHub.Editor
                 // 生成中禁用文本框旁的 AI 按钮，避免重复触发
                 EditorGUI.BeginDisabledGroup(isGeneratingUpdateInfo);
                 updateInfo = GUILayout.TextArea(updateInfo);
+                // 清空按钮
+                if (GUILayout.Button("清空", GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true)))
+                {
+                    updateInfo = "";
+                }
                 string aiBtnLabel = isGeneratingUpdateInfo ? "生成中…" : "AI";
                 if (GUILayout.Button(PluginHubEditor.GuiContent(aiBtnLabel, "根据手选 git 区间的整仓 diff，用本机 Cursor Agent 润色成更新说明"), GUILayout.Width(56), GUILayout.ExpandHeight(true)))
                 {
@@ -232,6 +237,15 @@ namespace PluginHub.Editor
                     if (enablePostCopy)
                     {
                         DrawPostCopyFolderPathsUI();
+                    }
+                    enableStreamingAssetsExclude = GUILayout.Toggle(
+                        enableStreamingAssetsExclude,
+                        PluginHubEditor.GuiContent(
+                            $"构建时按场景筛选 StreamingAssets 子文件夹{(enableStreamingAssetsExclude ? "📁" : "")}",
+                            "开关开启后对所有构建生效。按当前打开场景名保存；勾选=保留进包，取消勾选=构建前临时挪走，结束后还原。"));
+                    if (enableStreamingAssetsExclude)
+                    {
+                        DrawStreamingAssetsExcludeUI();
                     }
                 }
                 GUILayout.EndVertical();
