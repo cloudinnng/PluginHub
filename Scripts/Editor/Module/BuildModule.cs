@@ -616,12 +616,15 @@ namespace PluginHub.Editor
                 .ToList();
 
             DateTime latestBuildTime = directoriesWithTime.LastOrDefault()?.Time ?? DateTime.MinValue;
+            // 空场景名 Contains("") 恒为 true，必须先挡掉
+            string sceneName = SceneManager.GetActiveScene().name;
 
             for (int i = 0; i < directories.Length; i++)
             {
                 DateTime buildTime = GetBuildTime(directories[i]);
                 bool isLatest = buildTime == latestBuildTime && latestBuildTime != DateTime.MinValue;
-                DrawBuildItem(directories[i], i, isLatest);
+                bool isSceneBuild = !string.IsNullOrEmpty(sceneName) && directories[i].Contains(sceneName);
+                DrawBuildItem(directories[i], i, isLatest, isSceneBuild);
             }
         }
 
@@ -631,13 +634,27 @@ namespace PluginHub.Editor
             {
                 GUILayout.Label(PluginHubEditor.IconContent("VerticalLayoutGroup Icon"));
                 GUILayout.FlexibleSpace();
+                // 颜色规则放进问号按钮：悬停看 tooltip，点击弹对话框
+                string colorRuleTip =
+                    "颜色规则：\n" +
+                    "绿色：时间最新的构建 / 压缩文件\n" +
+                    "黄色：名称包含当前激活场景名\n" +
+                    "绿色优先于黄色";
+                if (DrawIconBtn("_Help", colorRuleTip))
+                {
+                    EditorApplication.delayCall += () =>
+                    {
+                        Debug.Log("[BuildModule] 显示构建库颜色规则");
+                        EditorUtility.DisplayDialog("构建库颜色规则", colorRuleTip, "知道了");
+                    };
+                }
                 DrawIconBtnOpenFolder(Path.Combine(Application.dataPath, "../Build/"));
             }
             GUILayout.EndHorizontal();
         }
 
 
-        private void DrawBuildItem(string directory, int index, bool isLatest)
+        private void DrawBuildItem(string directory, int index, bool isLatest, bool isSceneBuild)
         {
             string folderName = Path.GetFileName(directory);
             string executeFullpath = Path.Combine(directory, $"{folderName}.exe");
@@ -648,10 +665,18 @@ namespace PluginHub.Editor
                 string spendTimeStr = GetTimeSpanFromDateTime(buildTime);
                 string labelText = $"{index}. {folderName} ({spendTimeStr})";
 
+                // 与压缩文件条目对齐：最新绿优先，否则含当前场景名则黄
                 if (isLatest)
                 {
                     Color oldColor = GUI.color;
                     GUI.color = new Color(0.3f, 1f, 0.3f);
+                    GUILayout.Label(labelText);
+                    GUI.color = oldColor;
+                }
+                else if (isSceneBuild)
+                {
+                    Color oldColor = GUI.color;
+                    GUI.color = new Color(1f, 1f, 0.3f);
                     GUILayout.Label(labelText);
                     GUI.color = oldColor;
                 }
