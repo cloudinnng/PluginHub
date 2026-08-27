@@ -145,6 +145,13 @@ namespace PluginHub.Runtime
 
     // 注意，不要使用Application.identifier
     // PC平台编辑器与构建中的Application.identifier不同。PC构建中的Application.identifier是None
+
+    /// <summary>
+    /// License 锁屏必须盖住其它所有 OnGUI。
+    /// DefaultExecutionOrder 越大 OnGUI 越晚执行、后画盖住普通 IMGUI；32000 是 Unity 允许的上限。
+    /// 仅靠执行顺序盖不住 GUI.Window（本项目 IMGUIFramework 浮动窗走独立通道），因此 OnGUI 内用 ModalWindow。
+    /// </summary>
+    [DefaultExecutionOrder(32000)]
     public class ApplicationLicense : MonoBehaviour
     {
         public bool adminMode = false;
@@ -354,9 +361,29 @@ namespace PluginHub.Runtime
             return panelRect;
         }
 
+        // 独立 WindowId，避免与 IMGUIFramework / 其它 GUI.Window 冲突
+        private const int LicenseModalWindowId = 0x50484C49; // "PHLI"
+        private bool loggedTopMostGui;
+
         private void OnGUI()
         {
-            // 遮罩用屏幕像素绘制，不受 GUI.matrix 影响
+            // 越小越靠前；只影响不同脚本的普通 OnGUI，盖不住 GUI.Window
+            GUI.depth = int.MinValue;
+
+            if (!loggedTopMostGui)
+            {
+                loggedTopMostGui = true;
+                Debug.Log("[ApplicationLicense] OnGUI 以 ModalWindow 置顶绘制（盖住其它 OnGUI / GUI.Window）");
+            }
+
+            Rect screenRect = new Rect(0f, 0f, Screen.width, Screen.height);
+            // ModalWindow：永远画在其它 GUI.Window 之上，并吞掉下层点击
+            GUI.ModalWindow(LicenseModalWindowId, screenRect, DrawLicenseModal, GUIContent.none, GUIStyle.none);
+        }
+
+        private void DrawLicenseModal(int windowId)
+        {
+            // 窗口全屏且原点在 (0,0)，内部坐标与原先 OnGUI 屏幕像素一致
             Color prevColor = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.55f);
             for (int i = 0; i < 10; i++)
@@ -417,7 +444,6 @@ namespace PluginHub.Runtime
             {
                 EndScreenScaleGui(prevMatrix);
             }
-            // GUILayout.Label($"正确License: {GetLicenseCorrect(ApplicationIdentifier, machineCode)}");
         }
     }
 }
