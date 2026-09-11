@@ -47,7 +47,7 @@ namespace PluginHub.Editor
             get { return EditorPrefs.GetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_devBuild", false); }
             set { EditorPrefs.SetBool($"{PluginHubEditor.ProjectUniquePrefix}_BuildModule_devBuild", value); }
         }
-        
+
 
         //是否构建前删除旧的构建目录
         private static bool deleteOldBuildBeforeBuild
@@ -227,13 +227,13 @@ namespace PluginHub.Editor
                         Debug.Log("[BuildModule] 打开 Unity 场景构建选择界面");
                         BuildPlayerWindow.ShowBuildPlayerWindow();
                     }
-                    devBuild = GUILayout.Toggle(devBuild, PluginHubEditor.GuiContent($"开发构建{(devBuild?"🛠️":"")}"));
-                    deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, PluginHubEditor.GuiContent($"构建前删除旧的构建{(deleteOldBuildBeforeBuild?"❌":"")}", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
-                    clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, PluginHubEditor.GuiContent($"构建前清空StreamingAssets{(clearStreamingAssetsBeforeBuild?"🧹":"")}"));
-                    buildAndRun = GUILayout.Toggle(buildAndRun, PluginHubEditor.GuiContent($"构建后运行{(buildAndRun?"▶️":"")}", "勾选后，点击构建按钮将在构建完成后自动运行。"));
-                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, PluginHubEditor.GuiContent($"构建后自动压缩{(autoZipAfterBuild?"📦":"")}", "勾选后，Windows 构建成功后将自动压缩构建目录（时间命名）并复制 zip 到剪贴板。"));
-                    useSceneNameAsProductName = GUILayout.Toggle(useSceneNameAsProductName, PluginHubEditor.GuiContent($"使用场景名作为产品名称{(useSceneNameAsProductName?"🏞️":"")}", "勾选后，打包前将当前激活场景名称临时写入 Product Name，构建结束后自动还原。"));
-                    enablePostCopy = GUILayout.Toggle(enablePostCopy, PluginHubEditor.GuiContent($"构建后复制文件夹到构建目录{(enablePostCopy?"📋":"")}"));
+                    devBuild = GUILayout.Toggle(devBuild, PluginHubEditor.GuiContent($"开发构建{(devBuild ? "🛠️" : "")}"));
+                    deleteOldBuildBeforeBuild = GUILayout.Toggle(deleteOldBuildBeforeBuild, PluginHubEditor.GuiContent($"构建前删除旧的构建{(deleteOldBuildBeforeBuild ? "❌" : "")}", "虽然构建会将之前的覆盖,但有时动态生成的多余文件可能仍会被保留.使用此选项在构建前先删除旧构建文件夹以确保干净。"));
+                    clearStreamingAssetsBeforeBuild = GUILayout.Toggle(clearStreamingAssetsBeforeBuild, PluginHubEditor.GuiContent($"构建前清空StreamingAssets{(clearStreamingAssetsBeforeBuild ? "🧹" : "")}"));
+                    buildAndRun = GUILayout.Toggle(buildAndRun, PluginHubEditor.GuiContent($"构建后运行{(buildAndRun ? "▶️" : "")}", "勾选后，点击构建按钮将在构建完成后自动运行。"));
+                    autoZipAfterBuild = GUILayout.Toggle(autoZipAfterBuild, PluginHubEditor.GuiContent($"构建后自动压缩{(autoZipAfterBuild ? "📦" : "")}", "勾选后，Windows 构建成功后将自动压缩构建目录（时间命名）并复制 zip 到剪贴板。"));
+                    useSceneNameAsProductName = GUILayout.Toggle(useSceneNameAsProductName, PluginHubEditor.GuiContent($"使用场景名作为产品名称{(useSceneNameAsProductName ? "🏞️" : "")}", "勾选后，打包前将当前激活场景名称临时写入 Product Name，构建结束后自动还原。"));
+                    enablePostCopy = GUILayout.Toggle(enablePostCopy, PluginHubEditor.GuiContent($"构建后复制文件夹到构建目录{(enablePostCopy ? "📋" : "")}"));
                     if (enablePostCopy)
                     {
                         DrawPostCopyFolderPathsUI();
@@ -343,23 +343,26 @@ namespace PluginHub.Editor
                         PluginHubEditor.GuiContent("不应使用", "勾选后此区域标红，提醒本项目不应使用「项目构建」。"));
                 }
                 GUILayout.EndHorizontal();
-                projectBuildName = EditorGUILayout.TextField("项目构建名称:", projectBuildName);
-                GUILayout.BeginHorizontal();
+                if (!isMarkShouldNotUseProjectBuild)
                 {
-                    string exePath = $"Build/{projectBuildName}/{projectBuildName}.exe";
-                    DrawBuildButton(
-                        "构建项目",
-                        $"将构建到{exePath}",
-                        () =>
-                        {
-                            SceneManage_AddCurrSceneToBuildSetting();
-                            SceneManage_SetBuildSceneEnable(false);
-                            ExecuteBuild(BuildTarget.StandaloneWindows64, exePath);
-                        });
-                    DrawIconBtnOpenFolder(exePath);
-                    DrawRunButton(exePath);
+                    projectBuildName = EditorGUILayout.TextField("项目构建名称:", projectBuildName);
+                    GUILayout.BeginHorizontal();
+                    {
+                        string exePath = $"Build/{projectBuildName}/{projectBuildName}.exe";
+                        DrawBuildButton(
+                            "构建项目",
+                            $"将构建到{exePath}",
+                            () =>
+                            {
+                                SceneManage_AddCurrSceneToBuildSetting();
+                                SceneManage_SetBuildSceneEnable(false);
+                                ExecuteBuild(BuildTarget.StandaloneWindows64, exePath);
+                            });
+                        DrawIconBtnOpenFolder(exePath);
+                        DrawRunButton(exePath);
+                    }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
 
@@ -383,23 +386,25 @@ namespace PluginHub.Editor
                         isMarkShouldNotUseSceneBuild,
                         PluginHubEditor.GuiContent("不应使用", "勾选后此区域标红，提醒本项目不应使用「场景构建」。"));
                 }
-                sceneBuildName = EditorGUILayout.TextField("场景构建名称:", sceneBuildName);
-
-                using (new GUILayout.HorizontalScope())
+                if (!isMarkShouldNotUseSceneBuild)
                 {
-                    GUILayout.FlexibleSpace();
-                    string exePath = $"Build/{sceneBuildName}/{sceneBuildName}.exe";
-                    DrawBuildButton(
-                        "仅构建当前场景",
-                        $"将构建到{exePath}",
-                        () =>
-                        {
-                            SceneManage_AddCurrSceneToBuildSetting();
-                            SceneManage_SetBuildSceneEnable(true);
-                            ExecuteBuild(BuildTarget.StandaloneWindows64, exePath);
-                        });
-                    DrawIconBtnOpenFolder(exePath);
-                    DrawRunButton(exePath);
+                    sceneBuildName = EditorGUILayout.TextField("场景构建名称:", sceneBuildName);
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        GUILayout.FlexibleSpace();
+                        string exePath = $"Build/{sceneBuildName}/{sceneBuildName}.exe";
+                        DrawBuildButton(
+                            "仅构建当前场景",
+                            $"将构建到{exePath}",
+                            () =>
+                            {
+                                SceneManage_AddCurrSceneToBuildSetting();
+                                SceneManage_SetBuildSceneEnable(true);
+                                ExecuteBuild(BuildTarget.StandaloneWindows64, exePath);
+                            });
+                        DrawIconBtnOpenFolder(exePath);
+                        DrawRunButton(exePath);
+                    }
                 }
             }
 
