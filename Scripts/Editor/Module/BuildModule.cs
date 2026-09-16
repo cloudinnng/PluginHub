@@ -351,7 +351,7 @@ namespace PluginHub.Editor
                         string exePath = $"Build/{projectBuildName}/{projectBuildName}.exe";
                         DrawBuildButton(
                             "构建项目",
-                            $"将构建到{exePath}",
+                            $"将构建到{exePath}，（会将构建设置中的场景全启用）",
                             () =>
                             {
                                 SceneManage_AddCurrSceneToBuildSetting();
