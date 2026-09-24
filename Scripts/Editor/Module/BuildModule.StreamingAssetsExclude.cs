@@ -135,7 +135,39 @@ namespace PluginHub.Editor
 
             GUILayout.BeginVertical("box");
             {
-                GUILayout.Label("勾选 = 保留在 StreamingAssets（进入包体）；取消勾选 = 场景构建时临时挪走", EditorStyles.miniLabel);
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label("勾选 = 保留在 StreamingAssets（进入包体）；取消勾选 = 场景构建时临时挪走", EditorStyles.miniLabel);
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("反选", EditorStyles.miniButton, GUILayout.Width(48)))
+                    {
+                        // 只翻转本次列出的一级子文件夹：原保留改为排除，原排除改为保留。
+                        // 配置里已不存在的目录名保持原样，避免误删历史排除项。
+                        HashSet<string> visibleNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (string path in folderPaths)
+                            visibleNames.Add(Path.GetFileName(path));
+
+                        List<string> inverted = new List<string>();
+                        foreach (string name in excluded)
+                        {
+                            if (!visibleNames.Contains(name))
+                                inverted.Add(name);
+                        }
+
+                        foreach (string folderName in visibleNames)
+                        {
+                            bool isKept = !excluded.Any(n => string.Equals(n, folderName, StringComparison.OrdinalIgnoreCase));
+                            if (isKept)
+                                inverted.Add(folderName);
+                        }
+
+                        excluded = inverted;
+                        changed = true;
+                        Debug.Log($"[BuildModule] 场景「{sceneName}」已反选 StreamingAssets 保留项，排除 {inverted.Count} 项：{string.Join(ExcludedFoldersSeparator.ToString(), inverted)}");
+                    }
+                }
+                GUILayout.EndHorizontal();
+
                 foreach (string folderPath in folderPaths.OrderBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase))
                 {
                     string folderName = Path.GetFileName(folderPath);

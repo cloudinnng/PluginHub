@@ -82,6 +82,8 @@ namespace PluginHub.Runtime
         public AnimationCurve mouseSensitivityCurve =
             new AnimationCurve(new Keyframe(0f, 0.5f, 0f, 5f), new Keyframe(1f, 2.5f, 0f, 0f));
 
+        public float mouseSensitivityFactor = 1f;
+
         [Tooltip("Time it takes to interpolate camera rotation 99% of the way to the target."), Range(0.001f, 1f)]
         public float rotationLerpTime = 0.01f;
 
@@ -213,7 +215,7 @@ namespace PluginHub.Runtime
                 if (inputProvider != null)
                     mouseMovement = inputProvider.GetLookInput();
 
-                var mouseSensitivityFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude);
+                var mouseSensitivityFactor = mouseSensitivityCurve.Evaluate(mouseMovement.magnitude) * this.mouseSensitivityFactor;
 
                 m_TargetCameraState.yaw += mouseMovement.x * mouseSensitivityFactor;
                 m_TargetCameraState.pitch += mouseMovement.y * mouseSensitivityFactor;
