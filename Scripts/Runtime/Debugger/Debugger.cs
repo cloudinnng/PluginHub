@@ -104,7 +104,7 @@ namespace PluginHub.Runtime
         // 2026年5月25日起，该值不在检视面板上设置，而是存储在PlayerPrefs中
         private bool defaultOpen
         {
-            get => PlayerPrefs.GetInt($"PH_{Application.companyName}_{Application.productName}_Debugger_DefaultOpen", 1) == 1;
+            get => PlayerPrefs.GetInt($"PH_{Application.companyName}_{Application.productName}_Debugger_DefaultOpen", 0) == 1;
             set => PlayerPrefs.SetInt($"PH_{Application.companyName}_{Application.productName}_Debugger_DefaultOpen", value ? 1 : 0);
         }
 
