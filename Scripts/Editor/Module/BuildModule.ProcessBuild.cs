@@ -264,8 +264,8 @@ namespace PluginHub.Editor
         }
 
         /// <summary>
-        /// Windows 构建完成后，在 exe 同级目录创建指向包体 StreamingAssets 的快捷方式（StreamingAssets.lnk），
-        /// 便于部署后直接打开资源目录，无需进入 _Data 子目录。
+        /// Windows 构建完成后，在 exe 同级目录生成 OpenStreamingAssets.bat，双击打开包体 StreamingAssets，
+        /// 便于部署后直接打开资源目录，无需进入 _Data 子目录。使用相对路径，随包分发到任意电脑/目录均可用。
         /// </summary>
         private void CreateSteamingAssetsShortcutToBuildDirectory(string pathToBuiltProject)
         {
@@ -295,84 +295,24 @@ namespace PluginHub.Editor
                 Debug.Log($"[BuildModule] 包体 StreamingAssets 目录不存在，已创建：{streamingAssetsPath}");
             }
 
-            string shortcutPath = Path.Combine(buildDirectory, "StreamingAssets.lnk");
-            string description = $"打开 {Path.GetFileNameWithoutExtension(pathToBuiltProject)} 的 StreamingAssets 文件夹";
-            if (!TryCreateWindowsFolderShortcut(shortcutPath, streamingAssetsPath, description))
+            // 清理旧版本生成的 .lnk（存的是构建机绝对路径，随包分发后会失效或指向错误目录）
+            string legacyShortcutPath = Path.Combine(buildDirectory, "StreamingAssets.lnk");
+            if (File.Exists(legacyShortcutPath))
             {
-                Debug.LogWarning($"[BuildModule] 创建 StreamingAssets 快捷方式失败：{shortcutPath}");
-                return;
+                File.Delete(legacyShortcutPath);
+                Debug.Log($"[BuildModule] 已删除旧版 StreamingAssets 快捷方式：{legacyShortcutPath}");
             }
 
-            Debug.Log($"[BuildModule] 已创建 StreamingAssets 快捷方式：{shortcutPath} -> {streamingAssetsPath}");
-        }
+            // %~dp0 = bat 自身所在目录（带结尾反斜杠），因此包体移动/复制/换电脑后仍然有效。
+            // 用 *_Data 通配而不是写死 {产品名}_Data：bat 内容保持纯 ASCII，避免中文产品名在 cmd 代码页（GBK/UTF-8）下乱码。
+            // ponytail: 若构建根目录存在多个 *_Data 文件夹，会逐个打开；Unity Windows 包体正常只有一个。
+            string batPath = Path.Combine(buildDirectory, "OpenStreamingAssets.bat");
+            string batContent =
+                "@echo off\r\n" +
+                "for /d %%D in (\"%~dp0*_Data\") do start \"\" \"%%~fD\\StreamingAssets\"\r\n";
+            File.WriteAllText(batPath, batContent, Encoding.ASCII);
 
-        /// <summary>
-        /// 通过 PowerShell 调用 WScript.Shell 在 Windows 上创建文件夹快捷方式（.lnk）。
-        /// ponytail: Unity 进程内 COM 激活会报 Unmanaged activation is not supported，故外包给 PowerShell。
-        /// </summary>
-        private bool TryCreateWindowsFolderShortcut(string shortcutFilePath, string targetFolderPath, string description)
-        {
-            if (string.IsNullOrWhiteSpace(shortcutFilePath) || string.IsNullOrWhiteSpace(targetFolderPath))
-            {
-                Debug.LogWarning("[BuildModule] 创建快捷方式失败：shortcutFilePath 或 targetFolderPath 为空。");
-                return false;
-            }
-
-            try
-            {
-                string shortcutArg = EscapePowerShellSingleQuotedString(shortcutFilePath);
-                string targetArg = EscapePowerShellSingleQuotedString(targetFolderPath);
-                string descriptionArg = EscapePowerShellSingleQuotedString(description ?? string.Empty);
-
-                // 使用 -EncodedCommand 避免中文路径、空格、引号在命令行中转义出错
-                // 注意：不能用 C# 插值字符串 $"..."，否则 $s/$ws 会被当成 C# 变量吞掉
-                string psCommand =
-                    "$ws = New-Object -ComObject WScript.Shell; " +
-                    "$s = $ws.CreateShortcut('" + shortcutArg + "'); " +
-                    "$s.TargetPath = '" + targetArg + "'; " +
-                    "$s.Description = '" + descriptionArg + "'; " +
-                    "$s.Save()";
-                string encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(psCommand));
-
-                ProcessStartInfo psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {encodedCommand}",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                };
-
-                using (Process process = new Process())
-                {
-                    process.StartInfo = psi;
-                    process.Start();
-                    string error = process.StandardError.ReadToEnd();
-                    process.WaitForExit();
-
-                    if (process.ExitCode != 0)
-                    {
-                        Debug.LogWarning($"[BuildModule] PowerShell 创建快捷方式失败，ExitCode={process.ExitCode}，stderr={error}");
-                        return false;
-                    }
-                }
-
-                bool created = File.Exists(shortcutFilePath);
-                if (!created)
-                    Debug.LogWarning($"[BuildModule] 快捷方式保存后未找到文件：{shortcutFilePath}");
-                return created;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"[BuildModule] 创建快捷方式异常：{ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>PowerShell 单引号字符串转义：' → ''</summary>
-        private string EscapePowerShellSingleQuotedString(string value)
-        {
-            return value.Replace("'", "''");
+            Debug.Log($"[BuildModule] 已创建 StreamingAssets 打开脚本：{batPath} -> {streamingAssetsPath}");
         }
         /// <summary>
         /// Windows 构建完成后，将 daemon-run.bat 复制到构建目录（exe 同级目录）。
